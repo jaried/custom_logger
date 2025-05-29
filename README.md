@@ -69,5 +69,5 @@ pytest tests/
 
 ## 依赖
 
-- Python >= 3.7
+- Python >= 3.12
 - config_manager
