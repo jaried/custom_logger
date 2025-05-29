@@ -1,0 +1,16 @@
+# 包含配置文件
+include src/config/*.yaml
+include src/config/*.yml
+
+# 包含文档文件
+include README.md
+include requirements.txt
+
+# 排除不需要的文件
+exclude *.pyc
+exclude __pycache__
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+
+# 包含测试文件（开发模式）
+recursive-include tests *.py
