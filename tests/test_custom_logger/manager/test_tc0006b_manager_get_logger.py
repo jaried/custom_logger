@@ -1,9 +1,10 @@
-# tests/test_custom_logger/test_tc0006_manager.py
+# tests/test_custom_logger/manager/test_tc0006b_manager_get_logger.py
 from __future__ import annotations
 from datetime import datetime
 
 start_time = datetime.now()
 
+import os
 import pytest
 from unittest.mock import patch, MagicMock
 from custom_logger.manager import (
@@ -14,123 +15,9 @@ from custom_logger.logger import CustomLogger
 from custom_logger.types import DEBUG, INFO, ERROR
 
 
-def test_tc0006_001_is_initialized_false():
-    """测试未初始化时的状态检查"""
-    # 确保未初始化
-    tear_down_custom_logger_system()
-
-    assert not is_initialized()
-    pass
-
-
-@patch('custom_logger.manager.init_config')
-@patch('custom_logger.manager.init_writer')
-@patch('atexit.register')
-def test_tc0006_002_init_custom_logger_system(mock_atexit, mock_init_writer, mock_init_config):
-    """测试初始化自定义日志系统"""
-    # 确保未初始化
-    tear_down_custom_logger_system()
-
-    init_custom_logger_system()
-
-    # 验证调用了必要的初始化函数
-    mock_init_config.assert_called_once()
-    mock_init_writer.assert_called_once()
-    mock_atexit.assert_called_once()
-
-    # 验证状态
-    assert is_initialized()
-
-    # 清理
-    tear_down_custom_logger_system()
-    pass
-
-
-@patch('custom_logger.manager.init_config')
-@patch('custom_logger.manager.init_writer')
-def test_tc0006_003_init_custom_logger_system_already_initialized(mock_init_writer, mock_init_config):
-    """测试重复初始化系统"""
-    # 确保未初始化
-    tear_down_custom_logger_system()
-
-    # 第一次初始化
-    init_custom_logger_system()
-
-    # 第二次初始化
-    init_custom_logger_system()
-
-    # 应该只调用一次
-    mock_init_config.assert_called_once()
-    mock_init_writer.assert_called_once()
-
-    # 清理
-    tear_down_custom_logger_system()
-    pass
-
-
-@patch('custom_logger.manager.init_config', side_effect=Exception("Init error"))
-def test_tc0006_004_init_custom_logger_system_failure(mock_init_config):
-    """测试初始化失败"""
-    # 确保未初始化
-    tear_down_custom_logger_system()
-
-    with pytest.raises(Exception, match="Init error"):
-        init_custom_logger_system()
-
-    # 失败后应该仍未初始化
-    assert not is_initialized()
-    pass
-
-
-@patch('custom_logger.manager.shutdown_writer')
-def test_tc0006_005_tear_down_custom_logger_system(mock_shutdown_writer):
-    """测试清理自定义日志系统"""
-    # 先初始化
-    with patch('custom_logger.manager.init_config'):
-        with patch('custom_logger.manager.init_writer'):
-            init_custom_logger_system()
-
-    assert is_initialized()
-
-    # 清理
-    tear_down_custom_logger_system()
-
-    mock_shutdown_writer.assert_called_once()
-    assert not is_initialized()
-    pass
-
-
-def test_tc0006_006_tear_down_not_initialized():
-    """测试清理未初始化的系统"""
-    # 确保未初始化
-    tear_down_custom_logger_system()
-
-    # 再次清理应该不报错
-    tear_down_custom_logger_system()
-
-    assert not is_initialized()
-    pass
-
-
-@patch('custom_logger.manager.shutdown_writer', side_effect=Exception("Shutdown error"))
-def test_tc0006_007_tear_down_failure(mock_shutdown_writer):
-    """测试清理失败处理"""
-    # 先初始化
-    with patch('custom_logger.manager.init_config'):
-        with patch('custom_logger.manager.init_writer'):
-            init_custom_logger_system()
-
-    # 清理（应该不抛出异常）
-    tear_down_custom_logger_system()
-
-    # 状态应该被重置
-    assert not is_initialized()
-    pass
-
-
 @patch('custom_logger.manager.get_config')
 @patch('custom_logger.manager.parse_level_name')
-def test_tc0006_008_get_logger_basic(mock_parse_level, mock_get_config):
+def test_tc0006_011_get_logger_basic(mock_parse_level, mock_get_config):
     """测试获取基本logger"""
     # 模拟已初始化
     with patch('custom_logger.manager._initialized', True):
@@ -145,8 +32,36 @@ def test_tc0006_008_get_logger_basic(mock_parse_level, mock_get_config):
     pass
 
 
+@patch('custom_logger.manager.get_config', side_effect=RuntimeError("Not initialized"))
+@patch('custom_logger.manager.init_custom_logger_system')
+def test_tc0006_012_get_logger_auto_init(mock_init, mock_get_config):
+    """测试自动初始化logger系统"""
+    # 模拟未初始化
+    with patch('custom_logger.manager._initialized', False):
+        # 第一次调用get_config失败，第二次成功
+        mock_get_config.side_effect = [RuntimeError("Not initialized"), None]
+
+        logger = get_logger("test_logger")
+
+        # 应该自动初始化，且不传递配置路径（使用默认）
+        mock_init.assert_called_once_with()
+        assert isinstance(logger, CustomLogger)
+    pass
+
+
 @patch('custom_logger.manager.get_config')
-def test_tc0006_009_get_logger_no_levels(mock_get_config):
+@patch('custom_logger.manager.parse_level_name', side_effect=ValueError("Invalid level"))
+def test_tc0006_013_get_logger_invalid_level(mock_parse_level, mock_get_config):
+    """测试无效级别参数"""
+    # 模拟已初始化
+    with patch('custom_logger.manager._initialized', True):
+        with pytest.raises(ValueError, match="Invalid level"):
+            get_logger("test_logger", console_level="invalid")
+    pass
+
+
+@patch('custom_logger.manager.get_config')
+def test_tc0006_014_get_logger_no_levels(mock_get_config):
     """测试获取不指定级别的logger"""
     # 模拟已初始化
     with patch('custom_logger.manager._initialized', True):
@@ -159,37 +74,9 @@ def test_tc0006_009_get_logger_no_levels(mock_get_config):
     pass
 
 
-@patch('custom_logger.manager.get_config', side_effect=RuntimeError("Not initialized"))
-@patch('custom_logger.manager.init_custom_logger_system')
-def test_tc0006_010_get_logger_auto_init(mock_init, mock_get_config):
-    """测试自动初始化logger系统"""
-    # 模拟未初始化
-    with patch('custom_logger.manager._initialized', False):
-        # 第一次调用get_config失败，第二次成功
-        mock_get_config.side_effect = [RuntimeError("Not initialized"), None]
-
-        logger = get_logger("test_logger")
-
-        # 应该自动初始化
-        mock_init.assert_called_once()
-        assert isinstance(logger, CustomLogger)
-    pass
-
-
-@patch('custom_logger.manager.get_config')
-@patch('custom_logger.manager.parse_level_name', side_effect=ValueError("Invalid level"))
-def test_tc0006_011_get_logger_invalid_level(mock_parse_level, mock_get_config):
-    """测试无效级别参数"""
-    # 模拟已初始化
-    with patch('custom_logger.manager._initialized', True):
-        with pytest.raises(ValueError, match="Invalid level"):
-            get_logger("test_logger", console_level="invalid")
-    pass
-
-
 @patch('custom_logger.manager.get_config')
 @patch('custom_logger.manager.parse_level_name')
-def test_tc0006_012_get_logger_console_level_only(mock_parse_level, mock_get_config):
+def test_tc0006_015_get_logger_console_level_only(mock_parse_level, mock_get_config):
     """测试只指定控制台级别"""
     # 模拟已初始化
     with patch('custom_logger.manager._initialized', True):
@@ -205,7 +92,7 @@ def test_tc0006_012_get_logger_console_level_only(mock_parse_level, mock_get_con
 
 @patch('custom_logger.manager.get_config')
 @patch('custom_logger.manager.parse_level_name')
-def test_tc0006_013_get_logger_file_level_only(mock_parse_level, mock_get_config):
+def test_tc0006_016_get_logger_file_level_only(mock_parse_level, mock_get_config):
     """测试只指定文件级别"""
     # 模拟已初始化
     with patch('custom_logger.manager._initialized', True):
@@ -221,7 +108,7 @@ def test_tc0006_013_get_logger_file_level_only(mock_parse_level, mock_get_config
 
 @patch('custom_logger.manager.get_config')
 @patch('custom_logger.manager.parse_level_name')
-def test_tc0006_014_get_logger_both_levels(mock_parse_level, mock_get_config):
+def test_tc0006_017_get_logger_both_levels(mock_parse_level, mock_get_config):
     """测试指定两个级别"""
     # 模拟已初始化
     with patch('custom_logger.manager._initialized', True):
@@ -235,7 +122,7 @@ def test_tc0006_014_get_logger_both_levels(mock_parse_level, mock_get_config):
     pass
 
 
-def test_tc0006_015_get_logger_empty_name():
+def test_tc0006_018_get_logger_empty_name():
     """测试空名称logger"""
     # 模拟已初始化
     with patch('custom_logger.manager._initialized', True):
@@ -246,7 +133,7 @@ def test_tc0006_015_get_logger_empty_name():
     pass
 
 
-def test_tc0006_016_get_logger_unicode_name():
+def test_tc0006_019_get_logger_unicode_name():
     """测试Unicode名称logger"""
     # 模拟已初始化
     with patch('custom_logger.manager._initialized', True):
@@ -257,7 +144,7 @@ def test_tc0006_016_get_logger_unicode_name():
     pass
 
 
-def test_tc0006_017_get_logger_long_name():
+def test_tc0006_020_get_logger_long_name():
     """测试长名称logger"""
     long_name = "a" * 100
 
@@ -272,7 +159,7 @@ def test_tc0006_017_get_logger_long_name():
 
 @patch('custom_logger.manager.get_config')
 @patch('custom_logger.manager.parse_level_name')
-def test_tc0006_018_get_logger_case_sensitive_levels(mock_parse_level, mock_get_config):
+def test_tc0006_021_get_logger_case_sensitive_levels(mock_parse_level, mock_get_config):
     """测试级别名称大小写处理"""
     # 模拟已初始化
     with patch('custom_logger.manager._initialized', True):
@@ -286,7 +173,7 @@ def test_tc0006_018_get_logger_case_sensitive_levels(mock_parse_level, mock_get_
     pass
 
 
-def test_tc0006_019_multiple_loggers():
+def test_tc0006_022_multiple_loggers():
     """测试创建多个logger"""
     # 模拟已初始化
     with patch('custom_logger.manager._initialized', True):
@@ -304,26 +191,27 @@ def test_tc0006_019_multiple_loggers():
     pass
 
 
-@patch('custom_logger.manager.init_config')
-@patch('custom_logger.manager.init_writer')
-def test_tc0006_020_initialization_state_consistency(mock_init_writer, mock_init_config):
-    """测试初始化状态一致性"""
-    # 确保开始时未初始化
-    tear_down_custom_logger_system()
-    assert not is_initialized()
+def test_tc0006_023_multiple_loggers_different_configs():
+    """测试使用不同配置的多个logger"""
+    # 模拟已初始化
+    with patch('custom_logger.manager._initialized', True):
+        with patch('custom_logger.manager.get_config'):
+            with patch('custom_logger.manager.parse_level_name') as mock_parse:
+                mock_parse.side_effect = lambda x: {"debug": DEBUG, "info": INFO, "error": ERROR}[x]
 
-    # 初始化
-    init_custom_logger_system()
-    assert is_initialized()
+                logger1 = get_logger("module1", console_level="debug")
+                logger2 = get_logger("module2", file_level="error")
+                logger3 = get_logger("module3", console_level="info", file_level="debug")
 
-    # 清理
-    tear_down_custom_logger_system()
-    assert not is_initialized()
+                assert logger1.name == "module1"
+                assert logger1._console_level == DEBUG
+                assert logger1._file_level is None
 
-    # 再次初始化
-    init_custom_logger_system()
-    assert is_initialized()
+                assert logger2.name == "module2"
+                assert logger2._console_level is None
+                assert logger2._file_level == ERROR
 
-    # 最终清理
-    tear_down_custom_logger_system()
+                assert logger3.name == "module3"
+                assert logger3._console_level == INFO
+                assert logger3._file_level == DEBUG
     pass

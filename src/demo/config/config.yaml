@@ -1,0 +1,11 @@
+__data__:
+  base_dir: d:/logs
+  experiment_name: default
+  first_start_time: '2025-06-01T16:23:31.119377'
+  logger:
+    current_session_dir: d:/logs\my_project\default\logs\20250601\162331
+    global_console_level: info
+    global_file_level: debug
+    module_levels: {}
+  project_name: my_project
+__type_hints__: {}

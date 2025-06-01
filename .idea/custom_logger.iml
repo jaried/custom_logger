@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="PYTHON_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/src/custom_logger.egg-info" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/auto_init" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/config" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/test_custom_logger/worker" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/worker" />
+    </content>
+    <orderEntry type="jdk" jdkName="base_python3.12" jdkType="Python SDK" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>

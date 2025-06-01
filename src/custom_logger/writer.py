@@ -111,12 +111,7 @@ def _writer_thread_func() -> None:
     """写入线程主函数"""
     try:
         cfg = get_config()
-
-        # 兼容字典和DotDict访问方式
-        if isinstance(cfg, dict):
-            session_dir = cfg.get('current_session_dir')
-        else:
-            session_dir = getattr(cfg, 'current_session_dir', None)
+        session_dir = getattr(cfg, 'current_session_dir', None)
 
         if session_dir is None:
             print("无法获取会话目录", file=sys.stderr)

@@ -1,0 +1,7 @@
+# Add directories or file patterns to ignore during indexing (e.g. foo/ or *.csv)
+.idea
+/build
+/.pytest_cache
+/src/custom_logger.egg-info
+*.pyc
+*.pyd

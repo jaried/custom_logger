@@ -46,7 +46,8 @@ def test_tc0010_003_mock_logger_usage():
     # Mock所有外部依赖
     with patch.object(logger, '_print_to_console') as mock_console:
         with patch('custom_logger.writer.write_log_async') as mock_file:
-            with patch('custom_logger.formatter.get_config', return_value=mock_config):
+            with patch('custom_logger.config.get_root_config') as mock_get_root_config:
+                mock_get_root_config.return_value = MagicMock(first_start_time=mock_config["first_start_time"])
                 # 模拟_should_log方法返回True
                 with patch.object(logger, '_should_log_console', return_value=True):
                     with patch.object(logger, '_should_log_file', return_value=True):

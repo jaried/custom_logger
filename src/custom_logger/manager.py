@@ -15,16 +15,20 @@ from .types import parse_level_name
 _initialized = False
 
 
-def init_custom_logger_system() -> None:
-    """初始化自定义日志系统（仅主程序调用）"""
+def init_custom_logger_system(config_path: Optional[str] = None) -> None:
+    """初始化自定义日志系统（仅主程序调用）
+
+    Args:
+        config_path: 配置文件路径（可选），如果不提供则使用默认路径
+    """
     global _initialized
 
     if _initialized:
         return
 
     try:
-        # 初始化配置
-        init_config()
+        # 初始化配置，传递配置路径
+        init_config(config_path)
 
         # 初始化异步写入器
         init_writer()

@@ -101,7 +101,9 @@ def create_log_line(
         kwargs: dict
 ) -> str:
     """创建完整的日志行"""
-    cfg = get_config()
+    from .config import get_root_config
+
+    cfg = get_root_config()
     current_time = datetime.now()
 
     # 获取各个组件
@@ -109,12 +111,8 @@ def create_log_line(
     caller_module, line_number = get_caller_info()
     timestamp = current_time.strftime('%Y-%m-%d %H:%M:%S')
 
-    # 获取第一次启动时间（兼容字典和DotDict）
-    if isinstance(cfg, dict):
-        first_start_time = cfg.get('first_start_time')
-    else:
-        first_start_time = getattr(cfg, 'first_start_time', None)
-
+    # 获取第一次启动时间
+    first_start_time = getattr(cfg, 'first_start_time', None)
     elapsed_str = format_elapsed_time(first_start_time, current_time)
     formatted_message = format_log_message(level_name, message, module_name, args, kwargs)
 

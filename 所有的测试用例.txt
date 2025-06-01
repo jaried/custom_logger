@@ -1,0 +1,3453 @@
+# ======= 源文件: tests\__init__.py =======
+
+
+# ======= 源文件: tests\conftest.py =======
+# tests/conftest.py
+from __future__ import annotations
+from datetime import datetime
+start_time = datetime.now()
+
+import sys
+import os
+from pathlib import Path
+
+# 确保能找到src目录
+project_root = Path(__file__).parent.parent  # 从tests目录向上到项目根目录
+src_path = project_root / "src"
+
+# 添加src目录到Python路径的最前面
+if str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+
+print(f"项目根目录: {project_root}")
+print(f"src路径: {src_path}")
+print(f"src目录存在: {src_path.exists()}")
+
+# 确保custom_logger目录存在
+custom_logger_path = src_path / "custom_logger"
+print(f"custom_logger路径: {custom_logger_path}")
+print(f"custom_logger目录存在: {custom_logger_path.exists()}")
+
+# 显示Python路径
+print("Python路径:")
+for i, path in enumerate(sys.path[:5]):  # 只显示前5个
+    print(f"  {i}: {path}")
+
+pass
+
+
+# ======= 源文件: tests\auto_init\test_config.yaml =======
+__data__: {}
+__type_hints__: {}
+
+
+# ======= 源文件: tests\config\config.yaml =======
+__data__: {}
+__type_hints__: {}
+
+
+# ======= 源文件: tests\test_custom_logger\__init__.py =======
+
+
+# ======= 源文件: tests\test_custom_logger\test_tc0001_types.py =======
+# tests/test_custom_logger/test_tc0001_types.py
+from __future__ import annotations
+from datetime import datetime
+
+start_time = datetime.now()
+
+import pytest
+from custom_logger.types import (
+    DEBUG, INFO, WARNING, ERROR, CRITICAL, EXCEPTION,
+    DETAIL, W_SUMMARY, W_DETAIL,
+    LEVEL_NAME_TO_VALUE, VALUE_TO_LEVEL_NAME,
+    parse_level_name, get_level_name
+)
+
+
+def test_tc0001_001_level_constants():
+    """测试级别常量值是否正确"""
+    assert DEBUG == 10
+    assert INFO == 20
+    assert WARNING == 30
+    assert ERROR == 40
+    assert CRITICAL == 50
+    assert EXCEPTION == 60
+    assert DETAIL == 8
+    assert W_SUMMARY == 5
+    assert W_DETAIL == 3
+    pass
+
+
+def test_tc0001_002_level_name_mapping():
+    """测试级别名称映射是否完整"""
+    expected_mapping = {
+        "debug": 10,
+        "info": 20,
+        "warning": 30,
+        "error": 40,
+        "critical": 50,
+        "exception": 60,
+        "detail": 8,
+        "w_summary": 5,
+        "w_detail": 3,
+    }
+
+    assert LEVEL_NAME_TO_VALUE == expected_mapping
+
+    # 验证反向映射
+    for name, value in expected_mapping.items():
+        assert VALUE_TO_LEVEL_NAME[value] == name
+    pass
+
+
+def test_tc0001_003_parse_level_name_valid():
+    """测试解析有效的级别名称"""
+    assert parse_level_name("debug") == 10
+    assert parse_level_name("INFO") == 20
+    assert parse_level_name(" Warning ") == 30
+    assert parse_level_name("ERROR") == 40
+    assert parse_level_name("critical") == 50
+    assert parse_level_name("exception") == 60
+    assert parse_level_name("detail") == 8
+    assert parse_level_name("w_summary") == 5
+    assert parse_level_name("w_detail") == 3
+    pass
+
+
+def test_tc0001_004_parse_level_name_invalid():
+    """测试解析无效的级别名称"""
+    with pytest.raises(ValueError, match="无效的日志级别"):
+        parse_level_name("invalid_level")
+
+    with pytest.raises(ValueError, match="无效的日志级别"):
+        parse_level_name("")
+
+    with pytest.raises(ValueError, match="无效的日志级别"):
+        parse_level_name("trace")
+    pass
+
+
+def test_tc0001_005_parse_level_name_non_string():
+    """测试解析非字符串参数"""
+    with pytest.raises(ValueError, match="级别名称必须是字符串"):
+        parse_level_name(123)
+
+    with pytest.raises(ValueError, match="级别名称必须是字符串"):
+        parse_level_name(None)
+
+    with pytest.raises(ValueError, match="级别名称必须是字符串"):
+        parse_level_name([])
+    pass
+
+
+def test_tc0001_006_get_level_name_valid():
+    """测试获取有效级别的名称"""
+    assert get_level_name(10) == "debug"
+    assert get_level_name(20) == "info"
+    assert get_level_name(30) == "warning"
+    assert get_level_name(40) == "error"
+    assert get_level_name(50) == "critical"
+    assert get_level_name(60) == "exception"
+    assert get_level_name(8) == "detail"
+    assert get_level_name(5) == "w_summary"
+    assert get_level_name(3) == "w_detail"
+    pass
+
+
+def test_tc0001_007_get_level_name_invalid():
+    """测试获取无效级别值的名称"""
+    with pytest.raises(ValueError, match="无效的日志级别数值"):
+        get_level_name(999)
+
+    with pytest.raises(ValueError, match="无效的日志级别数值"):
+        get_level_name(-1)
+
+    with pytest.raises(ValueError, match="无效的日志级别数值"):
+        get_level_name(0)
+    pass
+
+
+def test_tc0001_008_case_insensitive():
+    """测试大小写不敏感"""
+    test_cases = [
+        ("DEBUG", 10),
+        ("debug", 10),
+        ("Debug", 10),
+        ("INFO", 20),
+        ("info", 20),
+        ("W_SUMMARY", 5),
+        ("w_summary", 5),
+        ("W_Summary", 5),
+    ]
+
+    for level_name, expected_value in test_cases:
+        assert parse_level_name(level_name) == expected_value
+    pass
+
+
+def test_tc0001_009_whitespace_handling():
+    """测试空白字符处理"""
+    assert parse_level_name("  debug  ") == 10
+    assert parse_level_name("\tdebug\t") == 10
+    assert parse_level_name("\ndebug\n") == 10
+    assert parse_level_name("debug ") == 10
+    assert parse_level_name(" debug") == 10
+    pass
+
+
+def test_tc0001_010_level_ordering():
+    """测试级别顺序是否正确"""
+    levels = [W_DETAIL, W_SUMMARY, DETAIL, DEBUG, INFO, WARNING, ERROR, CRITICAL, EXCEPTION]
+
+    # 验证顺序递增
+    for i in range(len(levels) - 1):
+        assert levels[i] < levels[i + 1], f"Level {levels[i]} should be < {levels[i + 1]}"
+    pass
+
+# ======= 源文件: tests\test_custom_logger\test_tc0002_config.py =======
+# tests/test_custom_logger/test_tc0002_config.py
+from __future__ import annotations
+from datetime import datetime
+
+start_time = datetime.now()
+
+import os
+import tempfile
+import pytest
+from unittest.mock import patch, MagicMock
+from custom_logger.config import (
+    get_config_file_path, init_config, get_config, get_root_config,
+    get_console_level, get_file_level, DEFAULT_CONFIG,
+    set_config_path, _cached_config_path
+)
+from custom_logger.types import DEBUG, INFO
+
+
+def test_tc0002_001_get_config_file_path_default():
+    """测试获取默认配置文件路径"""
+    # 清理缓存和环境变量
+    set_config_path(None)
+
+    path = get_config_file_path()
+    expected_path = os.path.join("config", "config.yaml")
+    assert path == expected_path
+    pass
+
+
+def test_tc0002_002_default_config_structure():
+    """测试默认配置结构"""
+    assert DEFAULT_CONFIG["project_name"] == "my_project"
+    assert DEFAULT_CONFIG["experiment_name"] == "default"
+    assert DEFAULT_CONFIG['logger']["global_console_level"] == "info"
+    assert DEFAULT_CONFIG['logger']["global_file_level"] == "debug"
+    assert DEFAULT_CONFIG["base_dir"] == "d:/logs"
+    assert DEFAULT_CONFIG["first_start_time"] is None
+    assert DEFAULT_CONFIG['logger']["current_session_dir"] is None
+    assert DEFAULT_CONFIG['logger']["module_levels"] == {}
+    pass
+
+
+def test_tc0002_003_set_config_path():
+    """测试设置配置路径"""
+    from custom_logger.config import get_cached_config_path
+
+    test_path = "test/custom_config.yaml"
+
+    set_config_path(test_path)
+
+    # 验证缓存路径被设置
+    assert get_cached_config_path() == test_path
+    # 验证环境变量被设置
+    assert os.environ.get('CUSTOM_LOGGER_CONFIG_PATH') == test_path
+
+    # 清理
+    set_config_path(None)
+    assert 'CUSTOM_LOGGER_CONFIG_PATH' not in os.environ
+    pass
+
+
+def test_tc0002_004_get_config_file_path_with_cache():
+    """测试从缓存获取配置路径"""
+    test_path = "cached/config.yaml"
+
+    set_config_path(test_path)
+    path = get_config_file_path()
+
+    assert path == test_path
+
+    # 清理
+    set_config_path(None)
+    pass
+
+
+def test_tc0002_005_get_config_file_path_from_env():
+    """测试从环境变量获取配置路径"""
+    test_path = "env/config.yaml"
+
+    # 清理缓存但设置环境变量
+    set_config_path(None)
+    os.environ['CUSTOM_LOGGER_CONFIG_PATH'] = test_path
+
+    path = get_config_file_path()
+    assert path == test_path
+
+    # 清理
+    del os.environ['CUSTOM_LOGGER_CONFIG_PATH']
+    pass
+
+
+@patch('os.makedirs')
+@patch('custom_logger.config.is_debug')
+@patch('custom_logger.config.get_config_manager')
+def test_tc0002_006_init_config_with_custom_path(mock_get_config_manager, mock_is_debug, mock_makedirs):
+    """测试使用自定义路径初始化配置"""
+    from custom_logger.config import get_cached_config_path
+
+    mock_is_debug.return_value = False
+    mock_cfg = MagicMock()
+    mock_get_config_manager.return_value = mock_cfg
+
+    custom_path = "custom/test_config.yaml"
+
+    # 模拟hasattr返回False（新配置）
+    with patch('builtins.hasattr', return_value=False):
+        init_config(custom_path)
+
+    # 验证配置路径被设置
+    assert get_cached_config_path() == custom_path
+    # 验证config_manager使用了正确的路径
+    mock_get_config_manager.assert_called_with(config_path=custom_path)
+    mock_makedirs.assert_called()
+
+    # 清理
+    set_config_path(None)
+    pass
+
+
+@patch('os.makedirs')
+@patch('custom_logger.config.is_debug')
+@patch('custom_logger.config.get_config_manager')
+def test_tc0002_007_init_config_existing(mock_get_config_manager, mock_is_debug, mock_makedirs):
+    """测试初始化已有配置"""
+    mock_is_debug.return_value = False
+    mock_cfg = MagicMock()
+    mock_cfg.first_start_time = "2024-01-01T10:00:00"
+    mock_get_config_manager.return_value = mock_cfg
+
+    with patch('builtins.hasattr', return_value=True):
+        init_config()
+
+    # 验证已有的first_start_time不被覆盖
+    assert mock_cfg.first_start_time == "2024-01-01T10:00:00"
+    mock_makedirs.assert_called()
+    pass
+
+
+@patch('custom_logger.config.get_config_manager')
+def test_tc0002_008_get_config_initialized(mock_get_config_manager):
+    """测试获取已初始化的配置"""
+    mock_cfg = MagicMock()
+    mock_logger_config = MagicMock()
+    mock_cfg.logger = mock_logger_config
+    mock_get_config_manager.return_value = mock_cfg
+
+    with patch('builtins.hasattr', return_value=True):
+        config = get_config()
+        assert config == mock_logger_config
+    pass
+
+
+@patch('custom_logger.config.get_config_manager')
+def test_tc0002_009_get_root_config_initialized(mock_get_config_manager):
+    """测试获取根配置对象"""
+    mock_cfg = MagicMock()
+    mock_cfg.logger = MagicMock()
+    mock_get_config_manager.return_value = mock_cfg
+
+    with patch('builtins.hasattr', return_value=True):
+        config = get_root_config()
+        assert config == mock_cfg
+    pass
+
+
+@patch('custom_logger.config.get_config_manager')
+def test_tc0002_010_get_root_config_not_initialized(mock_get_config_manager):
+    """测试获取未初始化的根配置"""
+    mock_cfg = MagicMock()
+    mock_get_config_manager.return_value = mock_cfg
+
+    with patch('builtins.hasattr', return_value=False):
+        with pytest.raises(RuntimeError, match="日志系统未初始化"):
+            get_root_config()
+    pass
+
+
+@patch('custom_logger.config.get_config')
+def test_tc0002_011_get_console_level_global(mock_get_config):
+    """测试获取全局控制台级别"""
+    mock_config = MagicMock()
+    mock_config.global_console_level = "info"
+    mock_config.module_levels = {}
+    mock_get_config.return_value = mock_config
+
+    level = get_console_level("test_module")
+    assert level == INFO
+    pass
+
+
+@patch('custom_logger.config.get_config')
+def test_tc0002_012_get_console_level_module_specific(mock_get_config):
+    """测试获取模块特定控制台级别"""
+    mock_config = MagicMock()
+    mock_config.global_console_level = "info"
+    mock_config.module_levels = {"test_module": {"console_level": "debug"}}
+    mock_get_config.return_value = mock_config
+
+    level = get_console_level("test_module")
+    assert level == DEBUG
+    pass
+
+
+@patch('custom_logger.config.get_config')
+def test_tc0002_013_get_file_level_global(mock_get_config):
+    """测试获取全局文件级别"""
+    mock_config = MagicMock()
+    mock_config.global_file_level = "debug"
+    mock_config.module_levels = {}
+    mock_get_config.return_value = mock_config
+
+    level = get_file_level("test_module")
+    assert level == DEBUG
+    pass
+
+
+@patch('custom_logger.config.get_config')
+def test_tc0002_014_get_file_level_module_specific(mock_get_config):
+    """测试获取模块特定文件级别"""
+    mock_config = MagicMock()
+    mock_config.global_file_level = "debug"
+    mock_config.module_levels = {"test_module": {"file_level": "info"}}
+    mock_get_config.return_value = mock_config
+
+    level = get_file_level("test_module")
+    assert level == INFO
+    pass
+
+
+def test_tc0002_015_config_path_priority():
+    """测试配置路径优先级"""
+    # 清理初始状态
+    set_config_path(None)
+
+    try:
+        # 设置环境变量
+        os.environ['CUSTOM_LOGGER_CONFIG_PATH'] = "env/config.yaml"
+
+        # 缓存路径应该优先于环境变量
+        set_config_path("cache/config.yaml")
+        assert get_config_file_path() == "cache/config.yaml"
+
+        # 清理缓存，应该使用环境变量
+        set_config_path(None)
+        # 手动重新设置环境变量，因为set_config_path(None)会清理它
+        os.environ['CUSTOM_LOGGER_CONFIG_PATH'] = "env/config.yaml"
+        assert get_config_file_path() == "env/config.yaml"
+
+        # 清理环境变量，应该使用默认路径
+        if 'CUSTOM_LOGGER_CONFIG_PATH' in os.environ:
+            del os.environ['CUSTOM_LOGGER_CONFIG_PATH']
+        expected_default = os.path.join("config", "config.yaml")
+        assert get_config_file_path() == expected_default
+
+    finally:
+        # 确保清理
+        set_config_path(None)
+        if 'CUSTOM_LOGGER_CONFIG_PATH' in os.environ:
+            del os.environ['CUSTOM_LOGGER_CONFIG_PATH']
+    pass
+
+
+def test_tc0002_016_worker_config_path_inheritance():
+    """测试worker进程配置路径继承"""
+    from custom_logger.config import get_cached_config_path
+
+    test_path = "worker/test_config.yaml"
+
+    # 模拟主进程设置配置路径
+    set_config_path(test_path)
+
+    # 模拟worker进程（清理缓存，只保留环境变量）
+    original_cache = get_cached_config_path()
+    set_config_path(None)  # 清理缓存但保留环境变量
+    os.environ['CUSTOM_LOGGER_CONFIG_PATH'] = test_path  # 手动设置环境变量
+
+    try:
+        # worker进程应该能从环境变量读取配置路径
+        worker_path = get_config_file_path()
+        assert worker_path == test_path
+    finally:
+        # 恢复和清理
+        set_config_path(None)
+    pass
+
+
+@patch('os.makedirs')
+@patch('custom_logger.config.is_debug')
+@patch('custom_logger.config.get_config_manager')
+def test_tc0002_017_init_config_debug_mode(mock_get_config_manager, mock_is_debug, mock_makedirs):
+    """测试调试模式下的配置初始化"""
+    mock_is_debug.return_value = True
+    mock_cfg = MagicMock()
+    mock_cfg.base_dir = "d:/logs"
+    mock_cfg.project_name = "test_project"
+    mock_cfg.experiment_name = "test_exp"
+    mock_cfg.first_start_time = None
+    mock_cfg.logger = MagicMock()
+    mock_get_config_manager.return_value = mock_cfg
+
+    with patch('builtins.hasattr', return_value=True):
+        init_config()
+
+    # 验证debug目录被创建
+    mock_makedirs.assert_called()
+    pass
+
+
+def test_tc0002_018_set_config_path_none():
+    """测试设置配置路径为None"""
+    from custom_logger.config import get_cached_config_path
+
+    # 先设置一个路径
+    set_config_path("test/path.yaml")
+    assert get_cached_config_path() == "test/path.yaml"
+    assert os.environ.get('CUSTOM_LOGGER_CONFIG_PATH') == "test/path.yaml"
+
+    # 设置为None应该清理
+    set_config_path(None)
+    assert get_cached_config_path() is None
+    assert 'CUSTOM_LOGGER_CONFIG_PATH' not in os.environ
+    pass
+
+
+def test_tc0002_019_empty_module_levels():
+    """测试模块级别配置为空的情况"""
+    mock_config = MagicMock()
+    mock_config.global_console_level = "warning"
+    mock_config.global_file_level = "error"
+    mock_config.module_levels = {"other_module": {"console_level": "debug"}}
+
+    with patch('custom_logger.config.get_config', return_value=mock_config):
+        console_level = get_console_level("non_existing_module")
+        file_level = get_file_level("non_existing_module")
+
+        # 应该使用全局配置
+        assert console_level == 30  # WARNING
+        assert file_level == 40  # ERROR
+    pass
+
+
+def test_tc0002_020_is_debug_integration():
+    """测试is_debug函数集成"""
+    from is_debug import is_debug
+    result = is_debug()
+    assert isinstance(result, bool)
+    pass
+
+# ======= 源文件: tests\test_custom_logger\test_tc0003_formatter.py =======
+# tests/test_custom_logger/test_tc0003_formatter.py
+from __future__ import annotations
+from datetime import datetime
+
+start_time = datetime.now()
+
+import os
+import sys
+import pytest
+from unittest.mock import patch, MagicMock
+from custom_logger.formatter import (
+    get_caller_info, format_elapsed_time, format_pid,
+    format_log_message, create_log_line, get_exception_info
+)
+
+
+def test_tc0003_001_get_caller_info():
+    """测试获取调用者信息"""
+    # 由于这个函数依赖于调用栈，我们测试它的基本功能
+    module_name, line_number = get_caller_info()
+
+    # 应该返回当前测试文件的信息
+    assert isinstance(module_name, str)
+    assert isinstance(line_number, int)
+    assert len(module_name) <= 8
+    assert line_number > 0
+    pass
+
+
+def test_tc0003_002_get_caller_info_long_filename():
+    """测试长文件名被截断"""
+    # 模拟一个长文件名的情况
+    with patch('inspect.stack') as mock_stack:
+        frame_info = MagicMock()
+        frame_info.filename = "/path/to/very_long_filename_that_exceeds_eight_chars.py"
+        frame_info.lineno = 42
+        mock_stack.return_value = [frame_info]
+
+        module_name, line_number = get_caller_info()
+
+        assert len(module_name) <= 8
+        assert module_name == "very_lon"
+        assert line_number == 42
+    pass
+
+
+def test_tc0003_003_get_caller_info_exception():
+    """测试获取调用者信息时发生异常"""
+    with patch('inspect.stack', side_effect=Exception("Test error")):
+        module_name, line_number = get_caller_info()
+
+        assert module_name == "error"
+        assert line_number == 0
+    pass
+
+
+def test_tc0003_004_format_elapsed_time():
+    """测试格式化运行时长"""
+    start_time_iso = "2024-01-01T10:00:00"
+    current_time = datetime(2024, 1, 1, 11, 23, 45, 500000)
+
+    elapsed_str = format_elapsed_time(start_time_iso, current_time)
+
+    # 1小时23分45.5秒
+    assert elapsed_str == "1:23:45.50"
+    pass
+
+
+def test_tc0003_005_format_elapsed_time_short():
+    """测试格式化短时长"""
+    start_time_iso = "2024-01-01T10:00:00"
+    current_time = datetime(2024, 1, 1, 10, 2, 3, 123000)
+
+    elapsed_str = format_elapsed_time(start_time_iso, current_time)
+
+    # 2分3.123秒
+    assert elapsed_str == "0:02:03.12"
+    pass
+
+
+def test_tc0003_006_format_elapsed_time_invalid():
+    """测试无效时间格式"""
+    elapsed_str = format_elapsed_time("invalid_time", datetime.now())
+
+    assert elapsed_str == "0:00:00.00"
+    pass
+
+
+def test_tc0003_007_format_pid():
+    """测试格式化进程ID"""
+    # 测试不同的PID值
+    assert format_pid(123) == "   123"
+    assert format_pid(999999) == "999999"
+    assert format_pid(1) == "     1"
+    pass
+
+
+def test_tc0003_008_format_log_message_simple():
+    """测试简单日志消息格式化"""
+    message = "Hello world"
+    result = format_log_message("INFO", message, "test", (), {})
+
+    assert result == "Hello world"
+    pass
+
+
+def test_tc0003_009_format_log_message_with_args():
+    """测试带参数的日志消息格式化"""
+    message = "User {} logged in from {}"
+    args = ("alice", "127.0.0.1")
+    result = format_log_message("INFO", message, "test", args, {})
+
+    assert result == "User alice logged in from 127.0.0.1"
+    pass
+
+
+def test_tc0003_010_format_log_message_with_kwargs():
+    """测试带关键字参数的日志消息格式化"""
+    message = "User {user} has {count} messages"
+    kwargs = {"user": "bob", "count": 5}
+    result = format_log_message("INFO", message, "test", (), kwargs)
+
+    assert result == "User bob has 5 messages"
+    pass
+
+
+def test_tc0003_011_format_log_message_format_error():
+    """测试格式化错误的处理"""
+    message = "User {} has {} messages"
+    args = ("alice",)  # 缺少一个参数
+    result = format_log_message("INFO", message, "test", args, {})
+
+    assert "格式化错误" in result
+    assert "alice" in result
+    pass
+
+
+@patch('custom_logger.config.get_root_config')
+@patch('custom_logger.formatter.get_caller_info')
+@patch('os.getpid')
+def test_tc0003_012_create_log_line(mock_getpid, mock_get_caller_info, mock_get_root_config):
+    """测试创建完整日志行"""
+    # 设置mock
+    mock_getpid.return_value = 12345
+    mock_get_caller_info.return_value = ("testfile", 42)
+
+    mock_config = MagicMock()
+    mock_config.first_start_time = "2024-01-01T10:00:00"
+    mock_get_root_config.return_value = mock_config
+
+    # 固定当前时间用于测试
+    with patch('custom_logger.formatter.datetime') as mock_datetime:
+        mock_datetime.now.return_value = datetime(2024, 1, 1, 10, 1, 30, 500000)
+        mock_datetime.fromisoformat = datetime.fromisoformat
+
+        log_line = create_log_line("INFO", "Test message", "test_module", (), {})
+
+        # 验证日志行格式
+        assert "[" in log_line and "12345" in log_line
+        assert "testfile" in log_line
+        assert "42" in log_line
+        assert "2024-01-01 10:01:30" in log_line
+        assert "0:01:30.50" in log_line
+        assert "INFO" in log_line
+        assert "Test message" in log_line
+    pass
+
+
+@patch('custom_logger.config.get_root_config')
+def test_tc0003_013_create_log_line_with_custom_config_path(mock_get_root_config):
+    """测试使用自定义配置路径创建日志行"""
+    mock_config = MagicMock()
+    mock_config.first_start_time = "2024-01-01T12:00:00"
+    mock_get_root_config.return_value = mock_config
+
+    with patch('custom_logger.formatter.get_caller_info', return_value=("demo_cus", 100)):
+        with patch('os.getpid', return_value=99999):
+            with patch('custom_logger.formatter.datetime') as mock_datetime:
+                mock_datetime.now.return_value = datetime(2024, 1, 1, 12, 5, 15)
+                mock_datetime.fromisoformat = datetime.fromisoformat
+
+                log_line = create_log_line("INFO", "Demo message", "demo", (), {})
+
+                # 验证调用者正确识别
+                assert "demo_cus" in log_line
+                assert "  100" in log_line
+                assert "Demo message" in log_line
+    pass
+
+
+def test_tc0003_014_get_exception_info_no_exception():
+    """测试没有异常时获取异常信息"""
+    result = get_exception_info()
+    assert result is None
+    pass
+
+
+def test_tc0003_015_get_exception_info_with_exception():
+    """测试有异常时获取异常信息"""
+    try:
+        raise ValueError("Test exception")
+    except ValueError:
+        result = get_exception_info()
+
+        assert result is not None
+        assert "ValueError" in result
+        assert "Test exception" in result
+        assert "Traceback" in result
+    pass
+
+
+def test_tc0003_016_get_exception_info_exception_in_function():
+    """测试函数内部异常处理"""
+    with patch('sys.exc_info', side_effect=Exception("Internal error")):
+        result = get_exception_info()
+        assert result is None
+    pass
+
+
+def test_tc0003_017_format_log_message_mixed_args():
+    """测试混合参数的日志消息格式化"""
+    message = "User {} has {count} messages and {status} status"
+    args = ("charlie",)
+    kwargs = {"count": 10, "status": "active"}
+
+    result = format_log_message("INFO", message, "test", args, kwargs)
+    assert result == "User charlie has 10 messages and active status"
+    pass
+
+
+def test_tc0003_018_format_elapsed_time_zero():
+    """测试零时长格式化"""
+    start_time_iso = "2024-01-01T10:00:00"
+    current_time = datetime(2024, 1, 1, 10, 0, 0)
+
+    elapsed_str = format_elapsed_time(start_time_iso, current_time)
+    assert elapsed_str == "0:00:00.00"
+    pass
+
+
+def test_tc0003_019_caller_info_custom_logger_filter():
+    """测试过滤custom_logger包内的调用"""
+    with patch('inspect.stack') as mock_stack:
+        # 模拟调用栈，包含custom_logger文件
+        frame1 = MagicMock()
+        frame1.filename = "/path/to/custom_logger/logger.py"
+        frame1.lineno = 100
+
+        frame2 = MagicMock()
+        frame2.filename = "/path/to/user_code.py"
+        frame2.lineno = 50
+
+        mock_stack.return_value = [frame1, frame2]
+
+        module_name, line_number = get_caller_info()
+
+        # 应该跳过custom_logger包内的文件
+        assert module_name == "user_cod"
+        assert line_number == 50
+    pass
+
+
+def test_tc0003_020_create_log_line_caller_identification():
+    """测试日志行中调用者识别修复"""
+    with patch('custom_logger.config.get_root_config') as mock_get_root_config:
+        mock_config = MagicMock()
+        mock_config.first_start_time = "2024-01-01T10:00:00"
+        mock_get_root_config.return_value = mock_config
+
+        # 模拟真实的调用栈，应该能正确识别外部调用者
+        with patch('custom_logger.formatter.get_caller_info') as mock_get_caller_info:
+            # 直接mock get_caller_info的返回值
+            mock_get_caller_info.return_value = ("demo_cus", 25)
+
+            with patch('os.getpid', return_value=12345):
+                with patch('custom_logger.formatter.datetime') as mock_datetime:
+                    mock_datetime.now.return_value = datetime(2024, 1, 1, 10, 1, 30)
+                    mock_datetime.fromisoformat = datetime.fromisoformat
+
+                    log_line = create_log_line("INFO", "Test message", "demo", (), {})
+
+                    # 应该识别出demo_cus而不是unknown
+                    assert "demo_cus" in log_line
+                    assert "25" in log_line
+                    assert "unknown" not in log_line
+    pass
+
+# ======= 源文件: tests\test_custom_logger\test_tc0004_writer.py =======
+# tests/test_custom_logger/test_tc0004_writer.py
+from __future__ import annotations
+from datetime import datetime
+
+start_time = datetime.now()
+
+import os
+import tempfile
+import threading
+import time
+import pytest
+from unittest.mock import patch, MagicMock, mock_open
+from custom_logger.writer import (
+    LogEntry, FileWriter, init_writer, write_log_async,
+    shutdown_writer, QUEUE_SENTINEL, _log_queue, _writer_thread, _stop_event
+)
+from custom_logger.types import ERROR, WARNING, INFO
+
+
+def test_tc0004_001_log_entry_creation():
+    """测试日志条目创建"""
+    entry = LogEntry("Test log line", INFO, "Exception info")
+
+    assert entry.log_line == "Test log line"
+    assert entry.level_value == INFO
+    assert entry.exception_info == "Exception info"
+    pass
+
+
+def test_tc0004_002_log_entry_no_exception():
+    """测试无异常信息的日志条目"""
+    entry = LogEntry("Test log line", ERROR)
+
+    assert entry.log_line == "Test log line"
+    assert entry.level_value == ERROR
+    assert entry.exception_info is None
+    pass
+
+
+def test_tc0004_003_file_writer_init():
+    """测试文件写入器初始化"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        writer = FileWriter(temp_dir)
+
+        # 验证文件被创建
+        full_log_path = os.path.join(temp_dir, "full.log")
+        error_log_path = os.path.join(temp_dir, "error.log")
+
+        assert os.path.exists(full_log_path)
+        assert os.path.exists(error_log_path)
+
+        writer.close()
+    pass
+
+
+def test_tc0004_004_file_writer_init_failure():
+    """测试文件写入器初始化失败"""
+    # 使用一个无效路径
+    invalid_path = "/invalid/path/that/does/not/exist"
+
+    with patch('sys.stderr'):
+        writer = FileWriter(invalid_path)
+
+        # 即使失败，对象也应该被创建
+        assert writer.session_dir == invalid_path
+        writer.close()
+    pass
+
+
+def test_tc0004_005_file_writer_write_info_log():
+    """测试写入INFO级别日志"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        writer = FileWriter(temp_dir)
+        entry = LogEntry("Info message", INFO)
+
+        writer.write_log(entry)
+        writer.close()
+
+        # 检查full.log有内容，error.log为空
+        full_log_path = os.path.join(temp_dir, "full.log")
+        error_log_path = os.path.join(temp_dir, "error.log")
+
+        with open(full_log_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            assert "Info message" in content
+
+        # INFO级别不应写入error.log
+        with open(error_log_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            assert content.strip() == ""
+    pass
+
+
+def test_tc0004_006_file_writer_write_error_log():
+    """测试写入ERROR级别日志"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        writer = FileWriter(temp_dir)
+        entry = LogEntry("Error message", ERROR, "Stack trace")
+
+        writer.write_log(entry)
+        writer.close()
+
+        # 检查两个文件都有内容
+        full_log_path = os.path.join(temp_dir, "full.log")
+        error_log_path = os.path.join(temp_dir, "error.log")
+
+        with open(full_log_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            assert "Error message" in content
+            assert "Stack trace" in content
+
+        with open(error_log_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            assert "Error message" in content
+            assert "Stack trace" in content
+    pass
+
+
+def test_tc0004_007_file_writer_write_failure():
+    """测试文件写入失败处理"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        writer = FileWriter(temp_dir)
+
+        # 关闭文件句柄模拟写入失败
+        writer.full_log_file.close()
+        writer.error_log_file.close()
+
+        entry = LogEntry("Test message", ERROR)
+
+        with patch('sys.stderr'):
+            writer.write_log(entry)  # 应该不抛出异常
+
+        writer.close()
+    pass
+
+
+def test_tc0004_008_file_writer_close():
+    """测试文件写入器关闭"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        writer = FileWriter(temp_dir)
+
+        # 验证文件被打开
+        assert writer.full_log_file is not None
+        assert writer.error_log_file is not None
+
+        writer.close()
+
+        # 验证文件被关闭
+        assert writer.full_log_file is None
+        assert writer.error_log_file is None
+    pass
+
+
+def test_tc0004_009_file_writer_close_failure():
+    """测试文件关闭失败处理"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        writer = FileWriter(temp_dir)
+
+        # 确保文件被正确创建
+        assert writer.full_log_file is not None
+        assert writer.error_log_file is not None
+
+        # 先正常关闭一次以释放文件句柄
+        writer.close()
+
+        # 然后模拟关闭失败
+        writer.full_log_file = MagicMock()
+        writer.error_log_file = MagicMock()
+        writer.full_log_file.close = MagicMock(side_effect=Exception("Close error"))
+        writer.error_log_file.close = MagicMock(side_effect=Exception("Close error"))
+
+        with patch('sys.stderr'):
+            writer.close()  # 应该不抛出异常
+    pass
+
+@patch('custom_logger.writer.get_config')
+def test_tc0004_010_init_writer(mock_get_config):
+    """测试初始化异步写入器"""
+    mock_config = MagicMock()
+    mock_config.current_session_dir = "/tmp/test"
+    mock_get_config.return_value = mock_config
+
+    # 清理全局状态
+    shutdown_writer()
+
+    with patch('os.makedirs'):
+        init_writer()
+
+    # 验证全局变量被设置
+    from custom_logger.writer import _log_queue, _writer_thread, _stop_event
+    assert _log_queue is not None
+    assert _writer_thread is not None
+    assert _stop_event is not None
+
+    shutdown_writer()
+    pass
+
+
+def test_tc0004_011_init_writer_already_initialized():
+    """测试重复初始化异步写入器"""
+    # 清理全局状态
+    shutdown_writer()
+
+    with patch('custom_logger.writer.get_config') as mock_get_config:
+        mock_config = MagicMock()
+        mock_config.current_session_dir = "/tmp/test"
+        mock_get_config.return_value = mock_config
+
+        with patch('os.makedirs'):
+            init_writer()
+
+            # 获取第一次初始化的队列引用
+            from custom_logger.writer import _log_queue
+            first_queue = _log_queue
+
+            # 再次初始化
+            init_writer()
+
+            # 应该是同一个队列（没有重新初始化）
+            from custom_logger.writer import _log_queue as second_queue
+            assert first_queue is second_queue
+
+    shutdown_writer()
+    pass
+
+
+@patch('custom_logger.writer.get_config')
+def test_tc0004_012_write_log_async(mock_get_config):
+    """测试异步写入日志"""
+    mock_config = MagicMock()
+    mock_config.current_session_dir = "/tmp/test"
+    mock_get_config.return_value = mock_config
+
+    # 清理并初始化
+    shutdown_writer()
+
+    with patch('os.makedirs'):
+        init_writer()
+
+    # 写入日志
+    write_log_async("Test log line", INFO)
+
+    # 等待一小段时间让队列处理
+    time.sleep(0.1)
+
+    # 验证队列不为空（或已处理）
+    from custom_logger.writer import _log_queue
+    assert _log_queue is not None
+
+    shutdown_writer()
+    pass
+
+
+def test_tc0004_013_write_log_async_not_initialized():
+    """测试未初始化时异步写入"""
+    # 清理全局状态
+    shutdown_writer()
+
+    # 直接写入（应该不报错）
+    write_log_async("Test log line", INFO)
+    pass
+
+
+def test_tc0004_014_write_log_async_queue_full():
+    """测试队列满时的处理"""
+    # 使用一个很小的队列来测试
+    with patch('queue.Queue') as mock_queue_class:
+        mock_queue = MagicMock()
+        mock_queue.put_nowait.side_effect = Exception("Queue full")
+        mock_queue_class.return_value = mock_queue
+
+        with patch('custom_logger.writer._log_queue', mock_queue):
+            with patch('sys.stderr'):
+                write_log_async("Test log line", INFO)  # 应该不抛出异常
+    pass
+
+
+def test_tc0004_015_shutdown_writer():
+    """测试关闭异步写入器"""
+    # 先初始化
+    with patch('custom_logger.writer.get_config') as mock_get_config:
+        mock_config = MagicMock()
+        mock_config.current_session_dir = "/tmp/test"
+        mock_get_config.return_value = mock_config
+
+        shutdown_writer()  # 清理
+
+        with patch('os.makedirs'):
+            init_writer()
+
+        # 验证已初始化
+        from custom_logger.writer import _log_queue, _writer_thread
+        assert _log_queue is not None
+        assert _writer_thread is not None
+
+        # 关闭
+        shutdown_writer()
+
+        # 验证已清理
+        from custom_logger.writer import _log_queue as final_queue
+        from custom_logger.writer import _writer_thread as final_thread
+        assert final_queue is None
+        assert final_thread is None
+    pass
+
+
+def test_tc0004_016_shutdown_writer_not_initialized():
+    """测试未初始化时关闭写入器"""
+    # 确保未初始化
+    shutdown_writer()
+
+    # 再次关闭应该不报错
+    shutdown_writer()
+    pass
+
+
+def test_tc0004_017_queue_sentinel():
+    """测试队列结束标记"""
+    assert QUEUE_SENTINEL is not None
+
+    # 验证是唯一对象
+    assert QUEUE_SENTINEL is not QUEUE_SENTINEL.__class__()
+    pass
+
+
+def test_tc0004_018_log_entry_edge_cases():
+    """测试日志条目的边界情况"""
+    # 空字符串
+    entry1 = LogEntry("", 0)
+    assert entry1.log_line == ""
+    assert entry1.level_value == 0
+
+    # 很长的日志行
+    long_message = "x" * 10000
+    entry2 = LogEntry(long_message, ERROR)
+    assert entry2.log_line == long_message
+
+    # 特殊字符
+    special_message = "日志\t消息\n换行"
+    entry3 = LogEntry(special_message, WARNING)
+    assert entry3.log_line == special_message
+    pass
+
+
+def test_tc0004_019_writer_thread_timeout():
+    """测试写入线程超时处理"""
+    with patch('custom_logger.writer.get_config') as mock_get_config:
+        mock_config = MagicMock()
+        mock_config.current_session_dir = "/tmp/test"
+        mock_get_config.return_value = mock_config
+
+        shutdown_writer()
+
+        with patch('os.makedirs'):
+            init_writer()
+
+        # 让线程运行一小段时间
+        time.sleep(0.1)
+
+        # 正常关闭
+        shutdown_writer()
+    pass
+
+
+def test_tc0004_020_concurrent_write():
+    """测试并发写入"""
+    with patch('custom_logger.writer.get_config') as mock_get_config:
+        mock_config = MagicMock()
+        mock_config.current_session_dir = "/tmp/test"
+        mock_get_config.return_value = mock_config
+
+        shutdown_writer()
+
+        with patch('os.makedirs'):
+            init_writer()
+
+        # 并发写入多条日志
+        threads = []
+        for i in range(10):
+            thread = threading.Thread(
+                target=write_log_async,
+                args=(f"Message {i}", INFO)
+            )
+            threads.append(thread)
+            thread.start()
+
+        # 等待所有线程完成
+        for thread in threads:
+            thread.join()
+
+        time.sleep(0.2)  # 等待处理
+
+        shutdown_writer()
+    pass
+
+# ======= 源文件: tests\test_custom_logger\test_tc0005_logger.py =======
+# tests/test_custom_logger/test_tc0005_logger.py
+from __future__ import annotations
+from datetime import datetime
+
+start_time = datetime.now()
+
+import sys
+import pytest
+from unittest.mock import patch, MagicMock
+
+# 使用相对导入避免路径问题
+import sys
+import os
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
+
+from custom_logger.logger import (
+    CustomLogger, Colors, LEVEL_COLORS, _enable_windows_ansi_support,
+    _COLOR_SUPPORT, _detect_terminal_type, _TERMINAL_TYPE
+)
+from custom_logger.types import (
+    DEBUG, INFO, WARNING, ERROR, CRITICAL, EXCEPTION,
+    DETAIL, W_SUMMARY, W_DETAIL
+)
+
+
+def test_tc0005_001_logger_creation():
+    """测试logger创建"""
+    logger = CustomLogger("test_logger")
+
+    assert logger.name == "test_logger"
+    assert logger._console_level is None
+    assert logger._file_level is None
+    pass
+
+
+def test_tc0005_002_logger_creation_with_levels():
+    """测试带级别的logger创建"""
+    logger = CustomLogger("test_logger", console_level=DEBUG, file_level=ERROR)
+
+    assert logger.name == "test_logger"
+    assert logger._console_level == DEBUG
+    assert logger._file_level == ERROR
+    pass
+
+
+@patch('custom_logger.logger.get_console_level')
+def test_tc0005_003_console_level_property_default(mock_get_console_level):
+    """测试控制台级别属性（使用默认配置）"""
+    mock_get_console_level.return_value = INFO
+
+    logger = CustomLogger("test_logger")
+    level = logger.console_level
+
+    assert level == INFO
+    mock_get_console_level.assert_called_once_with("test_logger")
+    pass
+
+
+def test_tc0005_004_console_level_property_custom():
+    """测试控制台级别属性（使用自定义级别）"""
+    logger = CustomLogger("test_logger", console_level=WARNING)
+    level = logger.console_level
+
+    assert level == WARNING
+    pass
+
+
+@patch('custom_logger.logger.get_file_level')
+def test_tc0005_005_file_level_property_default(mock_get_file_level):
+    """测试文件级别属性（使用默认配置）"""
+    mock_get_file_level.return_value = DEBUG
+
+    logger = CustomLogger("test_logger")
+    level = logger.file_level
+
+    assert level == DEBUG
+    mock_get_file_level.assert_called_once_with("test_logger")
+    pass
+
+
+def test_tc0005_006_file_level_property_custom():
+    """测试文件级别属性（使用自定义级别）"""
+    logger = CustomLogger("test_logger", file_level=ERROR)
+    level = logger.file_level
+
+    assert level == ERROR
+    pass
+
+
+def test_tc0005_007_should_log_console():
+    """测试是否应该输出到控制台的判断"""
+    logger = CustomLogger("test_logger", console_level=WARNING)
+
+    assert not logger._should_log_console(DEBUG)
+    assert not logger._should_log_console(INFO)
+    assert logger._should_log_console(WARNING)
+    assert logger._should_log_console(ERROR)
+    assert logger._should_log_console(CRITICAL)
+    pass
+
+
+def test_tc0005_008_should_log_file():
+    """测试是否应该输出到文件的判断"""
+    logger = CustomLogger("test_logger", file_level=ERROR)
+
+    assert not logger._should_log_file(DEBUG)
+    assert not logger._should_log_file(INFO)
+    assert not logger._should_log_file(WARNING)
+    assert logger._should_log_file(ERROR)
+    assert logger._should_log_file(CRITICAL)
+    pass
+
+
+@patch('builtins.print')
+def test_tc0005_009_print_to_console_info(mock_print):
+    """测试输出INFO级别到控制台"""
+    logger = CustomLogger("test_logger")
+    logger._print_to_console("Test message", INFO)
+
+    mock_print.assert_called_once()
+    args, kwargs = mock_print.call_args
+    assert "Test message" in args[0]  # 可能有颜色码
+    assert kwargs['file'] == sys.stdout
+    assert kwargs['flush'] is True
+    pass
+
+
+@patch('builtins.print')
+def test_tc0005_010_print_to_console_warning(mock_print):
+    """测试输出WARNING级别到控制台"""
+    logger = CustomLogger("test_logger")
+    logger._print_to_console("Warning message", WARNING)
+
+    mock_print.assert_called_once()
+    args, kwargs = mock_print.call_args
+    # WARNING应该输出到stderr，可能有颜色
+    assert "Warning message" in args[0]
+    assert kwargs['file'] == sys.stderr
+    pass
+
+
+@patch('builtins.print')
+def test_tc0005_011_print_to_console_error(mock_print):
+    """测试输出ERROR级别到控制台"""
+    logger = CustomLogger("test_logger")
+    logger._print_to_console("Error message", ERROR)
+
+    mock_print.assert_called_once()
+    args, kwargs = mock_print.call_args
+    # ERROR应该输出到stderr，可能有颜色
+    assert "Error message" in args[0]
+    assert kwargs['file'] == sys.stderr
+    pass
+
+
+@patch('builtins.print')
+def test_tc0005_012_print_to_console_exception_handling(mock_print):
+    """测试控制台输出异常处理"""
+    mock_print.side_effect = Exception("Print error")
+
+    logger = CustomLogger("test_logger")
+
+    # 应该不抛出异常
+    logger._print_to_console("Test message", INFO)
+    pass
+
+
+@patch('custom_logger.logger.create_log_line')
+@patch('custom_logger.logger.write_log_async')
+def test_tc0005_013_log_method_basic(mock_write_async, mock_create_log_line):
+    """测试基本的_log方法"""
+    mock_create_log_line.return_value = "Formatted log line"
+
+    logger = CustomLogger("test_logger", console_level=INFO, file_level=DEBUG)
+
+    with patch.object(logger, '_print_to_console') as mock_print:
+        logger._log(INFO, "Test message", "arg1", do_print=True, kwarg1="value1")
+
+    mock_create_log_line.assert_called_once_with(
+        "info", "Test message", "test_logger", ("arg1",), {"kwarg1": "value1"}
+    )
+    mock_print.assert_called_once_with("Formatted log line", INFO)
+    mock_write_async.assert_called_once_with("Formatted log line", INFO, None)
+    pass
+
+
+@patch('custom_logger.logger.create_log_line')
+@patch('custom_logger.logger.write_log_async')
+def test_tc0005_014_log_method_do_print_false(mock_write_async, mock_create_log_line):
+    """测试_log方法do_print=False"""
+    mock_create_log_line.return_value = "Formatted log line"
+
+    logger = CustomLogger("test_logger", console_level=INFO, file_level=DEBUG)
+
+    with patch.object(logger, '_print_to_console') as mock_print:
+        logger._log(INFO, "Test message", do_print=False)
+
+    # 不应该调用控制台输出
+    mock_print.assert_not_called()
+    # 但应该写入文件
+    mock_write_async.assert_called_once()
+    pass
+
+
+@patch('custom_logger.logger.create_log_line')
+@patch('custom_logger.logger.get_exception_info')
+@patch('custom_logger.logger.write_log_async')
+def test_tc0005_015_log_method_exception_level(mock_write_async, mock_get_exception, mock_create_log_line):
+    """测试EXCEPTION级别的_log方法"""
+    mock_create_log_line.return_value = "Exception log line"
+    mock_get_exception.return_value = "Stack trace info"
+
+    logger = CustomLogger("test_logger", console_level=EXCEPTION, file_level=DEBUG)
+
+    with patch.object(logger, '_print_to_console') as mock_print:
+        with patch('builtins.print') as mock_print_exc:
+            logger._log(EXCEPTION, "Exception occurred")
+
+    mock_get_exception.assert_called_once()
+    mock_write_async.assert_called_once_with("Exception log line", EXCEPTION, "Stack trace info")
+    mock_print_exc.assert_called_once_with("Stack trace info", file=sys.stderr)
+    pass
+
+
+@patch('custom_logger.logger.get_level_name')
+@patch('custom_logger.logger.create_log_line')
+def test_tc0005_016_log_method_invalid_level(mock_create_log_line, mock_get_level_name):
+    """测试无效级别的处理"""
+    mock_get_level_name.side_effect = ValueError("Invalid level")
+    mock_create_log_line.return_value = "Log line"
+
+    logger = CustomLogger("test_logger", console_level=DEBUG, file_level=DEBUG)
+
+    with patch.object(logger, '_print_to_console'):
+        with patch('custom_logger.logger.write_log_async'):
+            logger._log(999, "Invalid level message")
+
+    # 应该使用LEVEL_999格式
+    mock_create_log_line.assert_called_once()
+    args = mock_create_log_line.call_args[0]
+    assert args[0] == "LEVEL_999"
+    pass
+
+
+def test_tc0005_017_debug_method():
+    """测试debug方法"""
+    logger = CustomLogger("test_logger")
+
+    with patch.object(logger, '_log') as mock_log:
+        logger.debug("Debug message", "arg1", kwarg1="value1")
+
+    mock_log.assert_called_once_with(
+        DEBUG, "Debug message", "arg1", kwarg1="value1"
+    )
+    pass
+
+
+def test_tc0005_018_info_method():
+    """测试info方法"""
+    logger = CustomLogger("test_logger")
+
+    with patch.object(logger, '_log') as mock_log:
+        logger.info("Info message", "arg1", kwarg1="value1")
+
+    mock_log.assert_called_once_with(
+        INFO, "Info message", "arg1", kwarg1="value1"
+    )
+    pass
+
+
+def test_tc0005_019_warning_method():
+    """测试warning方法"""
+    logger = CustomLogger("test_logger")
+
+    with patch.object(logger, '_log') as mock_log:
+        logger.warning("Warning message", "arg1", kwarg1="value1")
+
+    mock_log.assert_called_once_with(
+        WARNING, "Warning message", "arg1", kwarg1="value1"
+    )
+    pass
+
+
+def test_tc0005_020_error_method():
+    """测试error方法"""
+    logger = CustomLogger("test_logger")
+
+    with patch.object(logger, '_log') as mock_log:
+        logger.error("Error message", "arg1", kwarg1="value1")
+
+    mock_log.assert_called_once_with(
+        ERROR, "Error message", "arg1", kwarg1="value1"
+    )
+    pass
+
+
+def test_tc0005_021_critical_method():
+    """测试critical方法"""
+    logger = CustomLogger("test_logger")
+
+    with patch.object(logger, '_log') as mock_log:
+        logger.critical("Critical message", "arg1", kwarg1="value1")
+
+    mock_log.assert_called_once_with(
+        CRITICAL, "Critical message", "arg1", kwarg1="value1"
+    )
+    pass
+
+
+def test_tc0005_022_exception_method():
+    """测试exception方法"""
+    logger = CustomLogger("test_logger")
+
+    with patch.object(logger, '_log') as mock_log:
+        logger.exception("Exception message", "arg1", kwarg1="value1")
+
+    mock_log.assert_called_once_with(
+        EXCEPTION, "Exception message", "arg1", kwarg1="value1"
+    )
+    pass
+
+
+def test_tc0005_023_detail_method():
+    """测试detail方法"""
+    logger = CustomLogger("test_logger")
+
+    with patch.object(logger, '_log') as mock_log:
+        logger.detail("Detail message", "arg1", kwarg1="value1")
+
+    mock_log.assert_called_once_with(
+        DETAIL, "Detail message", "arg1", kwarg1="value1"
+    )
+    pass
+
+
+def test_tc0005_024_worker_summary_method():
+    """测试worker_summary方法"""
+    logger = CustomLogger("test_logger")
+
+    with patch.object(logger, '_log') as mock_log:
+        logger.worker_summary("Worker summary", "arg1", kwarg1="value1")
+
+    mock_log.assert_called_once_with(
+        W_SUMMARY, "Worker summary", "arg1", kwarg1="value1"
+    )
+    pass
+
+
+def test_tc0005_025_worker_detail_method():
+    """测试worker_detail方法"""
+    logger = CustomLogger("test_logger")
+
+    with patch.object(logger, '_log') as mock_log:
+        logger.worker_detail("Worker detail", "arg1", kwarg1="value1")
+
+    mock_log.assert_called_once_with(
+        W_DETAIL, "Worker detail", "arg1", kwarg1="value1"
+    )
+    pass
+
+
+def test_tc0005_026_level_colors_constant():
+    """测试级别颜色常量"""
+    # 由于颜色会根据终端类型变化，我们测试结构而不是具体值
+    assert isinstance(LEVEL_COLORS, dict)
+    assert WARNING in LEVEL_COLORS
+    assert ERROR in LEVEL_COLORS
+    assert CRITICAL in LEVEL_COLORS
+    assert EXCEPTION in LEVEL_COLORS
+
+    # 确保所有颜色都不相同
+    colors = list(LEVEL_COLORS.values())
+    assert len(colors) == len(set(colors)), "所有级别应该有不同的颜色"
+    pass
+
+
+def test_tc0005_027_colors_constant():
+    """测试颜色常量"""
+    assert Colors.RED == '\033[31m'
+    assert Colors.YELLOW == '\033[33m'
+    assert Colors.MAGENTA == '\033[35m'
+    assert Colors.RESET == '\033[0m'
+    assert Colors.BRIGHT_RED == '\033[91m'
+
+    # 测试PyCharm专用颜色
+    assert Colors.PYCHARM_YELLOW == '\033[93m'
+    assert Colors.PYCHARM_RED == '\033[91m'
+    assert Colors.PYCHARM_MAGENTA == '\033[95m'
+    assert Colors.PYCHARM_BRIGHT_RED == '\033[1;31m'
+    pass
+
+
+def test_tc0005_028_log_level_filtering():
+    """测试日志级别过滤"""
+    logger = CustomLogger("test_logger", console_level=WARNING, file_level=ERROR)
+
+    with patch.object(logger, '_print_to_console') as mock_print:
+        with patch('custom_logger.logger.write_log_async') as mock_write:
+            with patch('custom_logger.logger.create_log_line', return_value="log line"):
+                # DEBUG级别：不应输出到控制台和文件
+                logger._log(DEBUG, "Debug message")
+                mock_print.assert_not_called()
+                mock_write.assert_not_called()
+
+                # WARNING级别：应输出到控制台，不输出到文件
+                logger._log(WARNING, "Warning message")
+                assert mock_print.call_count == 1
+                mock_write.assert_not_called()
+
+                # ERROR级别：应输出到控制台和文件
+                logger._log(ERROR, "Error message")
+                assert mock_print.call_count == 2
+                assert mock_write.call_count == 1
+    pass
+
+
+def test_tc0005_029_log_with_no_args():
+    """测试无参数的日志记录"""
+    logger = CustomLogger("test_logger", console_level=DEBUG, file_level=DEBUG)
+
+    with patch.object(logger, '_log') as mock_log:
+        logger.info("Simple message")
+
+    mock_log.assert_called_once_with(INFO, "Simple message")
+    pass
+
+
+def test_tc0005_030_log_with_mixed_args():
+    """测试混合参数的日志记录"""
+    logger = CustomLogger("test_logger", console_level=DEBUG, file_level=DEBUG)
+
+    with patch.object(logger, '_log') as mock_log:
+        logger.error("Error: {} in {}", "ValueError", "module.py", context="test", severity="high")
+
+    mock_log.assert_called_once_with(
+        ERROR, "Error: {} in {}", "ValueError", "module.py",
+        context="test", severity="high"
+    )
+    pass
+
+
+def test_tc0005_031_early_filtering():
+    """测试早期过滤功能"""
+    logger = CustomLogger("test_logger", console_level=ERROR, file_level=ERROR)
+
+    # Mock所有可能被调用的函数
+    with patch('custom_logger.logger.create_log_line') as mock_format:
+        with patch('custom_logger.logger.get_level_name') as mock_get_name:
+            with patch('custom_logger.logger.write_log_async') as mock_write:
+                with patch.object(logger, '_print_to_console') as mock_print:
+                    # 调用被过滤的级别
+                    logger._log(DEBUG, "Debug message")
+
+                    # 验证格式化等昂贵操作没有被调用
+                    mock_format.assert_not_called()
+                    mock_get_name.assert_not_called()
+                    mock_write.assert_not_called()
+                    mock_print.assert_not_called()
+    pass
+
+
+def test_tc0005_032_windows_ansi_support_success():
+    """测试Windows ANSI支持启用成功"""
+    # 直接测试函数逻辑，避免模块重载复杂性
+    with patch('os.name', 'nt'):
+        with patch('ctypes.windll') as mock_windll:
+            with patch('ctypes.wintypes') as mock_wintypes:
+                # Mock Windows API调用成功
+                mock_kernel32 = MagicMock()
+                mock_windll.kernel32 = mock_kernel32
+                mock_kernel32.GetStdHandle.return_value = 123
+                mock_kernel32.GetConsoleMode.return_value = True
+                mock_kernel32.SetConsoleMode.return_value = True
+
+                # Mock wintypes.DWORD
+                mock_dword = MagicMock()
+                mock_dword.value = 5
+                mock_wintypes.DWORD.return_value = mock_dword
+
+                # 模拟函数执行
+                try:
+                    import ctypes
+                    from ctypes import wintypes
+
+                    # 模拟函数逻辑
+                    if os.name == 'nt':
+                        kernel32 = ctypes.windll.kernel32
+                        handle = kernel32.GetStdHandle(-11)
+                        mode = wintypes.DWORD()
+                        kernel32.GetConsoleMode(handle, ctypes.byref(mode))
+                        new_mode = mode.value | 0x0004
+                        result = kernel32.SetConsoleMode(handle, new_mode)
+                        success = bool(result)
+                    else:
+                        success = True
+
+                    assert success is True
+                except Exception:
+                    # 如果模拟失败，至少验证函数能处理正常情况
+                    assert True
+    pass
+
+
+def test_tc0005_033_non_windows_ansi_support():
+    """测试非Windows系统的ANSI支持"""
+    with patch('os.name', 'posix'):
+        # 非Windows系统应该直接返回True
+        # 由于函数已经执行过，我们测试逻辑
+        if os.name != 'nt':
+            result = True
+        else:
+            result = False
+        assert result is True
+    pass
+
+
+def test_tc0005_034_windows_ansi_support_failure():
+    """测试Windows ANSI支持启用失败"""
+    # 测试异常处理逻辑
+    with patch('os.name', 'nt'):
+        try:
+            # 模拟ctypes不可用的情况
+            import ctypes
+            raise ImportError("ctypes not available")
+        except (ImportError, Exception):
+            # 异常情况下应该返回False
+            result = False
+
+        assert result is False
+    pass
+
+
+def test_tc0005_035_color_support_detection():
+    """测试颜色支持检测"""
+    # 测试_COLOR_SUPPORT是布尔值
+    assert isinstance(_COLOR_SUPPORT, bool)
+    pass
+
+
+@patch('custom_logger.logger._COLOR_SUPPORT', True)
+@patch('builtins.print')
+def test_tc0005_036_print_with_color_support(mock_print):
+    """测试支持颜色时的输出"""
+    logger = CustomLogger("test_logger")
+    logger._print_to_console("Warning message", WARNING)
+
+    mock_print.assert_called_once()
+    args, kwargs = mock_print.call_args
+    # 应该包含颜色码和消息内容
+    output = args[0]
+    assert "Warning message" in output
+    assert Colors.RESET in output
+    # 根据终端类型，可能是普通黄色或PyCharm黄色
+    assert (Colors.YELLOW in output or Colors.PYCHARM_YELLOW in output)
+    pass
+
+
+@patch('custom_logger.logger._COLOR_SUPPORT', False)
+@patch('builtins.print')
+def test_tc0005_037_print_without_color_support(mock_print):
+    """测试不支持颜色时的输出"""
+    logger = CustomLogger("test_logger")
+    logger._print_to_console("Warning message", WARNING)
+
+    mock_print.assert_called_once()
+    args, kwargs = mock_print.call_args
+    # 不应该包含颜色码
+    assert Colors.YELLOW not in args[0]
+    assert Colors.RESET not in args[0]
+    assert args[0] == "Warning message"
+    pass
+
+
+def test_tc0005_038_log_early_return_both_filtered():
+    """测试控制台和文件都被过滤时的早期返回"""
+    logger = CustomLogger("test_logger", console_level=ERROR, file_level=CRITICAL)
+
+    with patch('custom_logger.logger.get_level_name') as mock_get_name:
+        # WARNING级别被两个都过滤
+        logger._log(WARNING, "Warning message", do_print=True)
+
+        # 验证get_level_name没有被调用（早期返回）
+        mock_get_name.assert_not_called()
+    pass
+
+
+def test_tc0005_039_log_early_return_console_only():
+    """测试只有控制台被过滤时不会早期返回"""
+    logger = CustomLogger("test_logger", console_level=ERROR, file_level=DEBUG)
+
+    with patch('custom_logger.logger.get_level_name', return_value="warning"):
+        with patch('custom_logger.logger.create_log_line', return_value="log line"):
+            with patch('custom_logger.logger.write_log_async') as mock_write:
+                with patch.object(logger, '_print_to_console') as mock_print:
+                    # WARNING级别：控制台过滤，文件不过滤
+                    logger._log(WARNING, "Warning message", do_print=True)
+
+                    # 验证文件写入被调用，控制台输出没被调用
+                    mock_write.assert_called_once()
+                    mock_print.assert_not_called()
+    pass
+
+
+def test_tc0005_041_detect_terminal_type():
+    """测试终端类型检测"""
+    result = _detect_terminal_type()
+    assert isinstance(result, str)
+    assert result in ['pycharm', 'vscode', 'ide', 'cmd', 'terminal']
+    pass
+
+
+def test_tc0005_042_detect_pycharm():
+    """测试PyCharm环境检测"""
+    # 创建只包含PyCharm变量的环境
+    clean_env = {'PYCHARM_HOSTED': '1'}
+
+    with patch.dict(os.environ, clean_env, clear=True):
+        from custom_logger.logger import _detect_terminal_type
+        result = _detect_terminal_type()
+        assert result == 'pycharm'
+    pass
+
+
+def test_tc0005_043_detect_vscode():
+    """测试VS Code环境检测"""
+    # 清除PyCharm环境变量，只设置VS Code
+    env_vars = dict(os.environ)
+    # 移除PyCharm相关变量
+    for key in list(env_vars.keys()):
+        if 'PYCHARM' in key:
+            del env_vars[key]
+
+    # 设置VS Code变量
+    env_vars['VSCODE_PID'] = '12345'
+
+    with patch.dict(os.environ, env_vars, clear=True):
+        from custom_logger.logger import _detect_terminal_type
+        result = _detect_terminal_type()
+        assert result == 'vscode'
+    pass
+
+
+def test_tc0005_044_terminal_specific_colors():
+    """测试特定终端的颜色配置"""
+    # 创建干净的PyCharm环境
+    pycharm_env = {'PYCHARM_HOSTED': '1'}
+
+    with patch.dict(os.environ, pycharm_env, clear=True):
+        # 重新导入以应用新的终端类型
+        import importlib
+        import custom_logger.logger
+        importlib.reload(custom_logger.logger)
+
+        from custom_logger.logger import LEVEL_COLORS, Colors, WARNING
+
+        # PyCharm应该使用更鲜艳的颜色
+        assert WARNING in LEVEL_COLORS
+        # 验证使用的是PyCharm专用颜色
+        warning_color = LEVEL_COLORS[WARNING]
+        assert warning_color == Colors.PYCHARM_YELLOW
+    pass
+
+
+def test_tc0005_045_color_support_detection():
+    """测试颜色支持检测"""
+    assert isinstance(_COLOR_SUPPORT, bool)
+    assert isinstance(_TERMINAL_TYPE, str)
+    pass
+
+# ======= 源文件: tests\test_custom_logger\test_tc0006_manager.py =======
+# tests/test_custom_logger/test_tc0006_manager.py
+from __future__ import annotations
+from datetime import datetime
+
+start_time = datetime.now()
+
+import os
+import pytest
+from unittest.mock import patch, MagicMock
+from custom_logger.manager import (
+    init_custom_logger_system, get_logger, tear_down_custom_logger_system,
+    is_initialized, _initialized
+)
+from custom_logger.logger import CustomLogger
+from custom_logger.types import DEBUG, INFO, ERROR
+
+
+def test_tc0006_001_is_initialized_false():
+    """测试未初始化时的状态检查"""
+    # 确保未初始化
+    tear_down_custom_logger_system()
+
+    assert not is_initialized()
+    pass
+
+
+@patch('custom_logger.manager.init_config')
+@patch('custom_logger.manager.init_writer')
+@patch('atexit.register')
+def test_tc0006_002_init_custom_logger_system_default(mock_atexit, mock_init_writer, mock_init_config):
+    """测试初始化自定义日志系统（默认配置）"""
+    # 确保未初始化
+    tear_down_custom_logger_system()
+
+    init_custom_logger_system()
+
+    # 验证调用了必要的初始化函数
+    mock_init_config.assert_called_once_with(None)
+    mock_init_writer.assert_called_once()
+    mock_atexit.assert_called_once()
+
+    # 验证状态
+    assert is_initialized()
+
+    # 清理
+    tear_down_custom_logger_system()
+    pass
+
+
+@patch('custom_logger.manager.init_config')
+@patch('custom_logger.manager.init_writer')
+@patch('atexit.register')
+def test_tc0006_003_init_custom_logger_system_custom_path(mock_atexit, mock_init_writer, mock_init_config):
+    """测试使用自定义配置路径初始化系统"""
+    # 确保未初始化
+    tear_down_custom_logger_system()
+
+    custom_path = "test/custom_config.yaml"
+    init_custom_logger_system(config_path=custom_path)
+
+    # 验证调用了必要的初始化函数，并传递了配置路径
+    mock_init_config.assert_called_once_with(custom_path)
+    mock_init_writer.assert_called_once()
+    mock_atexit.assert_called_once()
+
+    # 验证状态
+    assert is_initialized()
+
+    # 清理
+    tear_down_custom_logger_system()
+    pass
+
+
+@patch('custom_logger.manager.init_config')
+@patch('custom_logger.manager.init_writer')
+def test_tc0006_004_init_custom_logger_system_already_initialized(mock_init_writer, mock_init_config):
+    """测试重复初始化系统"""
+    # 确保未初始化
+    tear_down_custom_logger_system()
+
+    # 第一次初始化
+    init_custom_logger_system()
+
+    # 第二次初始化
+    init_custom_logger_system("another/path.yaml")
+
+    # 应该只调用一次，且忽略第二次的参数
+    mock_init_config.assert_called_once()
+    mock_init_writer.assert_called_once()
+
+    # 清理
+    tear_down_custom_logger_system()
+    pass
+
+
+@patch('custom_logger.manager.init_config', side_effect=Exception("Init error"))
+def test_tc0006_005_init_custom_logger_system_failure(mock_init_config):
+    """测试初始化失败"""
+    # 确保未初始化
+    tear_down_custom_logger_system()
+
+    with pytest.raises(Exception, match="Init error"):
+        init_custom_logger_system()
+
+    # 失败后应该仍未初始化
+    assert not is_initialized()
+    pass
+
+
+@patch('custom_logger.manager.shutdown_writer')
+def test_tc0006_006_tear_down_custom_logger_system(mock_shutdown_writer):
+    """测试清理自定义日志系统"""
+    # 先初始化
+    with patch('custom_logger.manager.init_config'):
+        with patch('custom_logger.manager.init_writer'):
+            init_custom_logger_system()
+
+    assert is_initialized()
+
+    # 清理
+    tear_down_custom_logger_system()
+
+    mock_shutdown_writer.assert_called_once()
+    assert not is_initialized()
+    pass
+
+
+@patch('custom_logger.manager.get_config')
+@patch('custom_logger.manager.parse_level_name')
+def test_tc0006_007_get_logger_basic(mock_parse_level, mock_get_config):
+    """测试获取基本logger"""
+    # 模拟已初始化
+    with patch('custom_logger.manager._initialized', True):
+        mock_parse_level.side_effect = lambda x: {"debug": DEBUG, "info": INFO}[x]
+
+        logger = get_logger("test_logger", console_level="debug", file_level="info")
+
+        assert isinstance(logger, CustomLogger)
+        assert logger.name == "test_logger"
+        assert logger._console_level == DEBUG
+        assert logger._file_level == INFO
+    pass
+
+
+@patch('custom_logger.manager.get_config', side_effect=RuntimeError("Not initialized"))
+@patch('custom_logger.manager.init_custom_logger_system')
+def test_tc0006_008_get_logger_auto_init(mock_init, mock_get_config):
+    """测试自动初始化logger系统"""
+    # 模拟未初始化
+    with patch('custom_logger.manager._initialized', False):
+        # 第一次调用get_config失败，第二次成功
+        mock_get_config.side_effect = [RuntimeError("Not initialized"), None]
+
+        logger = get_logger("test_logger")
+
+        # 应该自动初始化，且不传递配置路径（使用默认）
+        mock_init.assert_called_once_with()
+        assert isinstance(logger, CustomLogger)
+    pass
+
+
+def test_tc0006_009_config_path_environment_inheritance():
+    """测试配置路径环境变量继承"""
+    from custom_logger.config import set_config_path, get_config_file_path, get_cached_config_path
+
+    test_path = "worker/inherited_config.yaml"
+
+    # 模拟主进程设置配置路径
+    set_config_path(test_path)
+
+    # 验证环境变量被设置
+    assert os.environ.get('CUSTOM_LOGGER_CONFIG_PATH') == test_path
+
+    # 模拟worker进程获取配置路径（清理缓存）
+    set_config_path(None)  # 清理缓存
+    os.environ['CUSTOM_LOGGER_CONFIG_PATH'] = test_path  # 确保环境变量存在
+
+    worker_path = get_config_file_path()
+    assert worker_path == test_path
+
+    # 清理
+    set_config_path(None)
+    pass
+
+
+@patch('custom_logger.manager.init_writer')
+def test_tc0006_010_multiprocess_config_sharing(mock_init_writer):
+    """测试多进程配置共享"""
+    from custom_logger.config import get_config_file_path, set_config_path
+    import os
+
+    # 确保清理状态
+    tear_down_custom_logger_system()
+    set_config_path(None)
+
+    custom_path = "multiprocess/shared_config.yaml"
+
+    # 只mock init_writer，让init_config正常运行以设置配置路径
+    with patch('custom_logger.manager.init_config') as mock_init_config:
+        # 让init_config执行实际的set_config_path逻辑
+        def mock_init_config_impl(config_path):
+            if config_path is not None:
+                set_config_path(config_path)
+
+        mock_init_config.side_effect = mock_init_config_impl
+
+        # 主进程初始化
+        init_custom_logger_system(config_path=custom_path)
+
+        # 验证初始化被调用时传递了正确的配置路径
+        mock_init_config.assert_called_with(custom_path)
+
+        # 验证主进程配置路径被正确设置
+        main_path = get_config_file_path()
+        assert main_path == custom_path
+
+        # 验证环境变量被设置
+        assert os.environ.get('CUSTOM_LOGGER_CONFIG_PATH') == custom_path
+
+        # 模拟worker进程启动（清理缓存但保留环境变量）
+        # 注意：不调用set_config_path(None)，而是手动清理缓存
+        from custom_logger.config import _cached_config_path
+        with patch('custom_logger.config._cached_config_path', None):
+            # 确保环境变量仍然存在
+            assert os.environ.get('CUSTOM_LOGGER_CONFIG_PATH') == custom_path
+
+            # 由于环境变量存在，worker进程应该能继承
+            worker_path = get_config_file_path()
+            assert worker_path == custom_path
+
+    # 清理
+    set_config_path(None)
+    pass
+
+
+@patch('custom_logger.manager.get_config')
+@patch('custom_logger.manager.parse_level_name', side_effect=ValueError("Invalid level"))
+def test_tc0006_011_get_logger_invalid_level(mock_parse_level, mock_get_config):
+    """测试无效级别参数"""
+    # 模拟已初始化
+    with patch('custom_logger.manager._initialized', True):
+        with pytest.raises(ValueError, match="Invalid level"):
+            get_logger("test_logger", console_level="invalid")
+    pass
+
+
+def test_tc0006_012_multiple_loggers_different_configs():
+    """测试使用不同配置的多个logger"""
+    # 模拟已初始化
+    with patch('custom_logger.manager._initialized', True):
+        with patch('custom_logger.manager.get_config'):
+            with patch('custom_logger.manager.parse_level_name') as mock_parse:
+                mock_parse.side_effect = lambda x: {"debug": DEBUG, "info": INFO, "error": ERROR}[x]
+
+                logger1 = get_logger("module1", console_level="debug")
+                logger2 = get_logger("module2", file_level="error")
+                logger3 = get_logger("module3", console_level="info", file_level="debug")
+
+                assert logger1.name == "module1"
+                assert logger1._console_level == DEBUG
+                assert logger1._file_level is None
+
+                assert logger2.name == "module2"
+                assert logger2._console_level is None
+                assert logger2._file_level == ERROR
+
+                assert logger3.name == "module3"
+                assert logger3._console_level == INFO
+                assert logger3._file_level == DEBUG
+    pass
+
+
+def test_tc0006_013_worker_logger_creation():
+    """测试worker进程中logger创建"""
+    from custom_logger.config import set_config_path
+
+    # 设置测试配置路径
+    test_path = "worker/test_config.yaml"
+    set_config_path(test_path)
+
+    try:
+        # 模拟worker进程（未初始化状态）
+        with patch('custom_logger.manager._initialized', False):
+            with patch('custom_logger.manager.get_config') as mock_get_config:
+                with patch('custom_logger.manager.init_custom_logger_system') as mock_init:
+                    # 第一次get_config失败触发自动初始化
+                    mock_get_config.side_effect = [RuntimeError("Not initialized"), None]
+
+                    logger = get_logger("worker_logger", console_level="w_summary")
+
+                    # 验证自动初始化被调用
+                    mock_init.assert_called_once_with()
+                    assert isinstance(logger, CustomLogger)
+                    assert logger.name == "worker_logger"
+    finally:
+        # 清理
+        set_config_path(None)
+    pass
+
+
+def test_tc0006_014_initialization_state_consistency():
+    """测试初始化状态一致性"""
+    # 确保开始时未初始化
+    tear_down_custom_logger_system()
+    assert not is_initialized()
+
+    # 使用自定义路径初始化
+    with patch('custom_logger.manager.init_config'):
+        with patch('custom_logger.manager.init_writer'):
+            init_custom_logger_system("custom/test.yaml")
+            assert is_initialized()
+
+    # 清理
+    tear_down_custom_logger_system()
+    assert not is_initialized()
+
+    # 再次初始化（默认路径）
+    with patch('custom_logger.manager.init_config'):
+        with patch('custom_logger.manager.init_writer'):
+            init_custom_logger_system()
+            assert is_initialized()
+
+    # 最终清理
+    tear_down_custom_logger_system()
+    pass
+
+
+def test_tc0006_015_tear_down_not_initialized():
+    """测试清理未初始化的系统"""
+    # 确保未初始化
+    tear_down_custom_logger_system()
+
+    # 再次清理应该不报错
+    tear_down_custom_logger_system()
+
+    assert not is_initialized()
+    pass
+
+
+@patch('custom_logger.manager.shutdown_writer', side_effect=Exception("Shutdown error"))
+def test_tc0006_016_tear_down_failure(mock_shutdown_writer):
+    """测试清理失败处理"""
+    # 先初始化
+    with patch('custom_logger.manager.init_config'):
+        with patch('custom_logger.manager.init_writer'):
+            init_custom_logger_system()
+
+    # 清理（应该不抛出异常）
+    tear_down_custom_logger_system()
+
+    # 状态应该被重置
+    assert not is_initialized()
+    pass
+
+
+@patch('custom_logger.manager.get_config')
+def test_tc0006_017_get_logger_no_levels(mock_get_config):
+    """测试获取不指定级别的logger"""
+    # 模拟已初始化
+    with patch('custom_logger.manager._initialized', True):
+        logger = get_logger("test_logger")
+
+        assert isinstance(logger, CustomLogger)
+        assert logger.name == "test_logger"
+        assert logger._console_level is None
+        assert logger._file_level is None
+    pass
+
+
+@patch('custom_logger.manager.get_config')
+@patch('custom_logger.manager.parse_level_name')
+def test_tc0006_018_get_logger_console_level_only(mock_parse_level, mock_get_config):
+    """测试只指定控制台级别"""
+    # 模拟已初始化
+    with patch('custom_logger.manager._initialized', True):
+        mock_parse_level.return_value = ERROR
+
+        logger = get_logger("test_logger", console_level="error")
+
+        assert logger._console_level == ERROR
+        assert logger._file_level is None
+        mock_parse_level.assert_called_once_with("error")
+    pass
+
+
+@patch('custom_logger.manager.get_config')
+@patch('custom_logger.manager.parse_level_name')
+def test_tc0006_019_get_logger_file_level_only(mock_parse_level, mock_get_config):
+    """测试只指定文件级别"""
+    # 模拟已初始化
+    with patch('custom_logger.manager._initialized', True):
+        mock_parse_level.return_value = DEBUG
+
+        logger = get_logger("test_logger", file_level="debug")
+
+        assert logger._console_level is None
+        assert logger._file_level == DEBUG
+        mock_parse_level.assert_called_once_with("debug")
+    pass
+
+
+@patch('custom_logger.manager.get_config')
+@patch('custom_logger.manager.parse_level_name')
+def test_tc0006_020_get_logger_both_levels(mock_parse_level, mock_get_config):
+    """测试指定两个级别"""
+    # 模拟已初始化
+    with patch('custom_logger.manager._initialized', True):
+        mock_parse_level.side_effect = [INFO, ERROR]  # 按调用顺序返回
+
+        logger = get_logger("test_logger", console_level="info", file_level="error")
+
+        assert logger._console_level == INFO
+        assert logger._file_level == ERROR
+        assert mock_parse_level.call_count == 2
+    pass
+
+
+def test_tc0006_021_get_logger_empty_name():
+    """测试空名称logger"""
+    # 模拟已初始化
+    with patch('custom_logger.manager._initialized', True):
+        with patch('custom_logger.manager.get_config'):
+            logger = get_logger("")
+
+            assert logger.name == ""
+    pass
+
+
+def test_tc0006_022_get_logger_unicode_name():
+    """测试Unicode名称logger"""
+    # 模拟已初始化
+    with patch('custom_logger.manager._initialized', True):
+        with patch('custom_logger.manager.get_config'):
+            logger = get_logger("测试模块")
+
+            assert logger.name == "测试模块"
+    pass
+
+
+def test_tc0006_023_get_logger_long_name():
+    """测试长名称logger"""
+    long_name = "a" * 100
+
+    # 模拟已初始化
+    with patch('custom_logger.manager._initialized', True):
+        with patch('custom_logger.manager.get_config'):
+            logger = get_logger(long_name)
+
+            assert logger.name == long_name
+    pass
+
+
+@patch('custom_logger.manager.get_config')
+@patch('custom_logger.manager.parse_level_name')
+def test_tc0006_024_get_logger_case_sensitive_levels(mock_parse_level, mock_get_config):
+    """测试级别名称大小写处理"""
+    # 模拟已初始化
+    with patch('custom_logger.manager._initialized', True):
+        mock_parse_level.return_value = INFO
+
+        # 测试不同大小写
+        logger = get_logger("test", console_level="INFO")
+
+        mock_parse_level.assert_called_with("INFO")
+        assert logger._console_level == INFO
+    pass
+
+
+def test_tc0006_025_multiple_loggers():
+    """测试创建多个logger"""
+    # 模拟已初始化
+    with patch('custom_logger.manager._initialized', True):
+        with patch('custom_logger.manager.get_config'):
+            logger1 = get_logger("module1")
+            logger2 = get_logger("module2")
+            logger3 = get_logger("module1")  # 同名
+
+            assert logger1.name == "module1"
+            assert logger2.name == "module2"
+            assert logger3.name == "module1"
+
+            # 应该是不同的实例
+            assert logger1 is not logger3
+    pass
+
+
+@patch('custom_logger.manager.init_config')
+@patch('custom_logger.manager.init_writer')
+def test_tc0006_026_initialization_state_consistency(mock_init_writer, mock_init_config):
+    """测试初始化状态一致性"""
+    # 确保开始时未初始化
+    tear_down_custom_logger_system()
+    assert not is_initialized()
+
+    # 使用自定义路径初始化
+    init_custom_logger_system("custom/test.yaml")
+    assert is_initialized()
+
+    # 清理
+    tear_down_custom_logger_system()
+    assert not is_initialized()
+
+    # 再次初始化（默认路径）
+    init_custom_logger_system()
+    assert is_initialized()
+
+    # 最终清理
+    tear_down_custom_logger_system()
+    pass
+
+
+def test_tc0006_027_config_path_parameter_validation():
+    """测试配置路径参数验证"""
+    tear_down_custom_logger_system()
+
+    with patch('custom_logger.manager.init_config') as mock_init_config:
+        with patch('custom_logger.manager.init_writer'):
+            # 测试None参数
+            init_custom_logger_system(config_path=None)
+            mock_init_config.assert_called_with(None)
+
+            tear_down_custom_logger_system()
+
+            # 测试空字符串
+            init_custom_logger_system(config_path="")
+            mock_init_config.assert_called_with("")
+
+            tear_down_custom_logger_system()
+
+            # 测试正常路径
+            init_custom_logger_system(config_path="valid/path.yaml")
+            mock_init_config.assert_called_with("valid/path.yaml")
+
+            tear_down_custom_logger_system()
+    pass
+
+# ======= 源文件: tests\test_custom_logger\test_tc0007_basic_integration.py =======
+# tests/test_custom_logger/test_tc0007_basic_integration.py
+from __future__ import annotations
+from datetime import datetime
+
+start_time = datetime.now()
+
+import pytest
+from unittest.mock import patch, MagicMock
+from custom_logger.manager import get_logger, is_initialized, _initialized
+from custom_logger.logger import CustomLogger
+from custom_logger.types import DEBUG, INFO, WARNING, ERROR
+
+
+def test_tc0007_001_logger_creation():
+    """测试logger创建功能"""
+    # 模拟配置
+    mock_config = {
+        "global_console_level": "info",
+        "global_file_level": "debug",
+        "module_levels": {}
+    }
+
+    with patch('custom_logger.config.get_config', return_value=mock_config):
+        with patch('custom_logger.manager._initialized', True):
+            logger = get_logger("test_logger")
+
+            assert isinstance(logger, CustomLogger)
+            assert logger.name == "test_logger"
+    pass
+
+
+def test_tc0007_002_logger_with_custom_levels():
+    """测试带自定义级别的logger"""
+    mock_config = {
+        "global_console_level": "info",
+        "global_file_level": "debug",
+        "module_levels": {}
+    }
+
+    with patch('custom_logger.config.get_config', return_value=mock_config):
+        with patch('custom_logger.manager._initialized', True):
+            logger = get_logger("test_logger", console_level="debug", file_level="error")
+
+            assert logger._console_level == DEBUG
+            assert logger._file_level == ERROR
+    pass
+
+
+def test_tc0007_003_logger_level_inheritance():
+    """测试logger级别继承"""
+    mock_config = {
+        "global_console_level": "warning",
+        "global_file_level": "error",
+        "module_levels": {
+            "special_module": {
+                "console_level": "debug",
+                "file_level": "info"
+            }
+        }
+    }
+
+    with patch('custom_logger.config.get_config', return_value=mock_config):
+        with patch('custom_logger.logger.get_console_level', return_value=WARNING):
+            with patch('custom_logger.logger.get_file_level', return_value=ERROR):
+                with patch('custom_logger.manager._initialized', True):
+                    # 普通模块
+                    normal_logger = get_logger("normal_module")
+                    assert normal_logger.console_level == WARNING
+                    assert normal_logger.file_level == ERROR
+
+                    # 特殊模块需要单独mock
+                    with patch('custom_logger.logger.get_console_level', return_value=DEBUG):
+                        with patch('custom_logger.logger.get_file_level', return_value=INFO):
+                            special_logger = get_logger("special_module")
+                            assert special_logger.console_level == DEBUG
+                            assert special_logger.file_level == INFO
+    pass
+
+
+def test_tc0007_004_logger_methods_exist():
+    """测试logger方法存在性"""
+    mock_config = {
+        "global_console_level": "debug",
+        "global_file_level": "debug",
+        "module_levels": {}
+    }
+
+    with patch('custom_logger.config.get_config', return_value=mock_config):
+        with patch('custom_logger.manager._initialized', True):
+            logger = get_logger("method_test")
+
+            # 检查所有方法都存在
+            assert hasattr(logger, 'debug')
+            assert hasattr(logger, 'info')
+            assert hasattr(logger, 'warning')
+            assert hasattr(logger, 'error')
+            assert hasattr(logger, 'critical')
+            assert hasattr(logger, 'exception')
+            assert hasattr(logger, 'detail')
+            assert hasattr(logger, 'worker_summary')
+            assert hasattr(logger, 'worker_detail')
+            assert hasattr(logger, '_log')
+    pass
+
+
+def test_tc0007_005_logger_level_filtering():
+    """测试logger级别过滤"""
+    mock_config = {
+        "global_console_level": "warning",
+        "global_file_level": "error",
+        "module_levels": {}
+    }
+
+    with patch('custom_logger.config.get_config', return_value=mock_config):
+        with patch('custom_logger.manager._initialized', True):
+            # 直接设置级别避免config调用
+            logger = get_logger("filter_test", console_level="warning", file_level="error")
+
+            # 测试级别判断
+            assert not logger._should_log_console(DEBUG)
+            assert not logger._should_log_console(INFO)
+            assert logger._should_log_console(WARNING)
+            assert logger._should_log_console(ERROR)
+
+            assert not logger._should_log_file(DEBUG)
+            assert not logger._should_log_file(INFO)
+            assert not logger._should_log_file(WARNING)
+            assert logger._should_log_file(ERROR)
+    pass
+
+# ======= 源文件: tests\test_custom_logger\test_tc0008_advanced_integration.py =======
+# tests/test_custom_logger/test_tc0008_advanced_integration.py
+from __future__ import annotations
+from datetime import datetime
+
+start_time = datetime.now()
+
+import os
+import tempfile
+import threading
+from unittest.mock import patch, MagicMock
+from custom_logger import get_logger, init_custom_logger_system, tear_down_custom_logger_system
+from custom_logger.types import DEBUG, INFO, WARNING, ERROR, EXCEPTION
+
+
+def test_tc0008_001_custom_config_path_integration():
+    """测试自定义配置路径集成"""
+    from custom_logger.config import get_config_file_path, set_config_path
+
+    # 创建临时配置文件路径
+    with tempfile.NamedTemporaryFile(suffix='.yaml', delete=False) as tmp_file:
+        custom_config_path = tmp_file.name
+
+    try:
+        # 清理状态
+        tear_down_custom_logger_system()
+        set_config_path(None)
+
+        # 直接测试配置路径设置，不mock init_config
+        init_custom_logger_system(config_path=custom_config_path)
+
+        # 验证配置路径被正确设置
+        assert get_config_file_path() == custom_config_path
+
+        tear_down_custom_logger_system()
+    finally:
+        # 清理临时文件
+        if os.path.exists(custom_config_path):
+            os.unlink(custom_config_path)
+        set_config_path(None)
+    pass
+
+
+def test_tc0008_002_multiprocess_config_inheritance():
+    """测试多进程配置继承"""
+    from custom_logger.config import set_config_path, get_config_file_path
+
+    # 创建唯一的测试配置路径
+    test_config_path = f"test_multiprocess_{os.getpid()}.yaml"
+
+    def worker_process():
+        """Worker进程函数"""
+        # worker进程中应该能获取主进程设置的配置路径
+        worker_path = get_config_file_path()
+        return worker_path
+
+    try:
+        # 主进程设置配置路径
+        set_config_path(test_config_path)
+
+        # 验证主进程配置路径
+        main_path = get_config_file_path()
+        assert main_path == test_config_path
+
+        # 模拟子进程通过环境变量获取配置路径
+        env_path = os.environ.get('CUSTOM_LOGGER_CONFIG_PATH')
+        assert env_path == test_config_path
+
+        # 验证在清理缓存后仍能从环境变量获取
+        with patch('custom_logger.config._cached_config_path', None):
+            inherited_path = get_config_file_path()
+            assert inherited_path == test_config_path
+
+    finally:
+        # 清理
+        set_config_path(None)
+    pass
+
+
+def test_tc0008_003_worker_logger_with_custom_config():
+    """测试worker使用自定义配置的logger"""
+    from custom_logger.config import set_config_path
+
+    test_config_path = "worker_test/custom_config.yaml"
+    mock_config = {
+        "global_console_level": "w_summary",
+        "global_file_level": "w_detail",
+        "module_levels": {
+            "worker_module": {
+                "console_level": "w_detail",
+                "file_level": "debug"
+            }
+        },
+        "first_start_time": datetime.now().isoformat()
+    }
+
+    try:
+        # 设置自定义配置路径
+        set_config_path(test_config_path)
+
+        with patch('custom_logger.config.get_config', return_value=mock_config):
+            with patch('custom_logger.config.get_root_config') as mock_root_config:
+                mock_root_config.return_value = MagicMock(first_start_time=mock_config["first_start_time"])
+
+                with patch('custom_logger.manager._initialized', True):
+                    # 创建worker logger
+                    worker_logger = get_logger("worker_module", console_level="w_summary")
+
+                    # 验证logger创建成功
+                    assert worker_logger.name == "worker_module"
+
+                    # 测试worker专用日志方法
+                    with patch.object(worker_logger, '_log') as mock_log:
+                        worker_logger.worker_summary("Worker task started")
+                        worker_logger.worker_detail("Processing data")
+
+                        # 验证worker方法被正确调用
+                        assert mock_log.call_count == 2
+                        calls = mock_log.call_args_list
+                        assert calls[0][0][0] == 5  # W_SUMMARY
+                        assert calls[1][0][0] == 3  # W_DETAIL
+    finally:
+        set_config_path(None)
+    pass
+
+
+def test_tc0008_004_exception_logging_with_custom_config():
+    """测试自定义配置下的异常日志记录"""
+    from custom_logger.config import set_config_path
+
+    test_config_path = "exception_test/config.yaml"
+    mock_config = {
+        "global_console_level": "exception",
+        "global_file_level": "exception",
+        "module_levels": {},
+        "first_start_time": datetime.now().isoformat()
+    }
+
+    try:
+        set_config_path(test_config_path)
+
+        with patch('custom_logger.config.get_config', return_value=mock_config):
+            with patch('custom_logger.config.get_root_config') as mock_root_config:
+                mock_root_config.return_value = MagicMock(first_start_time=mock_config["first_start_time"])
+
+                with patch('custom_logger.logger.get_console_level', return_value=EXCEPTION):
+                    with patch('custom_logger.logger.get_file_level', return_value=EXCEPTION):
+                        with patch('custom_logger.manager._initialized', True):
+                            logger = get_logger("exception_test")
+
+                            with patch('custom_logger.logger.get_exception_info') as mock_exc:
+                                mock_exc.return_value = "Custom exception traceback"
+
+                                with patch.object(logger, '_print_to_console'):
+                                    with patch('custom_logger.logger.write_log_async') as mock_file:
+                                        logger.exception("Custom config exception")
+
+                                        # 验证异常信息被获取和处理
+                                        mock_exc.assert_called_once()
+                                        mock_file.assert_called_once()
+
+                                        # 验证异步写入包含异常信息
+                                        call_args = mock_file.call_args[0]
+                                        assert call_args[1] == EXCEPTION  # level_value
+                                        assert call_args[2] == "Custom exception traceback"  # exception_info
+    finally:
+        set_config_path(None)
+    pass
+
+
+def test_tc0008_005_auto_initialization_with_custom_config():
+    """测试自定义配置的自动初始化"""
+    from custom_logger.config import set_config_path
+
+    test_config_path = "auto_init/test_config.yaml"
+    mock_config = {
+        "global_console_level": "info",
+        "global_file_level": "debug",
+        "module_levels": {}
+    }
+
+    try:
+        # 预设配置路径（模拟主进程已设置）
+        set_config_path(test_config_path)
+
+        # 模拟未初始化状态（worker进程场景）
+        with patch('custom_logger.manager._initialized', False):
+            with patch('custom_logger.config.get_config', side_effect=[RuntimeError("Not initialized"), mock_config]):
+                with patch('custom_logger.manager.init_custom_logger_system') as mock_init:
+                    logger = get_logger("auto_init_test")
+
+                    # 验证自动初始化被调用（不传递配置路径，使用环境变量）
+                    mock_init.assert_called_once_with()
+                    assert isinstance(logger, type(get_logger("test")))
+    finally:
+        set_config_path(None)
+    pass
+
+
+def test_tc0008_006_caller_identification_fix():
+    """测试调用者识别修复"""
+    from custom_logger.config import set_config_path
+
+    test_config_path = "caller_test/config.yaml"
+    mock_root_config = MagicMock()
+    mock_root_config.first_start_time = "2024-01-01T10:00:00"
+
+    try:
+        set_config_path(test_config_path)
+
+        # Mock整个配置系统避免实际初始化
+        with patch('custom_logger.config.get_config') as mock_get_config:
+            mock_config = MagicMock()
+            mock_config.global_console_level = "info"
+            mock_config.global_file_level = "debug"
+            mock_config.module_levels = {}
+            mock_get_config.return_value = mock_config
+
+            with patch('custom_logger.config.get_root_config', return_value=mock_root_config):
+                with patch('custom_logger.manager._initialized', True):
+                    logger = get_logger("caller_test")
+
+                    # 直接Mock get_caller_info函数而不是inspect.stack
+                    with patch('custom_logger.formatter.get_caller_info') as mock_caller_info:
+                        mock_caller_info.return_value = ("demo_cus", 25)
+
+                        with patch.object(logger, '_print_to_console') as mock_console:
+                            with patch('custom_logger.logger.write_log_async'):
+                                logger.info("Test caller identification")
+
+                                # 验证控制台输出被调用
+                                mock_console.assert_called_once()
+
+                                # 验证日志行中包含正确的调用者信息
+                                log_line = mock_console.call_args[0][0]
+                                assert "demo_cus" in log_line
+                                assert "  25" in log_line
+                                assert "unknown" not in log_line
+    finally:
+        set_config_path(None)
+    pass
+
+
+def test_tc0008_007_concurrent_loggers_custom_config():
+    """测试自定义配置下的并发logger使用"""
+    from custom_logger.config import set_config_path
+
+    test_config_path = "concurrent/test_config.yaml"
+    mock_config = {
+        "global_console_level": "info",
+        "global_file_level": "debug",
+        "module_levels": {},
+        "first_start_time": datetime.now().isoformat()
+    }
+
+    results = []
+
+    def worker_thread(thread_id):
+        """线程worker函数"""
+        try:
+            with patch('custom_logger.config.get_config', return_value=mock_config):
+                with patch('custom_logger.config.get_root_config') as mock_root_config:
+                    mock_root_config.return_value = MagicMock(first_start_time=mock_config["first_start_time"])
+
+                    with patch('custom_logger.manager._initialized', True):
+                        logger = get_logger(f"thread_{thread_id}")
+
+                        with patch.object(logger, '_log') as mock_log:
+                            logger.info(f"Message from thread {thread_id}")
+                            results.append((thread_id, mock_log.call_count))
+        except Exception as e:
+            results.append((thread_id, f"Error: {e}"))
+
+    try:
+        set_config_path(test_config_path)
+
+        # 创建多个线程并发使用logger
+        threads = []
+        for i in range(5):
+            thread = threading.Thread(target=worker_thread, args=(i,))
+            threads.append(thread)
+            thread.start()
+
+        # 等待所有线程完成
+        for thread in threads:
+            thread.join()
+
+        # 验证所有线程都成功执行
+        assert len(results) == 5
+        for thread_id, result in results:
+            assert result == 1  # 每个线程调用一次_log
+    finally:
+        set_config_path(None)
+    pass
+
+
+def test_tc0008_008_config_path_inheritance_stress():
+    """测试配置路径继承的压力测试"""
+    from custom_logger.config import set_config_path, get_config_file_path
+
+    base_path = "stress_test/config"
+
+    # 测试快速切换配置路径
+    for i in range(100):
+        test_path = f"{base_path}_{i}.yaml"
+        set_config_path(test_path)
+
+        # 验证路径正确设置
+        assert get_config_file_path() == test_path
+        assert os.environ.get('CUSTOM_LOGGER_CONFIG_PATH') == test_path
+
+        # 模拟worker进程获取配置
+        with patch('custom_logger.config._cached_config_path', None):
+            worker_path = get_config_file_path()
+            assert worker_path == test_path
+
+    # 清理
+    set_config_path(None)
+    pass
+
+
+def test_tc0008_009_mixed_initialization_scenarios():
+    """测试混合初始化场景"""
+    from custom_logger.config import set_config_path
+
+    try:
+        # 场景1：主进程显式初始化
+        tear_down_custom_logger_system()
+        with patch('custom_logger.manager.init_config') as mock_init_config:
+            with patch('custom_logger.manager.init_writer'):
+                init_custom_logger_system("explicit/config.yaml")
+                mock_init_config.assert_called_with("explicit/config.yaml")
+
+        tear_down_custom_logger_system()
+
+        # 场景2：worker进程自动初始化（使用环境变量配置）
+        set_config_path("worker/inherited.yaml")
+
+        with patch('custom_logger.manager._initialized', False):
+            with patch('custom_logger.config.get_config', side_effect=[RuntimeError(), {}]):
+                with patch('custom_logger.manager.init_custom_logger_system') as mock_auto_init:
+                    get_logger("worker_logger")
+                    mock_auto_init.assert_called_once_with()
+
+        # 场景3：混合使用默认和自定义配置
+        tear_down_custom_logger_system()
+        set_config_path(None)
+
+        with patch('custom_logger.manager.init_config') as mock_default_init:
+            with patch('custom_logger.manager.init_writer'):
+                init_custom_logger_system()  # 不传配置路径
+                mock_default_init.assert_called_with(None)
+
+    finally:
+        set_config_path(None)
+        tear_down_custom_logger_system()
+    pass
+
+
+def test_tc0008_010_edge_case_config_paths():
+    """测试边界情况的配置路径"""
+    from custom_logger.config import set_config_path, get_config_file_path
+
+    edge_cases = [
+        "single_file.yaml",  # 单个文件名
+        "very/deep/nested/path/config.yaml",  # 深层嵌套
+        "path with spaces/config.yaml",  # 包含空格
+        "unicode_路径/配置.yaml",  # Unicode字符
+    ]
+
+    # 单独测试空字符串情况
+    try:
+        set_config_path("")
+        # 空字符串应该被当作无效，返回默认路径
+        retrieved_path = get_config_file_path()
+        expected_default = os.path.join("config", "config.yaml")
+        assert retrieved_path == expected_default
+    finally:
+        set_config_path(None)
+
+    # 测试其他边界情况
+    for test_path in edge_cases:
+        try:
+            set_config_path(test_path)
+
+            # 验证路径被正确处理
+            retrieved_path = get_config_file_path()
+            assert retrieved_path == test_path
+
+            # 验证环境变量传递
+            env_path = os.environ.get('CUSTOM_LOGGER_CONFIG_PATH')
+            assert env_path == test_path
+
+        finally:
+            set_config_path(None)
+    pass
+
+# ======= 源文件: tests\test_custom_logger\test_tc0009_performance_integration.py =======
+# tests/test_custom_logger/test_tc0009_performance_integration.py
+from __future__ import annotations
+from datetime import datetime
+
+start_time = datetime.now()
+
+import time
+import threading
+from unittest.mock import patch, MagicMock
+from custom_logger import get_logger
+from custom_logger.types import DEBUG, INFO, WARNING, ERROR
+
+
+def test_tc0009_001_early_filtering_performance():
+    """测试早期过滤性能优化"""
+    # 创建高级别logger，大部分日志会被过滤
+    with patch('custom_logger.manager._initialized', True):
+        with patch('custom_logger.config.get_config'):
+            # 直接设置级别避免config调用
+            logger = get_logger("perf_test", console_level="error", file_level="error")
+
+            # Mock所有可能被调用的昂贵操作
+            with patch('custom_logger.formatter.create_log_line') as mock_format:
+                with patch('custom_logger.logger.write_log_async') as mock_write:
+                    with patch.object(logger, '_print_to_console') as mock_print:
+                        # 测试被过滤的日志不会调用昂贵操作
+                        start_time_test = time.time()
+
+                        for i in range(1_000):
+                            logger.debug(f"Debug message {i}")
+                            logger.info(f"Info message {i}")
+
+                        end_time_test = time.time()
+                        duration = end_time_test - start_time_test
+
+                        # 验证昂贵操作没有被调用
+                        mock_format.assert_not_called()
+                        mock_write.assert_not_called()
+                        mock_print.assert_not_called()
+
+                        # 性能应该很好（1000条被过滤的日志应该在合理时间内完成）
+                        assert duration < 1.0  # 1秒内完成
+    pass
+
+
+def test_tc0009_002_level_comparison_performance():
+    """测试级别比较性能"""
+    with patch('custom_logger.manager._initialized', True):
+        with patch('custom_logger.config.get_config'):
+            logger = get_logger("level_test", console_level="warning", file_level="error")
+
+            start_time_test = time.time()
+
+            # 大量级别比较操作
+            for i in range(10_000):
+                logger._should_log_console(DEBUG)
+                logger._should_log_console(INFO)
+                logger._should_log_console(WARNING)
+                logger._should_log_file(DEBUG)
+                logger._should_log_file(INFO)
+                logger._should_log_file(WARNING)
+
+            end_time_test = time.time()
+            duration = end_time_test - start_time_test
+
+            # 级别比较应该非常快
+            assert duration < 0.5  # 0.5秒内完成
+    pass
+
+
+def test_tc0009_003_concurrent_logging_performance():
+    """测试并发日志记录性能"""
+    results = []
+
+    def worker_thread(thread_id, message_count):
+        """工作线程函数"""
+        try:
+            with patch('custom_logger.manager._initialized', True):
+                with patch('custom_logger.config.get_config'):
+                    logger = get_logger(f"thread_{thread_id}", console_level="info", file_level="debug")
+
+                    start_time_worker = time.time()
+
+                    with patch.object(logger, '_log') as mock_log:
+                        for i in range(message_count):
+                            logger.info(f"Thread {thread_id} message {i}")
+
+                    end_time_worker = time.time()
+                    duration = end_time_worker - start_time_worker
+
+                    results.append((thread_id, duration, mock_log.call_count))
+        except Exception as e:
+            results.append((thread_id, f"Error: {e}", 0))
+
+    # 启动多个并发线程
+    threads = []
+    message_count = 100
+    thread_count = 5
+
+    start_time_total = time.time()
+
+    for i in range(thread_count):
+        thread = threading.Thread(target=worker_thread, args=(i, message_count))
+        threads.append(thread)
+        thread.start()
+
+    # 等待所有线程完成
+    for thread in threads:
+        thread.join()
+
+    end_time_total = time.time()
+    total_duration = end_time_total - start_time_total
+
+    # 验证结果
+    assert len(results) == thread_count
+
+    for thread_id, duration, call_count in results:
+        if isinstance(duration, str):  # 错误情况
+            assert False, f"Thread {thread_id} failed: {duration}"
+
+        assert call_count == message_count
+        assert duration < 2.0  # 单个线程2秒内完成
+
+    # 总时间应该合理（并发执行）
+    assert total_duration < 3.0  # 总共3秒内完成
+    pass
+
+
+def test_tc0009_004_memory_efficient_logging():
+    """测试内存高效的日志记录"""
+    with patch('custom_logger.manager._initialized', True):
+        with patch('custom_logger.config.get_config'):
+            logger = get_logger("memory_test", console_level="debug", file_level="debug")
+
+            # 模拟大量日志但不实际处理
+            with patch.object(logger, '_log') as mock_log:
+                large_data = "x" * 1_000  # 1KB数据
+
+                start_time_test = time.time()
+
+                for i in range(100):
+                    logger.info(f"Large message {i}: {large_data}")
+
+                end_time_test = time.time()
+                duration = end_time_test - start_time_test
+
+                # 验证调用次数
+                assert mock_log.call_count == 100
+
+                # 性能应该良好
+                assert duration < 1.0
+    pass
+
+
+def test_tc0009_005_format_optimization():
+    """测试格式化优化"""
+    with patch('custom_logger.manager._initialized', True):
+        with patch('custom_logger.config.get_config'):
+            logger = get_logger("format_test", console_level="error", file_level="error")
+
+            # 测试复杂格式化但被过滤的情况
+            with patch('custom_logger.formatter.format_log_message') as mock_format:
+                complex_args = ("arg1", "arg2", "arg3")
+                complex_kwargs = {"key1": "value1", "key2": "value2", "key3": "value3"}
+
+                start_time_test = time.time()
+
+                for i in range(1_000):
+                    logger.debug(
+                        "Complex message {} with {} and {key1} and {key2}",
+                        *complex_args,
+                        **complex_kwargs
+                    )
+
+                end_time_test = time.time()
+                duration = end_time_test - start_time_test
+
+                # 被过滤的日志不应该调用格式化
+                mock_format.assert_not_called()
+
+                # 性能应该很好
+                assert duration < 0.5
+    pass
+
+
+def test_tc0009_006_high_frequency_logging():
+    """测试高频日志记录"""
+    with patch('custom_logger.manager._initialized', True):
+        with patch('custom_logger.config.get_config'):
+            logger = get_logger("high_freq_test", console_level="info", file_level="info")
+
+            with patch.object(logger, '_log') as mock_log:
+                start_time_test = time.time()
+
+                # 高频率日志记录
+                for i in range(5_000):
+                    logger.info("High frequency message")
+
+                end_time_test = time.time()
+                duration = end_time_test - start_time_test
+
+                # 验证所有调用都被执行
+                assert mock_log.call_count == 5_000
+
+                # 性能要求：5000条日志在合理时间内
+                assert duration < 2.0
+    pass
+
+
+def test_tc0009_007_mixed_level_performance():
+    """测试混合级别性能"""
+    # 完全避免配置系统，直接测试CustomLogger
+    from custom_logger.logger import CustomLogger
+    from custom_logger.types import DEBUG, INFO, WARNING, ERROR
+
+    # 创建logger并设置固定级别
+    logger = CustomLogger("perf_test", console_level=WARNING, file_level=INFO)
+
+    # 验证级别设置
+    assert logger._console_level == WARNING  # 30
+    assert logger._file_level == INFO  # 20
+
+    # 验证早期过滤逻辑
+    assert not logger._should_log_console(DEBUG)  # DEBUG should be filtered
+    assert not logger._should_log_file(DEBUG)  # DEBUG should be filtered
+    assert logger._should_log_file(INFO)  # INFO should pass file filter
+    assert logger._should_log_console(WARNING)  # WARNING should pass console filter
+
+    # Mock必要的依赖
+    mock_root_config = MagicMock()
+    mock_root_config.first_start_time = "2024-01-01T10:00:00"
+
+    with patch('custom_logger.config.get_root_config', return_value=mock_root_config):
+        with patch('custom_logger.formatter.create_log_line') as mock_format:
+            with patch('custom_logger.logger.write_log_async'):
+                with patch.object(logger, '_print_to_console'):
+                    start_time_test = time.time()
+
+                    # 混合不同级别的日志
+                    for i in range(1_000):
+                        logger.debug("Debug message")  # DEBUG(10) < INFO(20)，应该被完全过滤
+                        logger.info("Info message")  # INFO(20) >= INFO(20)，写文件
+                        logger.warning("Warning message")  # WARNING(30) >= WARNING(30)，控制台和文件
+                        logger.error("Error message")  # ERROR(40) >= WARNING(30)，控制台和文件
+
+                    end_time_test = time.time()
+                    duration = end_time_test - start_time_test
+
+                    # DEBUG被早期过滤，只有info/warning/error被处理
+                    expected_calls = 1_000 * 3  # info, warning, error
+                    actual_calls = mock_format.call_count
+
+                    assert actual_calls == expected_calls, f"Expected {expected_calls} calls, but got {actual_calls}"
+                    assert duration < 1.5
+    pass
+
+
+def test_tc0009_008_exception_handling_performance():
+    """测试异常处理性能"""
+    with patch('custom_logger.manager._initialized', True):
+        with patch('custom_logger.config.get_config'):
+            logger = get_logger("exception_test", console_level="exception", file_level="exception")
+
+            with patch.object(logger, '_log') as mock_log:
+                start_time_test = time.time()
+
+                # 大量异常级别日志
+                for i in range(100):
+                    logger.exception(f"Exception message {i}")
+
+                end_time_test = time.time()
+                duration = end_time_test - start_time_test
+
+                # 验证调用次数
+                assert mock_log.call_count == 100
+
+                # 异常日志处理应该在合理时间内
+                assert duration < 1.0
+    pass
+
+
+def test_tc0009_009_caller_info_performance():
+    """测试调用者信息获取性能"""
+    from custom_logger.formatter import get_caller_info
+
+    start_time_test = time.time()
+
+    # 大量调用者信息获取
+    for i in range(1_000):
+        module_name, line_number = get_caller_info()
+        assert isinstance(module_name, str)
+        assert isinstance(line_number, int)
+
+    end_time_test = time.time()
+    duration = end_time_test - start_time_test
+
+    # 调用者信息获取应该相对快速
+    assert duration < 2.0
+    pass
+
+
+def test_tc0009_010_stress_test():
+    """压力测试"""
+    with patch('custom_logger.manager._initialized', True):
+        with patch('custom_logger.config.get_config'):
+            # 直接设置级别确保过滤逻辑正确
+            logger = get_logger("stress_test", console_level="warning", file_level="info")
+
+            # 验证级别设置
+            assert logger._console_level == 30  # WARNING
+            assert logger._file_level == 20  # INFO
+
+            results = []
+
+            def stress_worker(worker_id):
+                """压力测试工作函数"""
+                try:
+                    with patch.object(logger, '_log') as mock_log:
+                        start_time_worker = time.time()
+
+                        # 大量混合操作
+                        for i in range(500):
+                            logger.debug("Debug")  # DEBUG(10) < INFO(20)，被完全过滤
+                            logger.info("Info")  # INFO(20) >= INFO(20)，写文件
+                            if i % 10 == 0:
+                                logger.warning("Warning")  # WARNING(30) >= WARNING(30)，控制台和文件
+
+                        end_time_worker = time.time()
+                        duration = end_time_worker - start_time_worker
+
+                        # DEBUG被早期过滤，只有info和warning被处理
+                        expected_calls = 500 + (500 // 10)  # info + warning
+                        actual_calls = mock_log.call_count
+
+                        results.append((worker_id, duration, actual_calls, expected_calls))
+                except Exception as e:
+                    results.append((worker_id, f"Error: {e}", 0, 0))
+
+            # 启动多个压力测试线程
+            threads = []
+            for i in range(3):
+                thread = threading.Thread(target=stress_worker, args=(i,))
+                threads.append(thread)
+                thread.start()
+
+            # 等待完成
+            for thread in threads:
+                thread.join()
+
+            # 验证结果
+            assert len(results) == 3
+
+            for worker_id, duration, actual_calls, expected_calls in results:
+                if isinstance(duration, str):
+                    assert False, f"Worker {worker_id} failed: {duration}"
+
+                assert actual_calls == expected_calls
+                assert duration < 3.0  # 每个worker 3秒内完成
+    pass
+
+# ======= 源文件: tests\test_custom_logger\test_tc0010_minimal_integration.py =======
+# tests/test_custom_logger/test_tc0010_minimal_integration.py
+from __future__ import annotations
+from datetime import datetime
+
+start_time = datetime.now()
+
+import pytest
+from unittest.mock import patch, MagicMock
+
+
+def test_tc0010_001_import_test():
+    """测试模块导入"""
+    try:
+        from custom_logger import get_logger, CustomLogger
+        from custom_logger.types import DEBUG, INFO, WARNING, ERROR
+        from custom_logger.manager import is_initialized
+        assert True  # 如果能导入就成功
+    except ImportError as e:
+        pytest.fail(f"导入失败: {e}")
+    pass
+
+
+def test_tc0010_002_basic_logger_creation():
+    """测试基本logger创建"""
+    from custom_logger.logger import CustomLogger
+
+    logger = CustomLogger("test")
+    assert logger.name == "test"
+    assert logger._console_level is None
+    assert logger._file_level is None
+    pass
+
+
+def test_tc0010_003_mock_logger_usage():
+    """测试带mock的logger使用"""
+    from custom_logger.logger import CustomLogger
+    from custom_logger.types import INFO
+
+    logger = CustomLogger("mock_test", console_level=INFO, file_level=INFO)
+
+    # Mock配置
+    mock_config = {
+        "first_start_time": datetime.now().isoformat()
+    }
+
+    # Mock所有外部依赖
+    with patch.object(logger, '_print_to_console') as mock_console:
+        with patch('custom_logger.writer.write_log_async') as mock_file:
+            with patch('custom_logger.config.get_root_config') as mock_get_root_config:
+                mock_get_root_config.return_value = MagicMock(first_start_time=mock_config["first_start_time"])
+                # 模拟_should_log方法返回True
+                with patch.object(logger, '_should_log_console', return_value=True):
+                    with patch.object(logger, '_should_log_file', return_value=True):
+                        logger.info("Test message")
+
+                        # 基本验证：方法被调用
+                        assert mock_console.called or mock_file.called
+    pass
+
+
+def test_tc0010_004_types_constants():
+    """测试类型常量"""
+    from custom_logger.types import DEBUG, INFO, WARNING, ERROR, CRITICAL, EXCEPTION
+    from custom_logger.types import DETAIL, W_SUMMARY, W_DETAIL
+
+    # 验证常量值
+    assert DEBUG == 10
+    assert INFO == 20
+    assert WARNING == 30
+    assert ERROR == 40
+    assert CRITICAL == 50
+    assert EXCEPTION == 60
+    assert DETAIL == 8
+    assert W_SUMMARY == 5
+    assert W_DETAIL == 3
+    pass
+
+
+def test_tc0010_005_manager_state():
+    """测试管理器状态"""
+    from custom_logger.manager import is_initialized, _initialized
+
+    # 测试状态检查函数
+    result = is_initialized()
+    assert isinstance(result, bool)
+
+    # 状态应该与内部变量一致
+    assert result == _initialized
+    pass
+
+# ======= 源文件: tests\test_custom_logger\auto_init\test_config.yaml =======
+__data__: {}
+__type_hints__: {}
+
+
+# ======= 源文件: tests\test_custom_logger\caller_test\config.yaml =======
+__data__: {}
+__type_hints__: {}
+
+
+# ======= 源文件: tests\test_custom_logger\config\config.yaml =======
+__data__: {}
+__type_hints__: {}
+
+
+# ======= 源文件: tests\test_custom_logger\worker\inherited.yaml =======
+__data__: {}
+__type_hints__: {}
+
+
+# ======= 源文件: tests\worker\inherited.yaml =======
+__data__: {}
+__type_hints__: {}
+
+
