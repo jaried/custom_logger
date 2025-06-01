@@ -1,3 +1,5 @@
+# src/config/config.yaml
+
 # 项目基本信息
 project_name: "my_project"
 experiment_name: "default"
@@ -16,6 +18,12 @@ logger:
 
   # 当前会话目录（自动生成）
   current_session_dir: null
+  
+  # 调用链显示控制
+  show_call_chain: false  # 是否显示调用链信息
+  
+  # 调试输出控制
+  show_debug_call_stack: false  # 是否显示调用链调试信息
 
   # 模块特定配置（可选）
   module_levels: {}

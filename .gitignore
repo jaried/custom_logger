@@ -7,3 +7,4 @@ tests/worker/
 /tests/test_custom_logger/worker/
 /tests/auto_init/
 /tests/config/
+.cursor*

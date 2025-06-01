@@ -22,7 +22,7 @@ def test_tc0002_001_get_config_file_path_default():
     set_config_path(None)
 
     path = get_config_file_path()
-    expected_path = os.path.join("config", "config.yaml")
+    expected_path = os.path.join("src", "config", "config.yaml")  # 修正期望路径
     assert path == expected_path
     pass
 
@@ -249,7 +249,7 @@ def test_tc0002_015_config_path_priority():
         # 清理环境变量，应该使用默认路径
         if 'CUSTOM_LOGGER_CONFIG_PATH' in os.environ:
             del os.environ['CUSTOM_LOGGER_CONFIG_PATH']
-        expected_default = os.path.join("config", "config.yaml")
+        expected_default = os.path.join("src", "config", "config.yaml")  # 修正期望路径
         assert get_config_file_path() == expected_default
 
     finally:

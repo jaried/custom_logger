@@ -1,0 +1,53 @@
+# src/demo/worker_path_demo/config/worker_demo_config.yaml
+
+# Worker Demo自定义配置文件
+project_name: "worker_demo_project"
+experiment_name: "custom_worker_test"
+first_start_time: null
+base_dir: "d:/logs/demo"
+
+logger:
+  # 全局日志级别
+  global_console_level: "info"
+  global_file_level: "debug"
+
+  # 当前会话目录（自动生成）
+  current_session_dir: null
+
+  # 模块特定配置
+  module_levels:
+    main_process:
+      console_level: "info"
+      file_level: "debug"
+    thread_worker:
+      console_level: "w_summary"
+      file_level: "w_detail"
+    process_worker:
+      console_level: "w_summary"
+      file_level: "debug"
+
+# Worker Demo自定义配置文件
+project_name: "worker_demo_project"
+experiment_name: "custom_worker_test"
+first_start_time: null
+base_dir: "d:/logs/demo"
+
+logger:
+  # 全局日志级别
+  global_console_level: "info"
+  global_file_level: "debug"
+
+  # 当前会话目录（自动生成）
+  current_session_dir: null
+
+  # 模块特定配置
+  module_levels:
+    main_process:
+      console_level: "info"
+      file_level: "debug"
+    thread_worker:
+      console_level: "w_summary"
+      file_level: "w_detail"
+    process_worker:
+      console_level: "w_summary"
+      file_level: "debug"

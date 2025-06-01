@@ -1,0 +1,20 @@
+__data__:
+  base_dir: d:/logs/demo
+  experiment_name: custom_worker_test
+  first_start_time: '2025-06-01T22:53:31.327537'
+  logger:
+    current_session_dir: d:/logs/demo\worker_demo_project\custom_worker_test\logs\20250601\225331
+    global_console_level: info
+    global_file_level: debug
+    module_levels:
+      main_process:
+        console_level: info
+        file_level: debug
+      process_worker:
+        console_level: w_summary
+        file_level: debug
+      thread_worker:
+        console_level: w_summary
+        file_level: w_detail
+  project_name: worker_demo_project
+__type_hints__: {}

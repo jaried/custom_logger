@@ -34,12 +34,13 @@ def test_tc0003_002_get_caller_info_long_filename():
         frame_info = MagicMock()
         frame_info.filename = "/path/to/very_long_filename_that_exceeds_eight_chars.py"
         frame_info.lineno = 42
-        mock_stack.return_value = [frame_info]
+        mock_stack.return_value = [None, frame_info]  # None for current frame
 
         module_name, line_number = get_caller_info()
 
         assert len(module_name) <= 8
-        assert module_name == "very_lon"
+        # 修正期望值：当只有一个有效栈帧时，应该使用该栈帧的信息
+        assert module_name == "very_lon"  # 长文件名截断
         assert line_number == 42
     pass
 
