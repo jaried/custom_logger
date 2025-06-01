@@ -3,3 +3,7 @@
 *.egg-info
 build/
 /tests/worker/
+tests/worker/
+/tests/test_custom_logger/worker/
+/tests/auto_init/
+/tests/config/
