@@ -6,7 +6,7 @@ start_time = datetime.now()
 
 import os
 import tempfile
-import yaml
+from ruamel.yaml import YAML
 from unittest.mock import patch, MagicMock
 from custom_logger import init_custom_logger_system, get_logger, tear_down_custom_logger_system
 from custom_logger.config import set_config_path, get_config_file_path, init_config
@@ -212,7 +212,10 @@ def test_tc0016_004_large_config_handling():
     }
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
-        yaml.dump(config_data, tmp_file, default_flow_style=False, allow_unicode=True)
+        yaml = YAML()
+        yaml.preserve_quotes = True
+        yaml.default_flow_style = False
+        yaml.dump(config_data, tmp_file)
         config_path = tmp_file.name
 
     try:

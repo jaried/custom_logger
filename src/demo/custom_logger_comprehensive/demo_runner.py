@@ -11,7 +11,7 @@ import time
 
 
 def get_demo_directory():
-    """获取demo目录路径"""
+    """获取演示脚本目录"""
     current_dir = os.path.dirname(os.path.abspath(__file__))
     return current_dir
 
@@ -153,13 +153,13 @@ def validate_demo_environment():
     print(f"✅ Python版本: {python_version.major}.{python_version.minor}.{python_version.micro}")
 
     # 检查必要的模块
-    required_modules = ['custom_logger', 'config_manager', 'yaml', 'threading', 'multiprocessing']
+    required_modules = ['custom_logger', 'config_manager', 'ruamel.yaml', 'threading', 'multiprocessing']
     missing_modules = []
 
     for module in required_modules:
         try:
-            if module == 'yaml':
-                import yaml
+            if module == 'ruamel.yaml':
+                import ruamel.yaml
             elif module == 'threading':
                 import threading
             elif module == 'multiprocessing':

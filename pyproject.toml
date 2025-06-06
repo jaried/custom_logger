@@ -26,6 +26,7 @@ classifiers = [
 ]
 dependencies = [
     "config_manager",
+    "ruamel.yaml",
 ]
 
 [tool.setuptools]

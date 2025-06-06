@@ -552,8 +552,14 @@ def demo_08_custom_config_scenarios():
         }
         
         # 转换为YAML格式字符串
-        import yaml
-        config_content = yaml.dump(config_dict, default_flow_style=False, allow_unicode=True)
+        from ruamel.yaml import YAML
+        from io import StringIO
+        yaml = YAML()
+        yaml.preserve_quotes = True
+        yaml.default_flow_style = False
+        stream = StringIO()
+        yaml.dump(config_dict, stream)
+        config_content = stream.getvalue()
         
         with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
             tmp_file.write(config_content)

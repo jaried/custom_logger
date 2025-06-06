@@ -516,9 +516,11 @@ def init_config(config_path: Optional[str] = None, first_start_time: Optional[da
     original_config = None
     if os.path.exists(actual_config_path):
         try:
-            import yaml
+            from ruamel.yaml import YAML
+            yaml = YAML()
+            yaml.preserve_quotes = True
             with open(actual_config_path, 'r', encoding='utf-8') as f:
-                original_config = yaml.safe_load(f) or {}
+                original_config = yaml.load(f) or {}
             
             # 调试输出：显示原始配置内容
             if 'test_tc0015' in str(os.environ.get('PYTEST_CURRENT_TEST', '')) or 'test_tc0016' in str(os.environ.get('PYTEST_CURRENT_TEST', '')):
@@ -591,10 +593,12 @@ def init_config(config_path: Optional[str] = None, first_start_time: Optional[da
         # 如果没有原始配置，回退到从当前文件读取
         if os.path.exists(actual_config_path):
             try:
-                import yaml
+                from ruamel.yaml import YAML
+                yaml = YAML()
+                yaml.preserve_quotes = True
                 # 直接从当前YAML文件读取配置内容
                 with open(actual_config_path, 'r', encoding='utf-8') as f:
-                    raw_config = yaml.safe_load(f) or {}
+                    raw_config = yaml.load(f) or {}
 
                 # 调试输出：显示加载的配置内容
                 if 'test_tc0015' in str(os.environ.get('PYTEST_CURRENT_TEST', '')) or 'test_tc0016' in str(os.environ.get('PYTEST_CURRENT_TEST', '')):

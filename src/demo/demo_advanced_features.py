@@ -146,14 +146,20 @@ def demo_custom_config():
         # 构建配置内容
         config_dict = {
             "project_name": f"{scenario['name']}_demo",
-            "experiment_name": "config_test",
+                        "experiment_name": "config_test",
             "first_start_time": None,
             "base_dir": f"d:/logs/{scenario['name']}",
             "logger": scenario['config']
         }
         
-        import yaml
-        config_content = yaml.dump(config_dict, default_flow_style=False, allow_unicode=True)
+        from ruamel.yaml import YAML
+        from io import StringIO
+        yaml = YAML()
+        yaml.preserve_quotes = True
+        yaml.default_flow_style = False
+        stream = StringIO()
+        yaml.dump(config_dict, stream)
+        config_content = stream.getvalue()
         
         with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
             tmp_file.write(config_content)
