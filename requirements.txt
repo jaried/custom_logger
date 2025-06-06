@@ -1,2 +1,2 @@
 # 自定义Logger依赖文件
-ruamel.yaml>=0.17.0
+ruamel.yaml

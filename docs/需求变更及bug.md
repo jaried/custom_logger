@@ -50,6 +50,65 @@
 
 ---
 
+### 变更002 - YAML库迁移 (2025-06-06)
+
+**变更类型**: 技术债务优化  
+**优先级**: 中等  
+**状态**: 已完成  
+
+#### 变更描述
+将项目的YAML处理库从PyYAML迁移到ruamel.yaml，以获得更好的YAML格式保持能力和更安全的序列化机制。
+
+#### 具体需求
+1. **依赖库替换**: 将所有PyYAML的使用替换为ruamel.yaml
+2. **API适配**: 适配ruamel.yaml的API调用方式
+3. **格式保持**: 利用ruamel.yaml的格式保持特性，确保配置文件的可读性
+4. **安全性提升**: 避免PyYAML的不安全序列化问题
+
+#### 技术要点
+- 更新`requirements.txt`和`pyproject.toml`中的依赖声明
+- 修改所有`import yaml`为`from ruamel.yaml import YAML`
+- 适配YAML对象的实例化和配置方式
+- 保持现有的YAML文件格式和内容结构
+
+#### 实现细节
+```python
+# 旧的PyYAML方式
+import yaml
+yaml.dump(data, file, default_flow_style=False, allow_unicode=True)
+
+# 新的ruamel.yaml方式
+from ruamel.yaml import YAML
+yaml = YAML()
+yaml.preserve_quotes = True
+yaml.default_flow_style = False
+yaml.dump(data, file)
+```
+
+#### 影响范围
+- `requirements.txt`: 依赖声明更新
+- `pyproject.toml`: 依赖声明更新
+- `tests/test_custom_logger/test_tc0016_config_edge_cases.py`: YAML处理代码更新
+- `src/demo/custom_logger_comprehensive/demo_runner.py`: 模块检查更新
+- 所有使用YAML处理的代码文件
+
+#### 测试验证
+- 验证配置文件的正确加载和保存
+- 确保YAML格式的保持性
+- 验证序列化安全性（无Python对象标签）
+- 回归测试确保功能不受影响
+
+#### 向后兼容性
+✅ 完全向后兼容，YAML文件格式和内容保持不变，仅底层处理库发生变化
+
+#### 优势
+1. **格式保持**: ruamel.yaml能更好地保持YAML文件的原始格式
+2. **安全性**: 避免PyYAML的不安全序列化问题
+3. **功能丰富**: 支持更多YAML特性，如注释保持
+4. **维护活跃**: ruamel.yaml有更活跃的维护和更新
+
+---
+
 ## Bug记录
 
 ### Bug001 - 示例Bug记录格式

@@ -101,7 +101,14 @@ d:\logs\{debug模式时加debug层}\{project_name}\{experiment_name}\logs\{启�
 - 配置文件保存到：`src/config/custom_logger.yaml`
 - 持久化配置，防止多进程时丢失
 
-### 2.2 配置项
+### 2.2 YAML处理库选择
+
+- **使用ruamel.yaml替代PyYAML**：提供更好的格式保持能力
+- **安全性考虑**：避免PyYAML的不安全序列化问题
+- **格式保持**：保持配置文件的原始格式、注释和缩进
+- **功能丰富**：支持更多YAML 1.2规范特性
+
+### 2.3 配置项
 
 - `project_name`：项目名称
 - `experiment_name`：实验名称  
@@ -111,7 +118,7 @@ d:\logs\{debug模式时加debug层}\{project_name}\{experiment_name}\logs\{启�
 - `first_start_time`：第一个启动模块的时间戳（自动保存）
 - `base_log_dir`：基础日志目录（默认"d:/logs"）
 
-### 2.3 debug模式判断
+### 2.4 debug模式判断
 
 ```python
 from is_debug import is_debug
@@ -119,7 +126,7 @@ from is_debug import is_debug
 
 使用现有的`is_debug()`函数判断调试模式
 
-### 2.4 系统初始化
+### 2.5 系统初始化
 
 - **只有主程序需要调用**：`init_custom_logger_system()`
 - 使用config_manager管理配置
@@ -299,6 +306,7 @@ module_levels: {}
 ### 8.1 外部依赖
 
 - `config_manager` - 配置管理（外部依赖，不需要版本号）
+- `ruamel.yaml` - YAML处理库（>=0.17.0）
 - `is_debug` - 调试模式判断
 - 标准库：`threading`, `queue`, `os`, `sys`, `datetime`, `ctypes`（Windows颜色支持）
 
@@ -311,7 +319,7 @@ module_levels: {}
 
 ```text
 # requirements.txt
-config_manager
+ruamel.yaml>=0.17.0
 ```
 
 ## 9. 使用示例
