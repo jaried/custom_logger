@@ -328,7 +328,7 @@ def test_tc0008_009_mixed_initialization_scenarios():
         with patch('custom_logger.manager.init_config') as mock_init_config:
             with patch('custom_logger.manager.init_writer'):
                 init_custom_logger_system("explicit/config.yaml")
-                mock_init_config.assert_called_with("explicit/config.yaml")
+                mock_init_config.assert_called_with("explicit/config.yaml", None, None)
 
         tear_down_custom_logger_system()
 
@@ -348,7 +348,7 @@ def test_tc0008_009_mixed_initialization_scenarios():
         with patch('custom_logger.manager.init_config') as mock_default_init:
             with patch('custom_logger.manager.init_writer'):
                 init_custom_logger_system()  # 不传配置路径
-                mock_default_init.assert_called_with(None)
+                mock_default_init.assert_called_with(None, None, None)
 
     finally:
         set_config_path(None)

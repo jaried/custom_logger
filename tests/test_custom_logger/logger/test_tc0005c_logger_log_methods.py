@@ -77,7 +77,15 @@ def test_tc0005_023_log_method_exception_level(mock_write_async, mock_get_except
 
     mock_get_exception.assert_called_once()
     mock_write_async.assert_called_once_with("Exception log line", EXCEPTION, "Stack trace info")
-    mock_print_exc.assert_called_once_with("Stack trace info", file=sys.stderr)
+    
+    # 验证异常信息输出，考虑可能包含颜色代码
+    mock_print_exc.assert_called_once()
+    call_args = mock_print_exc.call_args
+    
+    # 检查调用参数：第一个参数应该包含"Stack trace info"（可能带颜色代码），第二个参数应该是sys.stderr
+    assert len(call_args[0]) == 1  # 只有一个位置参数
+    assert "Stack trace info" in call_args[0][0]  # 异常信息应该包含在输出中
+    assert call_args[1]['file'] == sys.stderr  # 应该输出到stderr
     pass
 
 

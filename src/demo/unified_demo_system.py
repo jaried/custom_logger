@@ -12,6 +12,13 @@ import multiprocessing
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from custom_logger import init_custom_logger_system, get_logger, tear_down_custom_logger_system
 
+from config_manager import get_config_manager
+
+config_manager = get_config_manager(
+    config_path="src/config/config.yaml",
+    auto_create=True,
+    first_start_time=start_time
+)
 
 def worker_process(worker_id: int):
     """多进程工作函数 - 必须在模块级别定义以支持序列化"""

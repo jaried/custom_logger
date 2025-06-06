@@ -2,11 +2,9 @@
 from __future__ import annotations
 from datetime import datetime
 
-start_time = datetime.now()
-
 import atexit
-from typing import Optional
-from .config import init_config, get_config
+from typing import Optional, Any
+from .config import init_config, get_config, set_config_path
 from .writer import init_writer, shutdown_writer
 from .logger import CustomLogger
 from .types import parse_level_name
@@ -15,11 +13,17 @@ from .types import parse_level_name
 _initialized = False
 
 
-def init_custom_logger_system(config_path: Optional[str] = None) -> None:
-    """初始化自定义日志系统（仅主程序调用）
+def init_custom_logger_system(
+    config_path: Optional[str] = None,
+    first_start_time: Optional[datetime] = None,
+    config_object: Optional[Any] = None
+) -> None:
+    """初始化自定义日志系统
 
     Args:
-        config_path: 配置文件路径（可选），如果不提供则使用默认路径
+        config_path: 配置文件路径（可选），如果不提供则使用默认路径 src/config/config.yaml
+        first_start_time: 首次启动时间（可选），主程序可以设置，其他程序从配置文件读取
+        config_object: 配置对象（可选），主程序可以直接传递config对象给worker
     """
     global _initialized
 
@@ -27,8 +31,8 @@ def init_custom_logger_system(config_path: Optional[str] = None) -> None:
         return
 
     try:
-        # 初始化配置，传递配置路径
-        init_config(config_path)
+        # 初始化配置，传递配置路径、启动时间和配置对象
+        init_config(config_path, first_start_time, config_object)
 
         # 初始化异步写入器
         init_writer()
@@ -104,6 +108,20 @@ def tear_down_custom_logger_system() -> None:
         except (ValueError, AttributeError, ImportError):
             # 如果所有输出都失败，则静默处理
             pass
+    
+    try:
+        # 清理config_manager缓存
+        from config_manager import _managers
+        _managers.clear()
+    except (ImportError, AttributeError, KeyError):
+        pass
+    
+    try:
+        # 清理配置路径缓存
+        set_config_path(None)
+    except Exception:
+        pass
+    
     finally:
         # 无论如何都要重置状态
         _initialized = False

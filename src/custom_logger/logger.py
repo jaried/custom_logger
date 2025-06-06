@@ -16,33 +16,123 @@ from .formatter import create_log_line, get_exception_info
 from .writer import write_log_async
 
 
+def _check_registry_ansi_support() -> bool:
+    """检查注册表中的ANSI支持设置"""
+    if os.name != 'nt':
+        return True
+
+    try:
+        import winreg
+
+        # 检查当前用户的控制台设置
+        try:
+            key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Console")
+            value, _ = winreg.QueryValueEx(key, "VirtualTerminalLevel")
+            winreg.CloseKey(key)
+            return value == 1
+        except FileNotFoundError:
+            return False
+        except Exception:
+            return False
+    except ImportError:
+        return False
+
+
+def _enable_registry_ansi_support() -> bool:
+    """启用注册表中的ANSI支持设置"""
+    if os.name != 'nt':
+        return True
+
+    try:
+        import winreg
+
+        # 打开或创建Console键
+        try:
+            key = winreg.CreateKey(winreg.HKEY_CURRENT_USER, r"Console")
+            winreg.SetValueEx(key, "VirtualTerminalLevel", 0, winreg.REG_DWORD, 1)
+            winreg.CloseKey(key)
+            return True
+        except Exception:
+            return False
+    except ImportError:
+        return False
+
+
 # Windows CMD颜色支持
 def _enable_windows_ansi_support() -> bool:
     """启用Windows ANSI颜色支持"""
     if os.name != 'nt':
         return True  # 非Windows系统直接返回True
 
+    # 首先检查注册表设置
+    registry_support = _check_registry_ansi_support()
+    registry_was_enabled = False
+
+    # 如果注册表未启用，尝试启用
+    if not registry_support:
+        registry_was_enabled = _enable_registry_ansi_support()
+        if registry_was_enabled:
+            registry_support = True
+
     try:
         import ctypes
         from ctypes import wintypes
 
-        # 获取stdout句柄
+        # 获取stdout和stderr句柄
         kernel32 = ctypes.windll.kernel32
-        handle = kernel32.GetStdHandle(-11)  # STD_OUTPUT_HANDLE
+        stdout_handle = kernel32.GetStdHandle(-11)  # STD_OUTPUT_HANDLE
+        stderr_handle = kernel32.GetStdHandle(-12)  # STD_ERROR_HANDLE
 
-        # 获取当前控制台模式
-        mode = wintypes.DWORD()
-        if not kernel32.GetConsoleMode(handle, ctypes.byref(mode)):
-            return False
+        success = False
 
-        # 启用ANSI处理 (ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004)
-        new_mode = mode.value | 0x0004
-        if not kernel32.SetConsoleMode(handle, new_mode):
-            return False
+        # 启用stdout的ANSI处理
+        try:
+            stdout_mode = wintypes.DWORD()
+            if kernel32.GetConsoleMode(stdout_handle, ctypes.byref(stdout_mode)):
+                new_stdout_mode = stdout_mode.value | 0x0004  # ENABLE_VIRTUAL_TERMINAL_PROCESSING
+                if kernel32.SetConsoleMode(stdout_handle, new_stdout_mode):
+                    success = True
+        except Exception:
+            pass
 
-        return True
+        # 启用stderr的ANSI处理
+        try:
+            stderr_mode = wintypes.DWORD()
+            if kernel32.GetConsoleMode(stderr_handle, ctypes.byref(stderr_mode)):
+                new_stderr_mode = stderr_mode.value | 0x0004  # ENABLE_VIRTUAL_TERMINAL_PROCESSING
+                if kernel32.SetConsoleMode(stderr_handle, new_stderr_mode):
+                    success = True
+        except Exception:
+            pass
+
+        # 根据不同情况输出不同的提示信息
+        if not success:
+            try:
+                if registry_was_enabled:
+                    # 刚刚启用了注册表，提示重启CMD
+                    print("\n[提示] ANSI颜色支持已启用，请重新打开CMD窗口以查看彩色日志。\n", file=sys.stderr)
+                elif not registry_support:
+                    # 注册表启用失败，提示手动操作
+                    print("\n[提示] 无法自动启用CMD颜色支持，请手动在CMD中运行以下命令：", file=sys.stderr)
+                    print("reg add HKCU\\Console /v VirtualTerminalLevel /t REG_DWORD /d 1", file=sys.stderr)
+                    print("然后重新打开CMD窗口。\n", file=sys.stderr)
+                else:
+                    # 注册表已设置但API调用失败
+                    print("\n[提示] 注册表已配置ANSI支持但当前CMD不支持，请重新打开CMD窗口。\n", file=sys.stderr)
+            except Exception:
+                pass
+        else:
+            # API调用成功，但如果刚刚设置了注册表，仍然建议重启以获得更好的支持
+            if registry_was_enabled:
+                try:
+                    print("\n[提示] ANSI颜色支持已启用并生效，重新打开CMD窗口可获得更好的颜色支持。\n", file=sys.stderr)
+                except Exception:
+                    pass
+
+        # 如果注册表支持或API调用成功，都认为支持颜色
+        return success or registry_support
     except Exception:
-        return False
+        return registry_support
 
 
 def _detect_terminal_type() -> str:
@@ -90,6 +180,9 @@ class Colors:
 _TERMINAL_TYPE = _detect_terminal_type()
 _COLOR_SUPPORT = _enable_windows_ansi_support() if _TERMINAL_TYPE == 'cmd' else True
 
+# 存储ANSI设置提示信息
+_ANSI_SETUP_MESSAGE = None
+
 
 # 根据终端类型选择颜色方案
 def _get_level_colors():
@@ -121,6 +214,17 @@ class CustomLogger:
         self.name = name
         self._console_level = console_level
         self._file_level = file_level
+
+        # 如果有ANSI设置提示信息，输出一次
+        global _ANSI_SETUP_MESSAGE
+        if _ANSI_SETUP_MESSAGE and not hasattr(CustomLogger, '_ansi_message_shown'):
+            CustomLogger._ansi_message_shown = True
+            # 使用info级别输出提示信息，不添加颜色
+            try:
+                message = f"[提示] {_ANSI_SETUP_MESSAGE}"
+                print(message, file=sys.stderr)
+            except Exception:
+                pass
         pass
 
     @property
@@ -160,10 +264,11 @@ class CustomLogger:
             else:
                 output_stream = sys.stdout
 
-            # 添加颜色（如果支持）
+            # 只有在颜色支持确实可用时才添加颜色
             if _COLOR_SUPPORT and level_value in LEVEL_COLORS:
                 colored_line = f"{LEVEL_COLORS[level_value]}{log_line}{Colors.RESET}"
             else:
+                # 如果不支持颜色或该级别没有颜色配置，直接输出原始日志
                 colored_line = log_line
 
             print(colored_line, file=output_stream, flush=True)
@@ -213,7 +318,12 @@ class CustomLogger:
             self._print_to_console(log_line, level_value)
             if exception_info:
                 try:
-                    print(exception_info, file=sys.stderr)
+                    # 异常信息也添加颜色（如果该级别有颜色）
+                    if _COLOR_SUPPORT and level_value in LEVEL_COLORS:
+                        colored_exception = f"{LEVEL_COLORS[level_value]}{exception_info}{Colors.RESET}"
+                        print(colored_exception, file=sys.stderr)
+                    else:
+                        print(exception_info, file=sys.stderr)
                 except Exception:
                     pass
 

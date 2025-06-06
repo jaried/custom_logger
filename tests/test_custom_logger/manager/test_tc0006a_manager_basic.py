@@ -35,7 +35,7 @@ def test_tc0006_002_init_custom_logger_system_default(mock_atexit, mock_init_wri
     init_custom_logger_system()
 
     # 验证调用了必要的初始化函数
-    mock_init_config.assert_called_once_with(None)
+    mock_init_config.assert_called_once_with(None, None, None)
     mock_init_writer.assert_called_once()
     mock_atexit.assert_called_once()
 
@@ -59,7 +59,7 @@ def test_tc0006_003_init_custom_logger_system_custom_path(mock_atexit, mock_init
     init_custom_logger_system(config_path=custom_path)
 
     # 验证调用了必要的初始化函数，并传递了配置路径
-    mock_init_config.assert_called_once_with(custom_path)
+    mock_init_config.assert_called_once_with(custom_path, None, None)
     mock_init_writer.assert_called_once()
     mock_atexit.assert_called_once()
 
@@ -188,19 +188,19 @@ def test_tc0006_010_config_path_parameter_validation():
         with patch('custom_logger.manager.init_writer'):
             # 测试None参数
             init_custom_logger_system(config_path=None)
-            mock_init_config.assert_called_with(None)
+            mock_init_config.assert_called_with(None, None, None)
 
             tear_down_custom_logger_system()
 
             # 测试空字符串
             init_custom_logger_system(config_path="")
-            mock_init_config.assert_called_with("")
+            mock_init_config.assert_called_with("", None, None)
 
             tear_down_custom_logger_system()
 
             # 测试正常路径
             init_custom_logger_system(config_path="valid/path.yaml")
-            mock_init_config.assert_called_with("valid/path.yaml")
+            mock_init_config.assert_called_with("valid/path.yaml", None, None)
 
             tear_down_custom_logger_system()
     pass

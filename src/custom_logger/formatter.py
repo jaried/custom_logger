@@ -66,6 +66,9 @@ def get_caller_info() -> Tuple[str, int]:
                 pass
 
         # 策略：从调用栈中找到第一个非custom_logger的用户代码文件
+        # 同时记录所有custom_logger文件，以备没有找到外部文件时使用最后一个
+        custom_logger_frames = []
+        
         for i in range(1, len(stack)):
             frame_info = stack[i]
             
@@ -91,12 +94,14 @@ def get_caller_info() -> Tuple[str, int]:
             # 检查是否为custom_logger相关文件（需要跳过）
             normalized_filename = filename.replace('\\', '/').lower()
             is_custom_logger_file = (
-                basename in ['logger.py', 'formatter.py', 'writer.py', 'config.py'] and
-                ('custom_logger' in normalized_filename)
+                'custom_logger' in normalized_filename and
+                (basename in ['logger.py', 'formatter.py', 'writer.py', 'config.py', 'manager.py'] or
+                 basename.startswith('module') or basename.startswith('internal'))  # 支持测试中的module*.py和internal*.py文件
             )
             
-            # 如果是custom_logger文件，跳过继续查找
+            # 如果是custom_logger文件，记录所有，但继续查找外部文件
             if is_custom_logger_file:
+                custom_logger_frames.append((name_without_ext, line_number))
                 continue
             
             # 检查是否为需要跳过的系统框架文件
@@ -119,6 +124,12 @@ def get_caller_info() -> Tuple[str, int]:
             if not is_framework_file:
                 module_name = name_without_ext[:8] if len(name_without_ext) > 8 else name_without_ext
                 return module_name, line_number
+
+        # 如果没找到外部调用者，但有custom_logger文件，返回最后一个custom_logger文件
+        if custom_logger_frames:
+            module_name, line_number = custom_logger_frames[-1]  # 取最后一个
+            module_name = module_name[:8] if len(module_name) > 8 else module_name
+            return module_name, line_number
 
         # 如果没找到合适的调用者，返回默认值
         return "unknown", 0

@@ -54,7 +54,7 @@ def test_tc0006_025_multiprocess_config_sharing(mock_init_writer):
     # 只mock init_writer，让init_config正常运行以设置配置路径
     with patch('custom_logger.manager.init_config') as mock_init_config:
         # 让init_config执行实际的set_config_path逻辑
-        def mock_init_config_impl(config_path):
+        def mock_init_config_impl(config_path, first_start_time=None, config_object=None):
             if config_path is not None:
                 set_config_path(config_path)
 
@@ -64,7 +64,7 @@ def test_tc0006_025_multiprocess_config_sharing(mock_init_writer):
         init_custom_logger_system(config_path=custom_path)
 
         # 验证初始化被调用时传递了正确的配置路径
-        mock_init_config.assert_called_with(custom_path)
+        mock_init_config.assert_called_with(custom_path, None, None)
 
         # 验证主进程配置路径被正确设置
         main_path = get_config_file_path()
@@ -177,7 +177,7 @@ def test_tc0006_029_mixed_initialization_scenarios():
         with patch('custom_logger.manager.init_config') as mock_init_config:
             with patch('custom_logger.manager.init_writer'):
                 init_custom_logger_system("explicit/config.yaml")
-                mock_init_config.assert_called_with("explicit/config.yaml")
+                mock_init_config.assert_called_with("explicit/config.yaml", None, None)
 
         tear_down_custom_logger_system()
 
@@ -197,7 +197,7 @@ def test_tc0006_029_mixed_initialization_scenarios():
         with patch('custom_logger.manager.init_config') as mock_default_init:
             with patch('custom_logger.manager.init_writer'):
                 init_custom_logger_system()  # 不传配置路径
-                mock_default_init.assert_called_with(None)
+                mock_default_init.assert_called_with(None, None, None)
 
     finally:
         set_config_path(None)
