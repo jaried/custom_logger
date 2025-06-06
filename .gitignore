@@ -8,3 +8,4 @@ tests/worker/
 /tests/auto_init/
 /tests/config/
 .cursor*
+collect.py
