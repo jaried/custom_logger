@@ -35,7 +35,7 @@ def test_tc0002_002_default_config_structure():
     assert DEFAULT_CONFIG['logger']["global_file_level"] == "debug"
     assert DEFAULT_CONFIG["base_dir"] == "d:/logs"
     assert DEFAULT_CONFIG["first_start_time"] is None
-    assert DEFAULT_CONFIG['logger']["current_session_dir"] is None
+    assert DEFAULT_CONFIG['paths']["log_dir"] is None
     assert DEFAULT_CONFIG['logger']["module_levels"] == {}
     pass
 

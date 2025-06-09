@@ -9,7 +9,12 @@
 本文档适用于custom_logger项目的开发、维护和扩展工作。
 
 ### 1.3 系统概述
-custom_logger是一个高性能、可配置的Python日志系统，支持异步写入、多级别日志、会话管理和灵活的配置方式。系统经过多次迭代优化，现已支持多进程环境下的配置隔离、config_manager集成的稳定性增强，以及配置文件的智能加载机制。系统采用ruamel.yaml作为YAML处理库，提供更好的格式保持能力和安全的序列化机制。
+custom_logger是一个高性能、可配置的Python日志系统，支持异步写入、多级别日志、路径管理和灵活的配置方式。系统经过多次迭代优化，现已支持多进程环境下的配置隔离、config_manager集成的稳定性增强，以及配置文件的智能加载机制。系统采用ruamel.yaml作为YAML处理库，提供更好的格式保持能力和安全的序列化机制。
+
+**最新架构变更**：
+- 日志目录管理从 `config.logger.current_session_dir` 迁移到 `config.paths.log_dir`
+- 集成 `is_debug` 模块进行调试模式检测
+- 优化日志目录生成规则：`base_dir\{debug}\{项目名}\{实验名}\{日期yyyy-mm-dd}\{时间HHMMSS}`
 
 ## 2. 架构概览
 
@@ -142,7 +147,8 @@ def _init_from_config_object(
 **设计要点**:
 - 配置优先级管理
 - 冲突检测和解决
-- 会话目录自动创建
+- 日志目录自动创建（从paths.log_dir管理）
+- 集成is_debug模块进行调试模式检测
 
 #### 3.2.3 logger.py
 ```python
@@ -174,7 +180,7 @@ sequenceDiagram
     App->>Mgr: init_custom_logger_system()
     Mgr->>Cfg: init_config()
     Cfg->>Cfg: 处理配置冲突
-    Cfg->>Cfg: 创建会话目录
+    Cfg->>Cfg: 创建日志目录
     Mgr->>Wrt: init_writer()
     Wrt->>Wrt: 启动异步队列
     Mgr-->>App: 初始化完成
@@ -213,7 +219,7 @@ flowchart TD
     F --> I
     G --> I
     H --> I
-    I --> J[创建会话目录]
+    I --> J[创建日志目录]
     J --> K[初始化完成]
 ```
 

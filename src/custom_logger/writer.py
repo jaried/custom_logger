@@ -111,7 +111,15 @@ def _writer_thread_func() -> None:
     """写入线程主函数"""
     try:
         cfg = get_config()
-        session_dir = getattr(cfg, 'current_session_dir', None)
+        # 从paths配置中获取日志目录
+        paths_obj = getattr(cfg, 'paths', None)
+        if paths_obj is not None:
+            if isinstance(paths_obj, dict):
+                session_dir = paths_obj.get('log_dir', None)
+            else:
+                session_dir = getattr(paths_obj, 'log_dir', None)
+        else:
+            session_dir = None
 
         if session_dir is None:
             print("无法获取会话目录", file=sys.stderr)

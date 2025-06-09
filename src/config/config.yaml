@@ -5,10 +5,15 @@ project_name: "my_project"
 experiment_name: "default"
 
 # 首次启动时间（自动生成）
-first_start_time: null
+first_start_time:
 
 # 基础目录
 base_dir: "d:/logs"
+
+# 路径配置
+paths:
+  # 日志目录（自动生成）
+  log_dir:
 
 # 日志配置
 logger:
@@ -16,17 +21,39 @@ logger:
   global_console_level: "info"
   global_file_level: "debug"
 
-  # 当前会话目录（自动生成）
-  current_session_dir: null
-  
   # 调用链显示控制
   show_call_chain: false  # 是否显示调用链信息
-  
   # 调试输出控制
   show_debug_call_stack: false  # 是否显示调用链调试信息
 
   # 模块特定配置（可选）
   module_levels: {}
+__data__:
+  project_name: "my_project"
+  experiment_name: "default"
+  first_start_time: '2025-06-09T19:58:02.535179'
+  base_dir: "d:/logs"
+  paths:
+    log_dir: d:\logs\my_project\default\logs\2025-06-09\195802
+    work_dir: d:\logs\my_project\default
+    checkpoint_dir: d:\logs\my_project\default\checkpoint
+    best_checkpoint_dir: d:\logs\my_project\default\checkpoint\best
+    tsb_logs_dir: d:\logs\my_project\default\tsb_logs\2025-06-09\195802
+  logger:
+    global_console_level: "info"
+    global_file_level: "debug"
+    show_call_chain: false
+    show_debug_call_stack: false
+    module_levels: {}
+  config_file_path: 
+    D:\Tony\Documents\yunpan\invest\invest2025\project\custom_logger\src\config\config.yaml
+  debug_mode: false
+  paths.work_dir: d:\logs\my_project\default
+  paths.checkpoint_dir: d:\logs\my_project\default\checkpoint
+  paths.best_checkpoint_dir: d:\logs\my_project\default\checkpoint\best
+  paths.tsb_logs_dir: d:\logs\my_project\default\tsb_logs\2025-06-09\195802
+  paths.log_dir: d:\logs\my_project\default\logs\2025-06-09\195802
+__type_hints__: {}
   #   module_name:
   #     console_level: "debug"
   #     file_level: "detail"

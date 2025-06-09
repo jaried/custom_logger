@@ -15,6 +15,9 @@ DEFAULT_CONFIG = {
     "experiment_name": "default",
     "first_start_time": None,
     "base_dir": "d:/logs",
+    'paths': {
+        "log_dir": None,
+    },
     'logger': {
         "global_console_level": "info",
         "global_file_level": "debug",
@@ -147,6 +150,21 @@ def _detect_mock_usage_and_suggest() -> None:
         pass
 
 
+def _create_session_dir(cfg) -> str:
+    """创建会话目录（向后兼容函数）
+    
+    这个函数是为了保持向后兼容性而添加的。
+    实际的日志目录创建逻辑已经迁移到_create_log_dir函数。
+    
+    Args:
+        cfg: 配置对象
+        
+    Returns:
+        str: 会话目录路径
+    """
+    return _create_log_dir(cfg)
+
+
 def _init_from_config_object(config_object: Any, first_start_time: Optional[datetime] = None) -> None:
     """从传入的配置对象初始化config_manager
     
@@ -197,241 +215,194 @@ def _init_from_config_object(config_object: Any, first_start_time: Optional[date
         
         # logger配置
         logger_config = None
-        config_has_logger = False
         if isinstance(config_object, dict):
-            if 'logger' in config_object and config_object['logger'] is not None:
-                logger_config = config_object['logger']
-                config_has_logger = True
+            logger_config = config_object.get('logger')
         else:
             if hasattr(config_object, 'logger'):
                 logger_config = getattr(config_object, 'logger')
-                if logger_config is not None:
-                    config_has_logger = True
         
-        if config_has_logger and logger_config is not None:
-            # 如果config_object提供了logger配置，使用它
-            if isinstance(logger_config, dict):
-                cfg.logger = logger_config.copy()
-            else:
-                # 如果是对象，提取其属性
+        if logger_config is not None:
+            # 确保logger配置是字典格式
+            if hasattr(logger_config, '__dict__'):
+                # 如果是对象，转换为字典
                 logger_dict = {}
-                for attr in ['global_console_level', 'global_file_level', 'current_session_dir', 'module_levels', 'show_call_chain', 'show_debug_call_stack']:
-                    if hasattr(logger_config, attr):
-                        value = getattr(logger_config, attr)
-                        if value is not None:
-                            logger_dict[attr] = value
+                for attr_name in dir(logger_config):
+                    if not attr_name.startswith('_'):
+                        try:
+                            attr_value = getattr(logger_config, attr_name)
+                            if not callable(attr_value):
+                                logger_dict[attr_name] = attr_value
+                        except Exception:
+                            pass
                 cfg.logger = logger_dict
+            else:
+                cfg.logger = logger_config
         else:
-            # 如果config_object没有提供logger配置，使用默认配置（覆盖cfg中可能存在的旧配置）
+            # 如果没有logger配置，使用默认配置
             cfg.logger = DEFAULT_CONFIG['logger'].copy()
         
-    except Exception as e:
-        # 如果复制失败，使用默认配置
-        for key, value in DEFAULT_CONFIG.items():
-            if not hasattr(cfg, key):
-                setattr(cfg, key, value)
-        
-        # 记录错误（如果在测试环境）
-        if 'test_' in str(os.environ.get('PYTEST_CURRENT_TEST', '')):
-            try:
-                print(f"DEBUG: Failed to copy config object: {e}")
-            except:
-                pass
-    
-    # 确保基本配置项存在，如果不存在则使用默认值（除了first_start_time和logger）
-    # 注意：当使用config_object初始化时，如果config_object没有提供某个属性，应该使用默认值
-    missing_configs = []
-    for key, default_value in DEFAULT_CONFIG.items():
-        if key not in ['first_start_time', 'logger']:  # first_start_time和logger单独处理
-            # 检查config对象是否已经提供了该属性的值
-            config_has_value = False
-            try:
-                # 支持字典和对象两种格式
-                if isinstance(config_object, dict):
-                    if key in config_object and config_object[key] is not None:
-                        config_has_value = True
-                else:
-                    if hasattr(config_object, key):
-                        config_value = getattr(config_object, key)
-                        if config_value is not None:
-                            config_has_value = True
-            except Exception:
-                # 如果访问config对象属性时出错，认为没有提供该值
-                config_has_value = False
-            
-            # 如果config对象没有提供该值，使用默认值（覆盖cfg中可能存在的旧值）
-            if not config_has_value:
-                setattr(cfg, key, default_value)
-                missing_configs.append(f"{key}='{default_value}'")
-    
-    # 如果有缺失的配置项，记录信息（仅在调试模式下）
-    if missing_configs and 'test_' in str(os.environ.get('PYTEST_CURRENT_TEST', '')):
-        try:
-            print(f"DEBUG: 使用默认配置项: {', '.join(missing_configs)}")
-        except:
-            pass
-    
-    # 专门处理first_start_time：检查冲突并设置值
-    try:
-        # 检查config对象是否有first_start_time属性且有值
-        config_has_first_start_time = False
+        # 处理first_start_time冲突检测
         config_first_start_time = None
-        
-        # 支持字典和对象两种格式
         if isinstance(config_object, dict):
-            if 'first_start_time' in config_object:
-                config_has_first_start_time = True
-                config_first_start_time = config_object['first_start_time']
+            config_first_start_time = config_object.get('first_start_time')
         else:
             if hasattr(config_object, 'first_start_time'):
-                config_has_first_start_time = True
                 config_first_start_time = getattr(config_object, 'first_start_time')
         
-        # 检查是否同时传入了两个first_start_time，且值不同
-        if (first_start_time is not None and 
-            config_first_start_time is not None):
-            # 比较两个时间值是否相同
-            param_time_str = first_start_time.isoformat()
-            config_time_str = None
+        # 冲突检测逻辑
+        if first_start_time is not None and config_first_start_time is not None:
+            # 两个都有值，需要检查是否相同
+            param_time_str = first_start_time.isoformat() if isinstance(first_start_time, datetime) else str(first_start_time)
+            config_time_str = config_first_start_time.isoformat() if isinstance(config_first_start_time, datetime) else str(config_first_start_time)
             
-            if isinstance(config_first_start_time, datetime):
-                config_time_str = config_first_start_time.isoformat()
-            else:
-                config_time_str = str(config_first_start_time)
-            
-            # 只有当两个值不同时才抛出错误
             if param_time_str != config_time_str:
                 raise ValueError(
-                    f"传入的first_start_time参数({param_time_str})与config_object.first_start_time({config_time_str})不一致。"
-                    "请确保两者值相同，或只使用其中一个来避免歧义。"
+                    f"first_start_time参数({param_time_str})与config_object.first_start_time({config_time_str})不一致。"
+                    "请确保两者时间相同，或只使用其中一个来避免歧义。"
                 )
         
-        # 设置first_start_time值
+        # 设置first_start_time（优先级：参数 > config_object > 当前时间）
         if first_start_time is not None:
-            # 使用传入的first_start_time参数
             cfg.first_start_time = first_start_time.isoformat()
         elif config_first_start_time is not None:
-            # 使用config对象中的first_start_time
             if isinstance(config_first_start_time, datetime):
-                # 如果是datetime对象，转换为ISO格式字符串
                 cfg.first_start_time = config_first_start_time.isoformat()
             else:
-                # 如果已经是字符串或其他格式，直接使用
-                cfg.first_start_time = config_first_start_time
+                cfg.first_start_time = str(config_first_start_time)
         else:
             # 两者都没有值，使用当前时间
             current_time = datetime.now()
             cfg.first_start_time = current_time.isoformat()
-            
-    except ValueError:
-        # 重新抛出ValueError（冲突错误）
-        raise
-    except Exception:
-        # 如果其他处理失败，使用当前时间
-        current_time = datetime.now()
-        cfg.first_start_time = current_time.isoformat()
-    
-    # 创建当前会话目录并更新logger配置
-    try:
-        session_dir = _create_session_dir(cfg)
         
-        # 确保logger配置是字典格式并更新会话目录
-        logger_obj = getattr(cfg, 'logger', None)
-        if isinstance(logger_obj, dict):
-            logger_obj['current_session_dir'] = session_dir
-        else:
-            # 如果不是字典，需要保留现有的logger配置，只添加current_session_dir
-            if logger_obj is not None:
-                # 如果已经有logger配置（比如ConfigNode对象），尝试设置current_session_dir属性
-                try:
-                    logger_obj.current_session_dir = session_dir
-                except Exception:
-                    # 如果无法设置属性，转换为字典格式但保留原有配置
-                    logger_dict = {}
-                    # 尝试提取现有配置
-                    for attr in ['global_console_level', 'global_file_level', 'module_levels', 'show_call_chain', 'show_debug_call_stack']:
-                        try:
-                            value = getattr(logger_obj, attr, None)
-                            if value is not None:
-                                logger_dict[attr] = value
-                        except Exception:
-                            pass
-                    # 添加会话目录
-                    logger_dict['current_session_dir'] = session_dir
-                    # 如果没有提取到任何配置，使用默认配置
-                    if not logger_dict or len(logger_dict) == 1:  # 只有current_session_dir
-                        logger_dict.update(DEFAULT_CONFIG['logger'])
-                        logger_dict['current_session_dir'] = session_dir
-                    cfg.logger = logger_dict
-            else:
-                # 如果没有logger配置，使用默认配置
-                logger_dict = DEFAULT_CONFIG['logger'].copy()
-                logger_dict['current_session_dir'] = session_dir
-                cfg.logger = logger_dict
-            
-    except Exception:
-        # 如果创建会话目录失败，只设置current_session_dir为None，不覆盖整个logger配置
-        logger_obj = getattr(cfg, 'logger', None)
-        if isinstance(logger_obj, dict):
-            logger_obj['current_session_dir'] = None
-        elif logger_obj is not None:
-            # 尝试设置属性
-            try:
-                logger_obj.current_session_dir = None
-            except Exception:
-                # 如果无法设置，保持原有配置不变
-                pass
-        else:
-            # 如果logger配置不存在，使用默认配置
+    except Exception as e:
+        # 如果复制配置失败，至少确保基本配置存在
+        if not hasattr(cfg, 'project_name'):
+            cfg.project_name = DEFAULT_CONFIG['project_name']
+        if not hasattr(cfg, 'experiment_name'):
+            cfg.experiment_name = DEFAULT_CONFIG['experiment_name']
+        if not hasattr(cfg, 'base_dir'):
+            cfg.base_dir = DEFAULT_CONFIG['base_dir']
+        if not hasattr(cfg, 'logger'):
             cfg.logger = DEFAULT_CONFIG['logger'].copy()
+        if not hasattr(cfg, 'first_start_time'):
+            if first_start_time is not None:
+                cfg.first_start_time = first_start_time.isoformat()
+            else:
+                current_time = datetime.now()
+                cfg.first_start_time = current_time.isoformat()
     
+    # 创建日志目录
+    log_dir = _create_log_dir(cfg)
+    
+    # 确保paths配置存在并更新日志目录
+    try:
+        paths_obj = getattr(cfg, 'paths', None)
+        if paths_obj is None:
+            # 如果没有paths配置，创建默认配置
+            cfg.paths = DEFAULT_CONFIG['paths'].copy()
+            cfg.paths['log_dir'] = log_dir
+        elif isinstance(paths_obj, dict):
+            paths_obj['log_dir'] = log_dir
+        else:
+            # 如果是ConfigNode对象，尝试设置log_dir属性
+            try:
+                paths_obj.log_dir = log_dir
+            except Exception:
+                # 如果无法设置属性，转换为字典格式
+                paths_dict = DEFAULT_CONFIG['paths'].copy()
+                paths_dict['log_dir'] = log_dir
+                cfg.paths = paths_dict
+
+        # 确保logger配置存在并设置current_session_dir
+        logger_obj = getattr(cfg, 'logger', None)
+        if logger_obj is None:
+            cfg.logger = DEFAULT_CONFIG['logger'].copy()
+            cfg.logger['current_session_dir'] = log_dir
+        elif isinstance(logger_obj, dict):
+            logger_obj['current_session_dir'] = log_dir
+        elif hasattr(logger_obj, '__dict__'):
+            # 如果是对象，转换为字典
+            logger_dict = {}
+            for attr_name in dir(logger_obj):
+                if not attr_name.startswith('_'):
+                    try:
+                        attr_value = getattr(logger_obj, attr_name)
+                        if not callable(attr_value):
+                            logger_dict[attr_name] = attr_value
+                    except Exception:
+                        pass
+            logger_dict['current_session_dir'] = log_dir
+            cfg.logger = logger_dict
+        else:
+            # 如果不是字典也不是对象，创建默认字典
+            cfg.logger = DEFAULT_CONFIG['logger'].copy()
+            cfg.logger['current_session_dir'] = log_dir
+
+    except Exception:
+        # 如果出现任何问题，使用默认配置
+        cfg.paths = DEFAULT_CONFIG['paths'].copy()
+        cfg.paths['log_dir'] = log_dir
+        cfg.logger = DEFAULT_CONFIG['logger'].copy()
+        cfg.logger['current_session_dir'] = log_dir
+
     return
 
 
 def _extract_config_data(cfg) -> dict:
-    """从ConfigManager对象中安全提取配置数据"""
+    """从config_manager对象中提取配置数据"""
     config_data = {}
-
-    # 安全获取基本属性
-    for key in ['project_name', 'experiment_name', 'first_start_time', 'base_dir']:
+    
+    # 基本配置项
+    for attr in ['project_name', 'experiment_name', 'first_start_time', 'base_dir']:
         try:
-            value = getattr(cfg, key, None)
+            value = getattr(cfg, attr, None)
             if value is not None:
-                config_data[key] = value
-        except Exception:
+                config_data[attr] = value
+        except AttributeError:
             pass
-
-    # 安全获取logger配置
+    
+    # logger配置
     try:
         logger_obj = getattr(cfg, 'logger', None)
-        if logger_obj:
+        if logger_obj is not None:
             if isinstance(logger_obj, dict):
-                config_data['logger'] = logger_obj.copy()
-            else:
-                # 从ConfigNode对象中提取数据
-                logger_data = {}
-                for attr in ['global_console_level', 'global_file_level', 'current_session_dir']:
-                    try:
-                        value = getattr(logger_obj, attr, None)
-                        if value is not None:
-                            logger_data[attr] = value
-                    except Exception:
-                        pass
-
-                # 提取module_levels
-                try:
-                    module_levels_obj = getattr(logger_obj, 'module_levels', None)
-                    if module_levels_obj:
-                        logger_data['module_levels'] = _convert_confignode_to_dict(module_levels_obj)
-                    else:
-                        logger_data['module_levels'] = {}
-                except Exception:
-                    logger_data['module_levels'] = {}
-
-                config_data['logger'] = logger_data
-    except Exception:
-        config_data['logger'] = DEFAULT_CONFIG['logger'].copy()
-
+                config_data['logger'] = logger_obj
+            elif hasattr(logger_obj, '__dict__'):
+                # 如果是对象，转换为字典
+                logger_dict = {}
+                for attr_name in dir(logger_obj):
+                    if not attr_name.startswith('_'):
+                        try:
+                            attr_value = getattr(logger_obj, attr_name)
+                            if not callable(attr_value):
+                                logger_dict[attr_name] = attr_value
+                        except Exception:
+                            pass
+                config_data['logger'] = logger_dict
+    except AttributeError:
+        pass
+    
+    # paths配置
+    try:
+        paths_obj = getattr(cfg, 'paths', None)
+        if paths_obj is not None:
+            if isinstance(paths_obj, dict):
+                config_data['paths'] = paths_obj
+            elif hasattr(paths_obj, '__dict__'):
+                # 如果是对象，转换为字典
+                paths_dict = {}
+                for attr_name in dir(paths_obj):
+                    if not attr_name.startswith('_'):
+                        try:
+                            attr_value = getattr(paths_obj, attr_name)
+                            if not callable(attr_value):
+                                paths_dict[attr_name] = attr_value
+                        except Exception:
+                            pass
+                config_data['paths'] = paths_dict
+    except AttributeError:
+        pass
+    
     return config_data
 
 
@@ -673,13 +644,36 @@ def init_config(config_path: Optional[str] = None, first_start_time: Optional[da
             current_time = datetime.now()
             cfg.first_start_time = current_time.isoformat()
 
-    # 创建当前会话目录
-    session_dir = _create_session_dir(cfg)
+    # 创建日志目录
+    log_dir = _create_log_dir(cfg)
 
-    # 确保logger配置是字典格式并更新会话目录
+    # 确保paths配置存在并更新日志目录
     try:
+        paths_obj = getattr(cfg, 'paths', None)
+        if paths_obj is None:
+            # 如果没有paths配置，创建默认配置
+            cfg.paths = DEFAULT_CONFIG['paths'].copy()
+            cfg.paths['log_dir'] = log_dir
+        elif isinstance(paths_obj, dict):
+            paths_obj['log_dir'] = log_dir
+        else:
+            # 如果是ConfigNode对象，尝试设置log_dir属性
+            try:
+                paths_obj.log_dir = log_dir
+            except Exception:
+                # 如果无法设置属性，转换为字典格式
+                paths_dict = DEFAULT_CONFIG['paths'].copy()
+                paths_dict['log_dir'] = log_dir
+                cfg.paths = paths_dict
+
+        # 确保logger配置存在并设置current_session_dir
         logger_obj = getattr(cfg, 'logger', None)
-        if hasattr(logger_obj, '__dict__'):
+        if logger_obj is None:
+            cfg.logger = DEFAULT_CONFIG['logger'].copy()
+            cfg.logger['current_session_dir'] = log_dir
+        elif isinstance(logger_obj, dict):
+            logger_obj['current_session_dir'] = log_dir
+        elif hasattr(logger_obj, '__dict__'):
             # 如果是对象，转换为字典
             logger_dict = {}
             for attr_name in dir(logger_obj):
@@ -690,26 +684,30 @@ def init_config(config_path: Optional[str] = None, first_start_time: Optional[da
                             logger_dict[attr_name] = attr_value
                     except Exception:
                         pass
+            logger_dict['current_session_dir'] = log_dir
             cfg.logger = logger_dict
-        elif not isinstance(logger_obj, dict):
+        else:
             # 如果不是字典也不是对象，创建默认字典
             cfg.logger = DEFAULT_CONFIG['logger'].copy()
+            cfg.logger['current_session_dir'] = log_dir
 
-        # 更新会话目录
-        if isinstance(cfg.logger, dict):
-            cfg.logger['current_session_dir'] = session_dir
-        else:
-            cfg.logger.current_session_dir = session_dir
     except Exception:
         # 如果出现任何问题，使用默认配置
+        cfg.paths = DEFAULT_CONFIG['paths'].copy()
+        cfg.paths['log_dir'] = log_dir
         cfg.logger = DEFAULT_CONFIG['logger'].copy()
-        cfg.logger['current_session_dir'] = session_dir
+        cfg.logger['current_session_dir'] = log_dir
 
     return
 
 
-def _create_session_dir(cfg) -> str:
-    """创建当前会话的日志目录"""
+def _create_log_dir(cfg) -> str:
+    """创建日志目录
+    
+    根据需求文档：
+    - 从is_debug模块导入调试状态
+    - 生成路径：config.base_dir\\{debug模式时增加'debug'}\\{项目名}\\{实验名}\\logs\\{启动日期yyyymmdd}\\{启动时间hhmmss}
+    """
     # 安全获取配置值
     try:
         base_dir = getattr(cfg, 'base_dir', 'd:/logs')
@@ -736,7 +734,7 @@ def _create_session_dir(cfg) -> str:
         current_time = datetime.now()
         first_start_time_str = current_time.isoformat()
 
-    # debug模式添加debug层
+    # 从is_debug模块导入调试状态，debug模式添加debug层
     if is_debug():
         base_dir = os.path.join(str(base_dir), "debug")
 
@@ -746,16 +744,17 @@ def _create_session_dir(cfg) -> str:
     except (ValueError, TypeError):
         first_start = datetime.now()
 
+    # 使用需求文档中的格式：yyyymmdd 和 hhmmss
     date_str = first_start.strftime("%Y%m%d")
     time_str = first_start.strftime("%H%M%S")
 
-    # 构建完整路径
-    session_dir = os.path.join(str(base_dir), str(project_name), str(experiment_name), "logs", date_str, time_str)
+    # 构建完整路径：base_dir\\{debug}\\{项目名}\\{实验名}\\logs\\{启动日期yyyymmdd}\\{启动时间hhmmss}
+    log_dir = os.path.join(str(base_dir), str(project_name), str(experiment_name), "logs", date_str, time_str)
 
     # 创建目录
-    os.makedirs(session_dir, exist_ok=True)
+    os.makedirs(log_dir, exist_ok=True)
 
-    return session_dir
+    return log_dir
 
 
 def get_config() -> Any:
@@ -766,8 +765,10 @@ def get_config() -> Any:
     try:
         logger_obj = getattr(cfg, 'logger', None)
         if logger_obj is None:
+            print("无法获取会话目录")
             raise RuntimeError("日志系统未初始化，请先调用 init_custom_logger_system()")
     except AttributeError:
+        print("无法获取会话目录")
         raise RuntimeError("日志系统未初始化，请先调用 init_custom_logger_system()")
 
     # 确保返回的是logger配置
@@ -890,18 +891,6 @@ def get_file_level(module_name: str) -> int:
         level_name = module_config['file_level']
     else:
         level_name = global_level
-
-    # 添加调试输出和调用栈信息 (仅在测试失败时临时添加)
-    if 'test_tc0013' in str(os.environ.get('PYTEST_CURRENT_TEST', '')):
-        try:
-            call_stack = _get_call_stack_info()
-            print(
-                f"DEBUG: get_file_level({module_name}) -> global:{global_level}, module_config:{module_config}, level_name:{level_name}")
-            print(f"DEBUG: Call stack: {call_stack}")
-            # 检测Mock使用并提供建议
-            _detect_mock_usage_and_suggest()
-        except:
-            pass
 
     level_value = parse_level_name(level_name)
     return level_value

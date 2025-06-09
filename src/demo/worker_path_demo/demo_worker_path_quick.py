@@ -19,10 +19,12 @@ experiment_name: "worker_path_demo"
 first_start_time: null
 base_dir: "{os.path.join(os.getcwd(), 'demo_logs').replace(os.sep, '/')}"
 
+paths:
+  log_dir: null
+
 logger:
   global_console_level: "info"
   global_file_level: "debug"
-  current_session_dir: null
   module_levels:
     main:
       console_level: "info"
@@ -86,12 +88,15 @@ def main():
         main_logger.info("实验: {}", experiment_name)
         main_logger.info("基础目录: {}", base_dir)
 
-        # 获取会话目录
-        logger_cfg = root_cfg.logger
-        if isinstance(logger_cfg, dict):
-            session_dir = logger_cfg.get('current_session_dir')
+        # 获取日志目录
+        paths_cfg = getattr(root_cfg, 'paths', None)
+        if paths_cfg:
+            if isinstance(paths_cfg, dict):
+                session_dir = paths_cfg.get('log_dir')
+            else:
+                session_dir = getattr(paths_cfg, 'log_dir', None)
         else:
-            session_dir = getattr(logger_cfg, 'current_session_dir', None)
+            session_dir = None
 
         if session_dir:
             main_logger.info("会话目录: {}", session_dir)
