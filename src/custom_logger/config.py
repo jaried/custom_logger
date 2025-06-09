@@ -666,7 +666,7 @@ def init_config(config_path: Optional[str] = None, first_start_time: Optional[da
                 paths_dict['log_dir'] = log_dir
                 cfg.paths = paths_dict
 
-        # 确保logger配置存在并设置current_session_dir
+        # 确保logger配置存在并设置current_session_dir（向后兼容）
         logger_obj = getattr(cfg, 'logger', None)
         if logger_obj is None:
             cfg.logger = DEFAULT_CONFIG['logger'].copy()

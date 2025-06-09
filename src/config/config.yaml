@@ -34,7 +34,7 @@ __data__:
   first_start_time: '2025-06-09T19:58:02.535179'
   base_dir: "d:/logs"
   paths:
-    log_dir: d:\logs\my_project\default\logs\2025-06-09\195802
+    log_dir: d:/logs\my_project\default\logs\20250609\195802
     work_dir: d:\logs\my_project\default
     checkpoint_dir: d:\logs\my_project\default\checkpoint
     best_checkpoint_dir: d:\logs\my_project\default\checkpoint\best
@@ -45,8 +45,8 @@ __data__:
     show_call_chain: false
     show_debug_call_stack: false
     module_levels: {}
-  config_file_path: 
-    D:\Tony\Documents\yunpan\invest\invest2025\project\custom_logger\src\config\config.yaml
+    current_session_dir: d:/logs\my_project\default\logs\20250609\195802
+  config_file_path: src\config\config.yaml
   debug_mode: false
   paths.work_dir: d:\logs\my_project\default
   paths.checkpoint_dir: d:\logs\my_project\default\checkpoint

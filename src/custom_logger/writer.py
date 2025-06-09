@@ -110,7 +110,8 @@ class FileWriter:
 def _writer_thread_func() -> None:
     """写入线程主函数"""
     try:
-        cfg = get_config()
+        from .config import get_root_config
+        cfg = get_root_config()
         # 从paths配置中获取日志目录
         paths_obj = getattr(cfg, 'paths', None)
         if paths_obj is not None:
