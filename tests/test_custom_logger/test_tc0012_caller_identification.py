@@ -73,16 +73,16 @@ def test_tc0012_003_get_caller_info_nested_function():
 def test_tc0012_004_logger_caller_identification():
     """测试通过logger调用时的调用者识别"""
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
-        tmp_file.write("""
+        tmp_file.write(f"""
 project_name: "caller_test"
 experiment_name: "test"
 first_start_time: null
-base_dir: "d:/logs/test"
+base_dir: "{temp_dir}/test"
 logger:
   global_console_level: "debug"
   global_file_level: "debug"
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """)
         config_path = tmp_file.name
 
@@ -132,16 +132,16 @@ def test_tc0012_005_thread_caller_identification():
 
             # 通过logger调用
             with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
-                tmp_file.write("""
+                tmp_file.write(f"""
 project_name: "thread_test"
 experiment_name: "test"
 first_start_time: null
-base_dir: "d:/logs/test"
+base_dir: "{temp_dir}/test"
 logger:
   global_console_level: "debug"
   global_file_level: "debug"
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """)
                 config_path = tmp_file.name
 
@@ -294,16 +294,16 @@ def test_tc0012_011_caller_info_long_filename():
 def test_tc0012_012_realistic_logger_call_stack():
     """测试真实logger调用场景的调用栈"""
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
-        tmp_file.write("""
+        tmp_file.write(f"""
 project_name: "realistic_test"
 experiment_name: "test"
 first_start_time: null
-base_dir: "d:/logs/test"
+base_dir: "{temp_dir}/test"
 logger:
   global_console_level: "debug"
   global_file_level: "debug"
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """)
         config_path = tmp_file.name
 
@@ -384,16 +384,16 @@ def test_tc0012_013_worker_thread_file_identification():
 def test_tc0012_014_main_function_line_number():
     """测试主函数行号识别问题"""
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
-        tmp_file.write("""
+        tmp_file.write(f"""
 project_name: "line_test"
 experiment_name: "test"
 first_start_time: null
-base_dir: "d:/logs/test"
+base_dir: "{temp_dir}/test"
 logger:
   global_console_level: "debug"
   global_file_level: "debug"
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """)
         config_path = tmp_file.name
 

@@ -77,19 +77,21 @@ def test_tc0014_002_caller_info_skip_threading():
 
 def test_tc0014_003_logger_caller_in_thread():
     """测试线程中logger调用的调用者识别"""
-    config_content = """project_name: "thread_caller_test"
+    config_content = f"""project_name: "thread_caller_test"
 experiment_name: "test"
 first_start_time: null
-base_dir: "d:/logs/test"
+base_dir: "{temp_dir}/test"
 
 logger:
   global_console_level: "w_detail"
   global_file_level: "debug"
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
+        import tempfile
+        temp_dir = tempfile.gettempdir().replace("\\", "/")
         tmp_file.write(config_content)
         config_path = tmp_file.name
 
@@ -211,19 +213,21 @@ def test_tc0014_005_threading_bootstrap_skip():
 
 def test_tc0014_006_multiple_threads_caller():
     """测试多线程环境下的调用者识别"""
-    config_content = """project_name: "multi_thread_test"
+    config_content = f"""project_name: "multi_thread_test"
 experiment_name: "caller_test"
 first_start_time: null
-base_dir: "d:/logs/test"
+base_dir: "{temp_dir}/test"
 
 logger:
   global_console_level: "info"  
   global_file_level: "debug"
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
+        import tempfile
+        temp_dir = tempfile.gettempdir().replace("\\", "/")
         tmp_file.write(config_content)
         config_path = tmp_file.name
 
@@ -278,19 +282,21 @@ logger:
 
 def test_tc0014_007_real_threading_identification():
     """测试真实threading环境下的识别"""
-    config_content = """project_name: "real_thread_test"
+    config_content = f"""project_name: "real_thread_test"
 experiment_name: "identification"
 first_start_time: null
-base_dir: "d:/logs/test"
+base_dir: "{temp_dir}/test"
 
 logger:
   global_console_level: "debug"
   global_file_level: "debug"
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
+        import tempfile
+        temp_dir = tempfile.gettempdir().replace("\\", "/")
         tmp_file.write(config_content)
         config_path = tmp_file.name
 
@@ -403,19 +409,21 @@ def test_tc0014_009_skip_pattern_effectiveness():
 
 def test_tc0014_010_concurrent_caller_identification():
     """测试并发调用者识别"""
-    config_content = """project_name: "concurrent_test"
+    config_content = f"""project_name: "concurrent_test"
 experiment_name: "caller_test"
 first_start_time: null
-base_dir: "d:/logs/test"
+base_dir: "{temp_dir}/test"
 
 logger:
   global_console_level: "info"
   global_file_level: "debug"
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
+        import tempfile
+        temp_dir = tempfile.gettempdir().replace("\\", "/")
         tmp_file.write(config_content)
         config_path = tmp_file.name
 

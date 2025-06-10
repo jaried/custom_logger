@@ -52,19 +52,21 @@ def test_tc0017_002_get_caller_info_nested_function():
 
 def test_tc0017_003_logger_call_stack_identification():
     """测试通过logger调用时的调用者识别"""
-    config_content = """project_name: caller_stack_test
+    config_content = f"""project_name: caller_stack_test
 experiment_name: test
 first_start_time: null
-base_dir: d:/logs/test
+base_dir: "{temp_dir}/test"
 
 logger:
   global_console_level: debug
   global_file_level: debug
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
+        import tempfile
+        temp_dir = tempfile.gettempdir().replace("\\", "/")
         tmp_file.write(config_content)
         config_path = tmp_file.name
 
@@ -146,19 +148,21 @@ def test_tc0017_004_create_log_line_caller_extraction():
 
 def test_tc0017_005_line_number_accuracy():
     """测试行号准确性"""
-    config_content = """project_name: line_accuracy_test
+    config_content = f"""project_name: line_accuracy_test
 experiment_name: test
 first_start_time: null
-base_dir: d:/logs/test
+base_dir: "{temp_dir}/test"
 
 logger:
   global_console_level: debug
   global_file_level: debug
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
+        import tempfile
+        temp_dir = tempfile.gettempdir().replace("\\", "/")
         tmp_file.write(config_content)
         config_path = tmp_file.name
 
@@ -257,19 +261,21 @@ def test_tc0017_006_stack_frame_filtering():
 
 def test_tc0017_007_thread_caller_identification():
     """测试线程中的调用者识别"""
-    config_content = """project_name: thread_caller_test
+    config_content = f"""project_name: thread_caller_test
 experiment_name: test
 first_start_time: null
-base_dir: d:/logs/test
+base_dir: "{temp_dir}/test"
 
 logger:
   global_console_level: debug
   global_file_level: debug
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
+        import tempfile
+        temp_dir = tempfile.gettempdir().replace("\\", "/")
         tmp_file.write(config_content)
         config_path = tmp_file.name
 
@@ -376,19 +382,21 @@ def test_tc0017_010_edge_case_exception_handling():
 
 def test_tc0017_011_comprehensive_integration():
     """综合集成测试：验证实际使用场景中的调用者识别"""
-    config_content = """project_name: comprehensive_test
+    config_content = f"""project_name: comprehensive_test
 experiment_name: integration
 first_start_time: null
-base_dir: d:/logs/test
+base_dir: "{temp_dir}/test"
 
 logger:
   global_console_level: debug
   global_file_level: debug
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
+        import tempfile
+        temp_dir = tempfile.gettempdir().replace("\\", "/")
         tmp_file.write(config_content)
         config_path = tmp_file.name
 
@@ -439,19 +447,21 @@ logger:
 
 def test_tc0017_012_real_line_number_verification():
     """真实行号验证测试"""
-    config_content = """project_name: real_line_test
+    config_content = f"""project_name: real_line_test
 experiment_name: verification
 first_start_time: null
-base_dir: d:/logs/test
+base_dir: "{temp_dir}/test"
 
 logger:
   global_console_level: debug
   global_file_level: debug
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
+        import tempfile
+        temp_dir = tempfile.gettempdir().replace("\\", "/")
         tmp_file.write(config_content)
         config_path = tmp_file.name
 

@@ -256,8 +256,13 @@ def _init_from_config_object(config_object: Any, first_start_time: Optional[date
             config_time_str = config_first_start_time.isoformat() if isinstance(config_first_start_time, datetime) else str(config_first_start_time)
             
             if param_time_str != config_time_str:
-                raise ValueError(
-                    f"first_start_time参数({param_time_str})与config_object.first_start_time({config_time_str})不一致。"
+                # 使用特殊的异常类来区分参数冲突错误
+                class ConfigConflictError(ValueError):
+                    """配置冲突错误，应该向上传播"""
+                    pass
+                
+                raise ConfigConflictError(
+                    f"传入的first_start_time参数({param_time_str})与config_object.first_start_time({config_time_str})不一致。"
                     "请确保两者时间相同，或只使用其中一个来避免歧义。"
                 )
         
@@ -275,7 +280,11 @@ def _init_from_config_object(config_object: Any, first_start_time: Optional[date
             cfg.first_start_time = current_time.isoformat()
         
     except Exception as e:
-        # 如果复制配置失败，至少确保基本配置存在
+        # 检查是否是配置冲突错误
+        if type(e).__name__ == 'ConfigConflictError':
+            # 配置冲突错误应该向上传播
+            raise
+        # 如果复制配置失败（非参数错误），至少确保基本配置存在
         if not hasattr(cfg, 'project_name'):
             cfg.project_name = DEFAULT_CONFIG['project_name']
         if not hasattr(cfg, 'experiment_name'):
@@ -706,7 +715,7 @@ def _create_log_dir(cfg) -> str:
     
     根据需求文档：
     - 从is_debug模块导入调试状态
-    - 生成路径：config.base_dir\\{debug模式时增加'debug'}\\{项目名}\\{实验名}\\logs\\{启动日期yyyymmdd}\\{启动时间hhmmss}
+    - 生成路径：config.base_dir/{如果是debug模式，加'debug'}/config.project_name/{实验名}/{config.first_start_time,yyyy-mm-dd格式}/{config.first_start_time,HHMMSS格式}
     """
     # 安全获取配置值
     try:
@@ -744,12 +753,12 @@ def _create_log_dir(cfg) -> str:
     except (ValueError, TypeError):
         first_start = datetime.now()
 
-    # 使用需求文档中的格式：yyyymmdd 和 hhmmss
-    date_str = first_start.strftime("%Y%m%d")
+    # 使用新的路径格式：yyyy-mm-dd 和 HHMMSS
+    date_str = first_start.strftime("%Y-%m-%d")
     time_str = first_start.strftime("%H%M%S")
 
-    # 构建完整路径：base_dir\\{debug}\\{项目名}\\{实验名}\\logs\\{启动日期yyyymmdd}\\{启动时间hhmmss}
-    log_dir = os.path.join(str(base_dir), str(project_name), str(experiment_name), "logs", date_str, time_str)
+    # 构建完整路径：base_dir/{debug}/{项目名}/{实验名}/{启动日期yyyy-mm-dd}/{启动时间HHMMSS}
+    log_dir = os.path.join(str(base_dir), str(project_name), str(experiment_name), date_str, time_str)
 
     # 创建目录
     os.makedirs(log_dir, exist_ok=True)

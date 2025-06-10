@@ -33,19 +33,23 @@ def test_tc0018_001_basic_caller_line_accuracy():
 
 def test_tc0018_002_logger_call_line_accuracy():
     """测试通过logger调用时的行号准确性"""
-    config_content = """project_name: line_accuracy_test
+    import tempfile
+    temp_dir = tempfile.gettempdir().replace("\\", "/")
+    config_content = f"""project_name: line_accuracy_test
 experiment_name: verification
 first_start_time: null
-base_dir: d:/logs/test
+base_dir: "{temp_dir}/test"
 
 logger:
   global_console_level: debug
   global_file_level: debug
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
+        import tempfile
+        temp_dir = tempfile.gettempdir().replace("\\", "/")
         tmp_file.write(config_content)
         config_path = tmp_file.name
 
@@ -154,19 +158,21 @@ def test_tc0018_003_stack_frame_skip_logic():
 
 def test_tc0018_004_real_world_scenario():
     """测试真实世界场景"""
-    config_content = """project_name: real_world_test
+    config_content = f"""project_name: real_world_test
 experiment_name: scenario
 first_start_time: null
-base_dir: d:/logs/test
+base_dir: "{temp_dir}/test"
 
 logger:
   global_console_level: debug
   global_file_level: debug
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
+        import tempfile
+        temp_dir = tempfile.gettempdir().replace("\\", "/")
         tmp_file.write(config_content)
         config_path = tmp_file.name
 
@@ -222,19 +228,21 @@ logger:
 
 def test_tc0018_005_demo_scenario_reproduction():
     """复现demo场景中的问题"""
-    config_content = """project_name: demo_reproduction
+    config_content = f"""project_name: demo_reproduction
 experiment_name: comprehensive_test
 first_start_time: null
-base_dir: d:/logs/demo
+base_dir: "{temp_dir}/demo"
 
 logger:
   global_console_level: info
   global_file_level: debug
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
+        import tempfile
+        temp_dir = tempfile.gettempdir().replace("\\", "/")
         tmp_file.write(config_content)
         config_path = tmp_file.name
 

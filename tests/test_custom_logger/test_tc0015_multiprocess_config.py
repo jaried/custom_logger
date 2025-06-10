@@ -239,10 +239,12 @@ def config_manager_test_function(config_path: str):
 
 def test_tc0015_001_multiprocess_config_inheritance():
     """测试多进程配置继承"""
-    config_content = """project_name: "multiprocess_test"
+    import tempfile
+    temp_dir = tempfile.gettempdir().replace("\\", "/")
+    config_content = f"""project_name: "multiprocess_test"
 experiment_name: "config_inheritance"
 first_start_time: null
-base_dir: "d:/logs/multiprocess"
+base_dir: "{temp_dir}/multiprocess"
 
 logger:
   global_console_level: "info"
@@ -301,16 +303,18 @@ logger:
 
 def test_tc0015_002_config_path_inheritance():
     """测试配置路径在进程间的继承"""
-    config_content = """project_name: "path_inheritance_test"
+    import tempfile
+    temp_dir = tempfile.gettempdir().replace("\\", "/")
+    config_content = f"""project_name: "path_inheritance_test"
 experiment_name: "test"
 first_start_time: null
-base_dir: "d:/logs/test"
+base_dir: "{temp_dir}/test"
 
 logger:
   global_console_level: "info"
   global_file_level: "debug"
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
@@ -346,16 +350,18 @@ logger:
 
 def test_tc0015_003_process_initialization():
     """测试进程中的日志系统初始化"""
-    config_content = """project_name: "process_init_test"
+    import tempfile
+    temp_dir = tempfile.gettempdir().replace("\\", "/")
+    config_content = f"""project_name: "process_init_test"
 experiment_name: "initialization"
 first_start_time: null
-base_dir: "d:/logs/process_init"
+base_dir: "{temp_dir}/process_init"
 
 logger:
   global_console_level: "info"
   global_file_level: "debug"
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
@@ -386,10 +392,12 @@ logger:
 
 def test_tc0015_004_yaml_serialization_compatibility():
     """测试YAML配置的序列化兼容性"""
-    config_content = """project_name: "yaml_test"
+    import tempfile
+    temp_dir = tempfile.gettempdir().replace("\\", "/")
+    config_content = f"""project_name: "yaml_test"
 experiment_name: "serialization"
 first_start_time: "2024-01-01T10:00:00"
-base_dir: "d:/logs/yaml_test"
+base_dir: "{temp_dir}/yaml_test"
 
 logger:
   global_console_level: "info"
@@ -422,16 +430,18 @@ logger:
 
 def test_tc0015_005_auto_initialization():
     """测试子进程中的自动初始化"""
-    config_content = """project_name: "auto_init_test"
+    import tempfile
+    temp_dir = tempfile.gettempdir().replace("\\", "/")
+    config_content = f"""project_name: "auto_init_test"
 experiment_name: "process_auto_init"
 first_start_time: null
-base_dir: "d:/logs/auto_init"
+base_dir: "{temp_dir}/auto_init"
 
 logger:
   global_console_level: "info"
   global_file_level: "debug"
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
@@ -455,16 +465,18 @@ logger:
 
 def test_tc0015_006_multiprocess_stress():
     """测试多进程压力场景"""
-    config_content = """project_name: "stress_test"
+    import tempfile
+    temp_dir = tempfile.gettempdir().replace("\\", "/")
+    config_content = f"""project_name: "stress_test"
 experiment_name: "multiprocess_stress"
 first_start_time: null
-base_dir: "d:/logs/stress"
+base_dir: "{temp_dir}/stress"
 
 logger:
   global_console_level: "info"
   global_file_level: "debug"
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
@@ -501,10 +513,10 @@ logger:
 
 def test_tc0015_007_complex_config_inheritance():
     """测试复杂配置的继承"""
-    config_content = """project_name: "complex_config_test"
+    config_content = f"""project_name: "complex_config_test"
 experiment_name: "inheritance"
 first_start_time: null
-base_dir: "d:/logs/complex"
+base_dir: "{temp_dir}/complex"
 
 logger:
   global_console_level: "info"
@@ -566,25 +578,25 @@ def test_tc0015_009_process_isolation():
     config1_content = """project_name: "isolation_test_1"
 experiment_name: "process_1"
 first_start_time: null
-base_dir: "d:/logs/isolation1"
+base_dir: "{temp_dir}/isolation1"
 
 logger:
   global_console_level: "debug"
   global_file_level: "debug"
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     config2_content = """project_name: "isolation_test_2"
 experiment_name: "process_2"
 first_start_time: null
-base_dir: "d:/logs/isolation2"
+base_dir: "{temp_dir}/isolation2"
 
 logger:
   global_console_level: "error"
   global_file_level: "error"
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp1:
@@ -618,10 +630,10 @@ logger:
 
 def test_tc0015_010_config_manager_integration():
     """测试config_manager集成的多进程兼容性"""
-    config_content = """project_name: "config_manager_test"
+    config_content = f"""project_name: "config_manager_test"
 experiment_name: "multiprocess_integration"
 first_start_time: null
-base_dir: "d:/logs/config_manager"
+base_dir: "{temp_dir}/config_manager"
 
 logger:
   global_console_level: "info"

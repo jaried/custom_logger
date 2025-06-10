@@ -90,7 +90,7 @@
 ### 1.5 文件路径结构
 
 ```
-d:\logs\{debug模式时加debug层}\{project_name}\{experiment_name}\logs\{启动日期yyyymmdd}\{启动时间hhmmss}\
+config.base_dir/{如果是debug模式，加'debug'}/config.project_name/{实验名}/{config.first_start_time,yyyy-mm-dd格式}/{config.first_start_time,HHMMSS格式}/
 ```
 
 ## 2. 配置管理
@@ -285,6 +285,7 @@ module_levels: {}
 - 不影响现有通过的测试
 - 支持并行测试
 - 使用实际配置文件，但隔离测试数据
+- **路径隔离要求**：所有测试必须使用系统临时路径，禁止使用生产环境路径（如d:\根目录）
 
 ### 7.2 测试覆盖
 
@@ -295,7 +296,13 @@ module_levels: {}
 - **颜色支持功能**：Windows ANSI支持、PyCharm环境检测、颜色输出
 - **性能优化**：早期过滤机制、级别判断逻辑
 
-### 7.3 测试文件编号规范
+### 7.3 Mock配置规范
+
+- **Mock对象必须设置具体值**：base_dir、experiment_name等属性必须返回字符串而非Mock对象
+- **路径格式一致性**：测试期望值必须与实际实现的路径格式保持一致（YYYY-MM-DD格式）
+- **临时路径使用**：所有测试路径必须使用tempfile.gettempdir()获取系统临时目录
+
+### 7.4 测试文件编号规范
 
 - 测试文件：test_tc0001_types.py 到 test_tc0010_minimal_integration.py
 - 测试函数：tc0001_001, tc0001_002 等二级编号

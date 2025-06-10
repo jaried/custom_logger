@@ -29,24 +29,28 @@ logger:
   # 模块特定配置（可选）
   module_levels: {}
 __data__:
-  project_name: "my_project"
-  experiment_name: "default"
-  first_start_time: '2025-06-09T19:58:02.535179'
-  base_dir: "d:/logs"
+  project_name: "test_config_object_project"
+  experiment_name: "config_object_experiment"
+  first_start_time: '2025-06-09T20:30:45'
+  base_dir: "d:/test_logs"
   paths:
-    log_dir: d:/logs\my_project\default\logs\20250609\195802
-    work_dir: d:\logs\my_project\default
-    checkpoint_dir: d:\logs\my_project\default\checkpoint
-    best_checkpoint_dir: d:\logs\my_project\default\checkpoint\best
-    tsb_logs_dir: d:\logs\my_project\default\tsb_logs\2025-06-09\195802
+    log_dir: 
+      d:\test_logs\test_config_object_project\config_object_experiment\logs\2025-06-09\203045
+    work_dir: d:\test_logs\test_config_object_project\config_object_experiment
+    checkpoint_dir: d:\test_logs\test_config_object_project\config_object_experiment\checkpoint
+    best_checkpoint_dir: d:\test_logs\test_config_object_project\config_object_experiment\checkpoint\best
+    tsb_logs_dir: 
+      d:\test_logs\test_config_object_project\config_object_experiment\tsb_logs\2025-06-09\203045
+    debug_dir: d:\test_logs\test_config_object_project\config_object_experiment\debug
   logger:
     global_console_level: "info"
     global_file_level: "debug"
-    show_call_chain: false
+    show_call_chain: true
     show_debug_call_stack: false
     module_levels: {}
-    current_session_dir: d:/logs\my_project\default\logs\20250609\195802
-  config_file_path: src\config\config.yaml
+    current_session_dir:
+  config_file_path: 
+    D:\Tony\Documents\yunpan\invest\invest2025\project\custom_logger\src\config\config.yaml
   debug_mode: false
   paths.work_dir: d:\logs\my_project\default
   paths.checkpoint_dir: d:\logs\my_project\default\checkpoint

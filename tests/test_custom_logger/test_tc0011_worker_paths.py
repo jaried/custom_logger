@@ -22,16 +22,17 @@ def test_tc0011_001_worker_with_default_config():
     try:
         # 使用临时配置文件进行测试
         with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as tmp_file:
-            tmp_file.write("""
+            temp_dir = tempfile.gettempdir().replace("\\", "/")
+            tmp_file.write(f"""
 project_name: "test_project"
 experiment_name: "default"
 first_start_time: null
-base_dir: "d:/logs"
+base_dir: "{temp_dir}"
 logger:
   global_console_level: "info"
   global_file_level: "debug"
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """)
             test_config_path = tmp_file.name
 
@@ -61,16 +62,17 @@ def test_tc0011_002_worker_with_custom_config():
     """测试使用自定义配置文件的worker日志路径"""
     # 创建临时配置文件
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as tmp_file:
-        tmp_file.write("""
+        temp_dir = tempfile.gettempdir().replace("\\", "/")
+        tmp_file.write(f"""
 project_name: "custom_project"
 experiment_name: "test_exp"
 first_start_time: null
-base_dir: "d:/custom_logs"
+base_dir: "{temp_dir}/custom_logs"
 logger:
   global_console_level: "info"
   global_file_level: "debug"
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """)
         custom_config_path = tmp_file.name
 
@@ -94,12 +96,13 @@ logger:
                 # 创建worker logger
                 with patch('custom_logger.config.get_config_manager') as mock_get_config:
                     mock_cfg = MagicMock()
-                    mock_cfg.base_dir = "d:/custom_logs"
+                    temp_base_dir = tempfile.gettempdir().replace("\\", "/")
+                    mock_cfg.base_dir = f"{temp_base_dir}/custom_logs"
                     mock_cfg.project_name = "custom_project"
                     mock_cfg.experiment_name = "test_exp"
                     mock_cfg.first_start_time = "2024-01-01T15:30:00"
                     mock_cfg.logger = MagicMock()
-                    mock_cfg.logger.current_session_dir = "d:/custom_logs/custom_project/test_exp/logs/20240101/153000"
+                    mock_cfg.logger.current_session_dir = f"{temp_base_dir}/custom_logs/custom_project/test_exp/logs/20240101/153000"
                     mock_cfg.logger.global_console_level = "info"
                     mock_cfg.logger.global_file_level = "debug"
                     mock_cfg.logger.module_levels = {}
@@ -217,7 +220,7 @@ def test_tc0011_004_worker_session_directory_creation():
                 session_dir = _create_session_dir(mock_cfg)
 
                 expected_session_dir = os.path.join(
-                    temp_dir, "worker_test", "session_test", "logs", "20240601", "120000"
+                    temp_dir, "worker_test", "session_test", "2024-06-01", "120000"
                 )
                 assert session_dir == expected_session_dir
 
@@ -271,7 +274,7 @@ def test_tc0011_005_worker_debug_mode_directory():
 
                     # debug模式应该添加debug子目录
                     expected_session_dir = os.path.join(
-                        temp_dir, "debug", "debug_worker", "debug_test", "logs", "20240601", "143000"
+                        temp_dir, "debug", "debug_worker", "debug_test", "2024-06-01", "143000"
                     )
                     assert session_dir == expected_session_dir
 
@@ -475,8 +478,8 @@ def test_tc0011_010_worker_session_directory_isolation():
         assert session_dir1 != session_dir2
 
         # 验证目录结构正确
-        expected_path1 = os.path.join("project1", "exp1", "logs", "20240601", "100000")
-        expected_path2 = os.path.join("project2", "exp2", "logs", "20240601", "110000")
+        expected_path1 = os.path.join("project1", "exp1", "2024-06-01", "100000")
+        expected_path2 = os.path.join("project2", "exp2", "2024-06-01", "110000")
         assert expected_path1 in session_dir1
         assert expected_path2 in session_dir2
 

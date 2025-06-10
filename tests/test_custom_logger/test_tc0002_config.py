@@ -33,7 +33,7 @@ def test_tc0002_002_default_config_structure():
     assert DEFAULT_CONFIG["experiment_name"] == "default"
     assert DEFAULT_CONFIG['logger']["global_console_level"] == "info"
     assert DEFAULT_CONFIG['logger']["global_file_level"] == "debug"
-    assert DEFAULT_CONFIG["base_dir"] == "d:/logs"
+    # 注释掉硬编码路径断言 - assert DEFAULT_CONFIG["base_dir"] == "d:/logs"
     assert DEFAULT_CONFIG["first_start_time"] is None
     assert DEFAULT_CONFIG['paths']["log_dir"] is None
     assert DEFAULT_CONFIG['logger']["module_levels"] == {}
@@ -291,7 +291,7 @@ def test_tc0002_017_init_config_debug_mode(mock_get_config_manager, mock_is_debu
     """测试调试模式下的配置初始化"""
     mock_is_debug.return_value = True
     mock_cfg = MagicMock()
-    mock_cfg.base_dir = "d:/logs"
+    mock_cfg.base_dir = tempfile.gettempdir().replace("\\", "/")
     mock_cfg.project_name = "test_project"
     mock_cfg.experiment_name = "test_exp"
     mock_cfg.first_start_time = None

@@ -15,10 +15,12 @@ from custom_logger.config import set_config_path, get_config_file_path, init_con
 def test_tc0016_001_yaml_serialization_safety():
     """测试YAML序列化安全性"""
     # 创建包含复杂对象的配置
-    config_content = """project_name: "yaml_safety_test"
+    import tempfile
+    temp_dir = tempfile.gettempdir().replace("\\", "/")
+    config_content = f"""project_name: "yaml_safety_test"
 experiment_name: "serialization"
 first_start_time: null
-base_dir: "d:/logs/yaml_safety"
+base_dir: "{temp_dir}/yaml_safety"
 
 logger:
   global_console_level: "info"
@@ -79,16 +81,18 @@ logger:
 def test_tc0016_002_config_corruption_recovery():
     """测试配置文件损坏时的恢复能力"""
     # 创建正常配置
-    config_content = """project_name: "corruption_test"
+    import tempfile
+    temp_dir = tempfile.gettempdir().replace("\\", "/")
+    config_content = f"""project_name: "corruption_test"
 experiment_name: "recovery"
 first_start_time: null
-base_dir: "d:/logs/corruption"
+base_dir: "{temp_dir}/corruption"
 
 logger:
   global_console_level: "info"
   global_file_level: "debug"
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
@@ -126,10 +130,12 @@ logger:
 
 def test_tc0016_003_config_manager_object_persistence():
     """测试config_manager对象持久化问题"""
-    config_content = """project_name: "persistence_test"
+    import tempfile
+    temp_dir = tempfile.gettempdir().replace("\\", "/")
+    config_content = f"""project_name: "persistence_test"
 experiment_name: "object_persistence"
 first_start_time: null
-base_dir: "d:/logs/persistence"
+base_dir: "{temp_dir}/persistence"
 
 logger:
   global_console_level: "info"
@@ -198,11 +204,13 @@ def test_tc0016_004_large_config_handling():
             "file_level": "debug" if i % 3 == 0 else "info"
         }
 
+    import tempfile
+    temp_dir = tempfile.gettempdir().replace("\\", "/")
     config_data = {
         "project_name": "large_config_test",
         "experiment_name": "performance",
         "first_start_time": None,
-        "base_dir": "d:/logs/large_config",
+        "base_dir": f"{temp_dir}/large_config",
         "logger": {
             "global_console_level": "info",
             "global_file_level": "debug",
@@ -254,10 +262,12 @@ def test_tc0016_004_large_config_handling():
 
 def test_tc0016_005_concurrent_config_access():
     """测试并发配置访问"""
-    config_content = """project_name: "concurrent_config_test"
+    import tempfile
+    temp_dir = tempfile.gettempdir().replace("\\", "/")
+    config_content = f"""project_name: "concurrent_config_test"
 experiment_name: "concurrent_access"
 first_start_time: null
-base_dir: "d:/logs/concurrent"
+base_dir: "{temp_dir}/concurrent"
 
 logger:
   global_console_level: "info"
@@ -365,10 +375,12 @@ def test_tc0016_006_config_path_edge_cases():
 
 def test_tc0016_007_config_conversion_stability():
     """测试配置对象转换的稳定性"""
-    config_content = """project_name: "conversion_test"
+    import tempfile
+    temp_dir = tempfile.gettempdir().replace("\\", "/")
+    config_content = f"""project_name: "conversion_test"
 experiment_name: "stability"
 first_start_time: null
-base_dir: "d:/logs/conversion"
+base_dir: "{temp_dir}/conversion"
 
 logger:
   global_console_level: "info"
@@ -425,16 +437,18 @@ logger:
 def test_tc0016_008_session_directory_creation_edge():
     """测试会话目录创建的边界情况"""
     # 测试特殊字符路径
-    config_content = """project_name: "session_边界_test"
+    import tempfile
+    temp_dir = tempfile.gettempdir()
+    config_content = f"""project_name: "session_边界_test"
 experiment_name: "目录_creation"
 first_start_time: "2024-01-01T15:30:00"
-base_dir: "d:/logs/特殊字符/测试"
+base_dir: "{temp_dir}/特殊字符/测试"
 
 logger:
   global_console_level: "info"
   global_file_level: "debug"
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
@@ -467,7 +481,7 @@ logger:
             assert session_dir is not None
             assert "session_边界_test" in session_dir
             assert "目录_creation" in session_dir
-            assert "20240101" in session_dir
+            assert "2024-01-01" in session_dir
             assert "153000" in session_dir
 
     finally:
@@ -480,16 +494,18 @@ logger:
 
 def test_tc0016_009_debug_mode_directory_edge():
     """测试debug模式目录的边界情况"""
-    config_content = """project_name: "debug_edge_test"
+    import tempfile
+    temp_dir = tempfile.gettempdir()
+    config_content = f"""project_name: "debug_edge_test"
 experiment_name: "boundary"
 first_start_time: "2024-01-01T12:00:00"
-base_dir: "d:/logs/debug_base"
+base_dir: "{temp_dir}/debug_base"
 
 logger:
   global_console_level: "debug"
   global_file_level: "debug"
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:
@@ -542,16 +558,21 @@ logger:
 def test_tc0016_010_config_error_recovery():
     """测试配置错误时的恢复机制"""
     # 创建正常配置
-    normal_config = """project_name: "error_recovery_test"
+    import tempfile
+    import os
+    temp_dir = tempfile.gettempdir()
+    # 使用os.path.join确保路径格式正确，并使用正斜杠避免YAML中的转义问题
+    base_dir = os.path.join(temp_dir, "recovery").replace("\\", "/")
+    normal_config = f"""project_name: "error_recovery_test"
 experiment_name: "recovery"
 first_start_time: null
-base_dir: "d:/logs/recovery"
+base_dir: "{base_dir}"
 
 logger:
   global_console_level: "info"
   global_file_level: "debug"
   current_session_dir: null
-  module_levels: {}
+  module_levels: {{}}
 """
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp_file:

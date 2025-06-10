@@ -177,10 +177,10 @@
 ```
 日志文件路径:
 {base_dir}/
-└── {project_name}/
-    └── {experiment_name}/
-        └── logs/
-            └── {YYYYMMDD}/
+└── {debug}/ (debug模式时)
+    └── {project_name}/
+        └── {experiment_name}/
+            └── {YYYY-MM-DD}/
                 └── {HHMMSS}/
                     ├── full.log (完整日志)
                     └── error.log (错误日志)
@@ -412,18 +412,92 @@
 - 长时间运行稳定性测试
 - 资源使用情况测试
 
-### 10.2 测试覆盖
+### 10.2 测试环境隔离设计
 
-#### 10.2.1 功能覆盖
+#### 10.2.1 路径隔离方案
+```python
+# 标准测试路径配置方案
+import tempfile
+import os
+
+def setup_test_environment():
+    """设置测试环境的标准化路径配置"""
+    temp_dir = tempfile.gettempdir()
+    test_base_dir = os.path.join(temp_dir, "custom_logger_tests")
+    return test_base_dir
+
+# 在所有测试中统一使用
+base_dir = setup_test_environment()
+```
+
+#### 10.2.2 Mock配置设计模式
+- **具体值原则**: 所有Mock对象的关键属性必须设置为具体的字符串值
+- **路径一致性**: Mock配置生成的路径必须与实际`_create_log_dir`函数的输出格式一致
+- **属性完整性**: Mock配置必须包含`base_dir`、`experiment_name`、`first_start_time`、`logger`、`paths`等必要属性
+
+#### 10.2.3 路径格式标准化设计
+- **实际格式**: `{base_dir}/{project_name}/{experiment_name}/{YYYY-MM-DD}/{HHMMSS}`
+- **日期处理**: 使用`strftime("%Y-%m-%d")`生成日期部分
+- **时间处理**: 使用`strftime("%H%M%S")`生成时间部分
+- **调试模式**: 在`is_debug()`为True时，在base_dir后添加"debug"目录
+
+### 10.3 测试配置管理设计
+
+#### 10.3.1 Mock配置创建标准化
+```python
+def create_mock_config(project_name="test_project", 
+                      experiment_name="test_experiment",
+                      base_dir=None):
+    """创建标准化的Mock配置对象"""
+    if base_dir is None:
+        base_dir = tempfile.gettempdir()
+    
+    mock_cfg = MagicMock()
+    mock_cfg.base_dir = base_dir
+    mock_cfg.project_name = project_name
+    mock_cfg.experiment_name = experiment_name
+    mock_cfg.first_start_time = "2024-01-01T12:00:00"
+    mock_cfg.logger = {
+        "global_console_level": "info",
+        "global_file_level": "debug",
+        "current_session_dir": None,
+        "module_levels": {}
+    }
+    mock_cfg.paths = {"log_dir": base_dir}
+    return mock_cfg
+```
+
+#### 10.3.2 测试期望值计算
+```python
+def calculate_expected_path(base_dir, project_name, experiment_name, 
+                           first_start_time, is_debug=False):
+    """计算期望的路径，与实际实现保持一致"""
+    from datetime import datetime
+    
+    if is_debug:
+        base_dir = os.path.join(base_dir, "debug")
+    
+    start_time = datetime.fromisoformat(first_start_time)
+    date_str = start_time.strftime("%Y-%m-%d")
+    time_str = start_time.strftime("%H%M%S")
+    
+    return os.path.join(base_dir, project_name, experiment_name, date_str, time_str)
+```
+
+### 10.4 测试覆盖
+
+#### 10.4.1 功能覆盖
 - 所有公开接口的测试覆盖
 - 所有配置选项的测试覆盖
 - 所有异常路径的测试覆盖
+- **路径格式一致性测试**: 确保测试期望与实际实现路径格式完全一致
 
-#### 10.2.2 场景覆盖
+#### 10.4.2 场景覆盖
 - 单线程应用场景
 - 多线程应用场景
 - 多进程应用场景
 - 高并发场景
+- **Mock配置场景**: 覆盖各种Mock配置组合和边界情况
 
 ---
 
@@ -435,5 +509,6 @@
 **维护者**: 开发团队  
 
 ### 更新记录
+- v1.2 (2025-06-06): 新增测试环境隔离设计和Mock配置标准化方案
 - v1.1 (2025-06-06): 新增多进程配置管理和config_manager集成优化的概要设计
 - v1.0 (2025-06-06): 初始版本，包含系统整体概要设计 
