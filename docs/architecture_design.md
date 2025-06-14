@@ -112,11 +112,12 @@ graph TD
 
 #### 3.2.1 manager.py
 ```python
-# 核心接口
-def init_custom_logger_system(
-    config_path: Optional[str] = None,
-    first_start_time: Optional[datetime] = None,
-    config_object: Optional[Any] = None
+# 核心接口（新API）
+def init_custom_logger_system(config_object: Any) -> None
+
+def init_custom_logger_system_for_worker(
+    serializable_config_object: Any,
+    worker_id: str = None
 ) -> None
 
 def get_logger(
@@ -130,29 +131,34 @@ def tear_down_custom_logger_system() -> None
 
 **设计要点**:
 - 单例模式管理全局状态
-- 支持多种初始化方式
+- 只接收config对象，不再支持config_path和first_start_time参数
+- 严格的配置对象验证（必须包含paths.log_dir和first_start_time）
+- get_logger名字长度限制为8个字符
+- 支持队列模式用于多进程环境
+- 优先检查`config.logger.enable_queue_mode`参数控制队列模式
+- 向后兼容：没有`enable_queue_mode`时根据`queue_info.log_queue`自动判断
 - 自动清理资源
 
 #### 3.2.2 config.py
 ```python
-# 核心配置处理
-def init_config(
-    config_path: Optional[str] = None,
-    first_start_time: Optional[datetime] = None,
-    config_object: Optional[Any] = None
-) -> None
+# 核心配置处理（新API）
+def init_config_from_object(config_object: Any) -> None
 
-def _init_from_config_object(
-    config_object: Any,
-    first_start_time: Optional[datetime] = None
-) -> None
+def get_console_level(module_name: str) -> int
+
+def get_file_level(module_name: str) -> int
+
+def get_config() -> Any
 ```
 
 **设计要点**:
-- 配置优先级管理
-- 冲突检测和解决
-- 日志目录自动创建（从paths.log_dir管理）
-- 集成is_debug模块进行调试模式检测
+- 直接使用传入的config对象，不再调用config_manager
+- 严格的配置对象验证（paths.log_dir、first_start_time必须存在）
+- **配置属性自动补充**：自动检查并补充缺失的logger属性，确保config对象完整性
+- 支持字典和对象两种paths格式
+- 日志目录自动创建（从config.paths.log_dir管理）
+- 支持队列信息传递给worker进程
+- 优雅处理只读config对象，无法设置属性时不抛出异常
 
 #### 3.2.3 logger.py
 ```python

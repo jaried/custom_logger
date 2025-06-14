@@ -369,6 +369,141 @@ class TestNewAPIRequirements:
         logger = get_logger("test")
         assert logger is not None
 
+    def test_config_attributes_auto_supplement(self):
+        """测试config属性自动补充功能"""
+        # 创建一个缺少logger属性的config对象
+        config = Mock()
+        config.first_start_time = datetime.now()
+        config.paths = Mock()
+        config.paths.log_dir = self.log_dir
+        # 确保没有logger属性
+        if hasattr(config, 'logger'):
+            delattr(config, 'logger')
+        
+        # 验证初始化前没有logger属性
+        assert not hasattr(config, 'logger')
+        
+        # 初始化系统
+        init_custom_logger_system(config)
+        
+        # 验证logger属性被自动添加
+        assert hasattr(config, 'logger')
+        assert config.logger is not None
+        
+        # 验证logger的各个子属性都被正确设置
+        assert hasattr(config.logger, 'global_console_level')
+        assert config.logger.global_console_level == "info"
+        
+        assert hasattr(config.logger, 'global_file_level')
+        assert config.logger.global_file_level == "debug"
+        
+        assert hasattr(config.logger, 'module_levels')
+        assert config.logger.module_levels == {}
+        
+        assert hasattr(config.logger, 'show_call_chain')
+        assert config.logger.show_call_chain == True
+        
+        assert hasattr(config.logger, 'show_debug_call_stack')
+        assert config.logger.show_debug_call_stack == False
+        
+        assert hasattr(config.logger, 'enable_queue_mode')
+        assert config.logger.enable_queue_mode == False
+
+    def test_config_partial_logger_attributes_supplement(self):
+        """测试config部分logger属性自动补充功能"""
+        # 创建一个有logger但缺少部分属性的config对象
+        config = Mock()
+        config.first_start_time = datetime.now()
+        config.paths = Mock()
+        config.paths.log_dir = self.log_dir
+        
+        # 创建一个不完整的logger对象，明确设置一些属性，删除其他属性
+        config.logger = Mock()
+        config.logger.global_console_level = "warning"  # 已有属性
+        config.logger.global_file_level = "error"  # 已有属性
+        # 删除其他属性，确保它们不存在
+        if hasattr(config.logger, 'module_levels'):
+            delattr(config.logger, 'module_levels')
+        if hasattr(config.logger, 'show_call_chain'):
+            delattr(config.logger, 'show_call_chain')
+        if hasattr(config.logger, 'show_debug_call_stack'):
+            delattr(config.logger, 'show_debug_call_stack')
+        if hasattr(config.logger, 'enable_queue_mode'):
+            delattr(config.logger, 'enable_queue_mode')
+        
+        # 初始化系统
+        init_custom_logger_system(config)
+        
+        # 验证已有属性保持不变
+        assert config.logger.global_console_level == "warning"
+        assert config.logger.global_file_level == "error"
+        
+        # 验证缺失的属性被自动补充
+        assert hasattr(config.logger, 'module_levels')
+        assert config.logger.module_levels == {}
+        
+        assert hasattr(config.logger, 'show_call_chain')
+        assert config.logger.show_call_chain == True
+        
+        assert hasattr(config.logger, 'show_debug_call_stack')
+        assert config.logger.show_debug_call_stack == False
+        
+        assert hasattr(config.logger, 'enable_queue_mode')
+        assert config.logger.enable_queue_mode == False
+
+    def test_config_none_attributes_supplement(self):
+        """测试config中None值属性的自动补充功能"""
+        # 创建一个有logger但属性值为None的config对象
+        config = Mock()
+        config.first_start_time = datetime.now()
+        config.paths = Mock()
+        config.paths.log_dir = self.log_dir
+        
+        # 创建一个属性值为None的logger对象
+        config.logger = Mock()
+        config.logger.global_console_level = None
+        config.logger.global_file_level = None
+        config.logger.module_levels = None
+        config.logger.show_call_chain = None
+        config.logger.show_debug_call_stack = None
+        config.logger.enable_queue_mode = None
+        
+        # 初始化系统
+        init_custom_logger_system(config)
+        
+        # 验证None值属性被自动补充为默认值
+        assert config.logger.global_console_level == "info"
+        assert config.logger.global_file_level == "debug"
+        assert config.logger.module_levels == {}
+        assert config.logger.show_call_chain == True
+        assert config.logger.show_debug_call_stack == False
+        assert config.logger.enable_queue_mode == False
+
+    def test_config_readonly_object_attributes_supplement(self):
+        """测试只读config对象的属性补充处理"""
+        # 创建一个模拟的只读对象
+        class ReadOnlyConfig:
+            def __init__(self, log_dir):
+                self.first_start_time = datetime.now()
+                self.paths = Mock()
+                self.paths.log_dir = log_dir
+            
+            def __setattr__(self, name, value):
+                if name in ['first_start_time', 'paths']:
+                    super().__setattr__(name, value)
+                else:
+                    raise AttributeError(f"Cannot set attribute '{name}' on readonly object")
+        
+        config = ReadOnlyConfig(self.log_dir)
+        
+        # 初始化系统应该不会因为无法设置属性而失败
+        init_custom_logger_system(config)
+        assert is_initialized() == True
+        
+        # 应该能够获取logger（使用默认配置）
+        logger = get_logger("test")
+        assert logger is not None
+
     def test_invalid_log_directory_creation(self):
         """测试无效日志目录创建的错误处理"""
         config = Mock()

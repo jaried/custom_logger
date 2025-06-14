@@ -216,13 +216,12 @@ init_custom_logger_system_with_params(
 **异常：**
 - `RuntimeError`: 如果日志系统未初始化
 
-### `init_custom_logger_system_from_serializable_config(serializable_config, first_start_time=None)`
+### `init_custom_logger_system_for_worker(serializable_config)`
 
 从序列化配置对象初始化自定义日志系统，专门用于worker进程。
 
 **参数：**
-- `serializable_config`: 序列化的配置对象
-- `first_start_time`: 首次启动时间（可选）
+- `serializable_config`: 序列化的配置对象（必需）
 
 ## 优势对比
 

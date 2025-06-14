@@ -126,11 +126,38 @@ get_logger(name: str, console_level: Optional[str] = None,
           file_level: Optional[str] = None) -> CustomLogger
 ```
 
+**API变更说明**：
+1. `init_custom_logger_system`不再接收`config_path`和`first_start_time`参数，只接收`config_object`
+2. 所有配置信息（包括`first_start_time`、日志级别等）必须通过`config_object`提供
+3. `get_logger`名字长度限制为8个字符，超过会抛出`ValueError`异常
+4. Worker进程使用专门的`init_custom_logger_system_for_worker`函数
+5. 支持队列模式用于多进程日志处理
+
 **配置对象要求**：
 - 必须包含`paths.log_dir`属性（字符串路径）
 - 必须包含`first_start_time`属性（datetime对象或ISO字符串）
 - 可选包含`logger`配置对象
 - 可选包含`queue_info.log_queue`用于多进程队列模式
+- 可选在`logger`配置中包含`enable_queue_mode`布尔参数来显式控制队列模式
+
+**配置属性自动补充**：
+- 如果config对象缺少`logger`属性，系统会自动创建并设置默认值
+- 如果`logger`对象缺少必要的子属性，系统会自动补充默认值
+- 自动补充的属性包括：
+  - `global_console_level`: "info"
+  - `global_file_level`: "debug"
+  - `module_levels`: {}
+  - `show_call_chain`: True
+  - `show_debug_call_stack`: False
+  - `enable_queue_mode`: False
+- 对于只读config对象，系统会优雅处理无法设置属性的情况，不会抛出异常
+- 属性补充确保下次使用时config对象包含完整的logger配置信息
+
+**队列模式控制**：
+- 优先检查`config.logger.enable_queue_mode`参数
+- 如果`enable_queue_mode=True`，则必须提供`queue_info.log_queue`
+- 如果`enable_queue_mode=False`，则不启用队列模式（但仍会检查`queue_info`以保持向后兼容）
+- 如果没有`enable_queue_mode`参数，则根据是否存在`queue_info.log_queue`自动判断（向后兼容）
 
 ### 2.3 YAML处理库选择
 

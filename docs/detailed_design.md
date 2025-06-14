@@ -83,6 +83,13 @@
 - 配置预读机制：防止config_manager覆盖原始配置
 - 智能冲突检测：相同值不冲突，不同值抛错
 - 多进程配置隔离：确保子进程正确加载配置
+- **配置属性自动补充**：
+  - 自动检查config对象是否包含完整的logger配置属性
+  - 缺少logger属性时自动创建并设置默认值
+  - 缺少logger子属性时自动补充默认值
+  - 支持的自动补充属性：global_console_level、global_file_level、module_levels、show_call_chain、show_debug_call_stack、enable_queue_mode
+  - 优雅处理只读config对象，无法设置属性时不抛出异常
+  - 确保下次使用时config对象包含完整配置信息
 
 #### 2.2.3 Logger模块（日志记录器）
 **职责**:
@@ -197,7 +204,48 @@
 
 ### 4.1 系统管理接口
 
-#### 4.1.1 系统初始化接口
+#### 4.1.1 系统初始化接口（新API）
+
+**主程序初始化**:
+```python
+def init_custom_logger_system(config_object: Any) -> None:
+    """
+    初始化自定义日志系统（主程序模式）
+    
+    Args:
+        config_object: 配置对象（必须），主程序传递config_manager的config对象
+                      必须包含paths.log_dir和first_start_time属性
+                      如果包含queue_info.log_queue，则启用队列模式
+    
+    Raises:
+        ValueError: 如果config_object为None或缺少必要属性
+    """
+```
+
+**Worker进程初始化**:
+```python
+def init_custom_logger_system_for_worker(
+    serializable_config_object: Any,
+    worker_id: str = None
+) -> None:
+    """
+    为worker进程初始化自定义日志系统
+    
+    Args:
+        serializable_config_object: 序列化的配置对象，包含paths.log_dir、
+                                   first_start_time、以及队列信息等
+        worker_id: worker进程ID，用于标识日志来源
+    
+    Raises:
+        ValueError: 如果serializable_config_object为None或缺少必要属性
+    """
+```
+
+**API变更说明**:
+1. 不再接收`config_path`和`first_start_time`参数
+2. 所有配置信息必须通过`config_object`提供
+3. Worker进程使用专门的初始化函数
+4. 支持队列模式用于多进程日志处理
 **接口名称**: `init_custom_logger_system`
 **功能描述**: 初始化整个日志系统
 **输入参数**:
@@ -211,11 +259,16 @@
 **接口名称**: `get_logger`
 **功能描述**: 获取logger实例
 **输入参数**:
-- `name`: logger名称（必须，8字符以内）
-- `console_level`: 控制台级别（可选）
-- `file_level`: 文件级别（可选）
+- `name`: logger名称（必须，严格限制8字符以内）
+- `console_level`: 控制台级别（可选，已废弃，保留用于兼容性）
+- `file_level`: 文件级别（可选，已废弃，保留用于兼容性）
 **输出**: CustomLogger实例
-**异常**: 系统未初始化时抛出异常
+**异常**: 
+- 系统未初始化时抛出RuntimeError
+- 名称超过8个字符时抛出ValueError
+**新增验证**:
+- 严格的名称长度检查，超过8个字符直接抛出异常
+- 提示信息明确指出字符数限制
 
 #### 4.1.3 系统清理接口
 **接口名称**: `tear_down_custom_logger_system`

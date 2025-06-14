@@ -15,16 +15,13 @@ _initialized = False
 _queue_mode = False  # 标记是否为队列模式
 
 
-def init_custom_logger_system(
-    config_object: Any
-) -> None:
+def init_custom_logger_system(config_object: Any) -> None:
     """初始化自定义日志系统（主程序模式）
 
     Args:
         config_object: 配置对象（必须），主程序传递config_manager的config对象或序列化的config对象
                       必须包含paths.log_dir和first_start_time属性
                       如果包含queue_info.log_queue，则启用队列模式
-                      不再支持first_start_time参数，必须使用config.first_start_time
     
     Raises:
         ValueError: 如果config_object为None或缺少必要属性
@@ -59,27 +56,58 @@ def init_custom_logger_system(
         init_config_from_object(config_object)
 
         # 检查是否启用队列模式
-        queue_info = getattr(config_object, 'queue_info', None)
-        if queue_info is not None:
-            log_queue = None
-            if isinstance(queue_info, dict):
-                log_queue = queue_info.get('log_queue')
+        # 优先检查config.logger.enable_queue_mode参数
+        enable_queue_mode = False
+        logger_config = getattr(config_object, 'logger', None)
+        if logger_config is not None:
+            if isinstance(logger_config, dict):
+                enable_queue_mode = logger_config.get('enable_queue_mode', False)
             else:
-                log_queue = getattr(queue_info, 'log_queue', None)
-            
-            if log_queue is not None:
-                # 启用队列模式：主程序作为日志接收器
-                init_queue_receiver(log_queue, log_dir)
-                _queue_mode = True
-                print(f"主程序启用队列模式，日志接收器已初始化")
+                enable_queue_mode = getattr(logger_config, 'enable_queue_mode', False)
+        
+        # 如果配置中明确指定了enable_queue_mode，则使用该配置
+        if enable_queue_mode:
+            # 检查是否有队列信息
+            queue_info = getattr(config_object, 'queue_info', None)
+            if queue_info is not None:
+                log_queue = None
+                if isinstance(queue_info, dict):
+                    log_queue = queue_info.get('log_queue')
+                else:
+                    log_queue = getattr(queue_info, 'log_queue', None)
+                
+                if log_queue is not None:
+                    # 启用队列模式：主程序作为日志接收器
+                    init_queue_receiver(log_queue, log_dir)
+                    _queue_mode = True
+                    print(f"主程序启用队列模式（配置启用），日志接收器已初始化")
+                else:
+                    raise ValueError("配置启用队列模式但未提供queue_info.log_queue")
+            else:
+                raise ValueError("配置启用队列模式但未提供queue_info")
+        else:
+            # 如果配置中没有enable_queue_mode或为False，则检查是否有队列信息（向后兼容）
+            queue_info = getattr(config_object, 'queue_info', None)
+            if queue_info is not None:
+                log_queue = None
+                if isinstance(queue_info, dict):
+                    log_queue = queue_info.get('log_queue')
+                else:
+                    log_queue = getattr(queue_info, 'log_queue', None)
+                
+                if log_queue is not None:
+                    # 启用队列模式：主程序作为日志接收器（向后兼容）
+                    init_queue_receiver(log_queue, log_dir)
+                    _queue_mode = True
+                    print(f"主程序启用队列模式（自动检测），日志接收器已初始化")
+                else:
+                    # 普通模式：使用异步写入器
+                    init_writer()
+                    _queue_mode = False
             else:
                 # 普通模式：使用异步写入器
                 init_writer()
                 _queue_mode = False
-        else:
-            # 普通模式：使用异步写入器
-            init_writer()
-            _queue_mode = False
 
         # 注册退出时清理
         atexit.register(tear_down_custom_logger_system)
@@ -150,30 +178,61 @@ def init_custom_logger_system_for_worker(
         # 直接使用传入的序列化config对象，不再调用config_manager
         init_config_from_object(serializable_config_object)
 
-        # 检查队列信息
-        queue_info = getattr(serializable_config_object, 'queue_info', None)
-        if queue_info is not None:
-            log_queue = None
-            if isinstance(queue_info, dict):
-                log_queue = queue_info.get('log_queue')
+        # 检查是否启用队列模式
+        # 优先检查config.logger.enable_queue_mode参数
+        enable_queue_mode = False
+        logger_config = getattr(serializable_config_object, 'logger', None)
+        if logger_config is not None:
+            if isinstance(logger_config, dict):
+                enable_queue_mode = logger_config.get('enable_queue_mode', False)
             else:
-                log_queue = getattr(queue_info, 'log_queue', None)
-            
-            if log_queue is not None:
-                # Worker模式：初始化队列发送器
-                init_queue_sender(log_queue, worker_id)
-                _queue_mode = True
-                print(f"Worker {worker_id}: 启用队列模式，日志发送器已初始化")
+                enable_queue_mode = getattr(logger_config, 'enable_queue_mode', False)
+        
+        # 如果配置中明确指定了enable_queue_mode，则使用该配置
+        if enable_queue_mode:
+            # 检查队列信息
+            queue_info = getattr(serializable_config_object, 'queue_info', None)
+            if queue_info is not None:
+                log_queue = None
+                if isinstance(queue_info, dict):
+                    log_queue = queue_info.get('log_queue')
+                else:
+                    log_queue = getattr(queue_info, 'log_queue', None)
+                
+                if log_queue is not None:
+                    # Worker模式：初始化队列发送器
+                    init_queue_sender(log_queue, worker_id)
+                    _queue_mode = True
+                    print(f"Worker {worker_id}: 启用队列模式（配置启用），日志发送器已初始化")
+                else:
+                    raise ValueError("配置启用队列模式但未提供queue_info.log_queue")
             else:
-                # 如果没有队列，使用普通异步写入器
+                raise ValueError("配置启用队列模式但未提供queue_info")
+        else:
+            # 如果配置中没有enable_queue_mode或为False，则检查是否有队列信息（向后兼容）
+            queue_info = getattr(serializable_config_object, 'queue_info', None)
+            if queue_info is not None:
+                log_queue = None
+                if isinstance(queue_info, dict):
+                    log_queue = queue_info.get('log_queue')
+                else:
+                    log_queue = getattr(queue_info, 'log_queue', None)
+                
+                if log_queue is not None:
+                    # Worker模式：初始化队列发送器（向后兼容）
+                    init_queue_sender(log_queue, worker_id)
+                    _queue_mode = True
+                    print(f"Worker {worker_id}: 启用队列模式（自动检测），日志发送器已初始化")
+                else:
+                    # 如果没有队列，使用普通异步写入器
+                    init_writer()
+                    _queue_mode = False
+                    print(f"Worker {worker_id}: 使用普通写入模式")
+            else:
+                # 如果没有队列信息，使用普通异步写入器
                 init_writer()
                 _queue_mode = False
                 print(f"Worker {worker_id}: 使用普通写入模式")
-        else:
-            # 如果没有队列信息，使用普通异步写入器
-            init_writer()
-            _queue_mode = False
-            print(f"Worker {worker_id}: 使用普通写入模式")
 
         # 注册退出时清理
         atexit.register(tear_down_custom_logger_system)
@@ -212,14 +271,12 @@ def get_logger(
         RuntimeError: 如果日志系统未初始化
         ValueError: 如果name超过8个字符
     """
+    if len(name) > 8:
+        raise ValueError(f"日志记录器名称不能超过8个字符，当前长度: {len(name)}")
     global _initialized
 
     if not _initialized:
         raise RuntimeError("日志系统未初始化，请先调用 init_custom_logger_system() 或 init_custom_logger_system_for_worker()")
-
-    if len(name) > 8:
-        raise ValueError(f"日志记录器名称不能超过8个字符，当前长度: {len(name)}")
-
     # 获取配置
     config = get_config()
 

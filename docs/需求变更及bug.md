@@ -109,6 +109,76 @@ yaml.dump(data, file)
 
 ---
 
+### 变更003 - 新API需求实现 (2025-06-14)
+
+**变更类型**: 重大功能变更  
+**优先级**: 高  
+**状态**: 已完成  
+
+#### 变更描述
+实现新的API需求，完全重构初始化接口，移除对config_manager的依赖，增强Worker支持和严格验证。
+
+#### 具体需求
+1. **API简化**: `init_custom_logger_system`只接收`config_object`参数，不再支持`config_path`和`first_start_time`参数
+2. **配置解耦**: custom_logger不再调用config_manager，直接使用传入的config对象
+3. **Worker专用API**: 新增`init_custom_logger_system_for_worker`专门用于worker进程初始化
+4. **严格验证**: `get_logger`名字长度严格限制为8个字符，超过直接抛出异常
+5. **队列支持**: 支持多进程队列模式，主程序负责文件写入，worker负责日志生成
+6. **时间精确**: 使用config.first_start_time确保worker时间计算正确
+
+#### 技术要点
+- 移除所有旧的初始化参数支持
+- 严格的配置对象验证（必须包含paths.log_dir和first_start_time）
+- 支持字典和对象两种paths格式
+- 队列信息传递给worker进程
+- 完整的测试用例覆盖
+
+#### 实现细节
+```python
+# 新的主程序API
+init_custom_logger_system(config_object: Any) -> None
+
+# 新的Worker API
+init_custom_logger_system_for_worker(
+    serializable_config_object: Any,
+    worker_id: str = None
+) -> None
+
+# 严格的名字长度验证
+def get_logger(name: str) -> CustomLogger:
+    if len(name) > 8:
+        raise ValueError(f"日志记录器名称不能超过8个字符，当前长度: {len(name)}")
+```
+
+#### 影响范围
+- `src/custom_logger/manager.py`: 完全重构初始化函数
+- `src/custom_logger/config.py`: 新增`init_config_from_object`函数
+- `tests/01_unit_tests/test_tc0017_new_api_requirements.py`: 新增全面测试用例
+- `tests/01_unit_tests/test_tc0016_new_api_comprehensive.py`: 删除重复测试文件
+- 所有文档更新：需求、架构设计、概要设计、详细设计
+
+#### 测试覆盖
+- 21个测试用例，覆盖所有新API功能
+- 配置对象验证测试（缺少必要属性）
+- Worker初始化测试（普通模式和队列模式）
+- 名字长度验证测试（边界情况和异常情况）
+- 队列模式集成测试
+- 时间计算正确性测试
+
+#### 向后兼容性
+❌ 不兼容变更：
+- 旧的`init_custom_logger_system(config_path, first_start_time)`不再支持
+- 必须使用新的API接口
+- 需要更新所有调用代码
+
+#### 迁移指南
+1. 将`init_custom_logger_system(config_path, first_start_time)`改为`init_custom_logger_system(config_object)`
+2. 确保config_object包含必要的属性：paths.log_dir、first_start_time
+3. Worker进程使用`init_custom_logger_system_for_worker`
+4. 检查所有logger名字长度不超过8个字符
+
+---
+
 ## Bug记录
 
 ### Bug001 - 示例Bug记录格式
