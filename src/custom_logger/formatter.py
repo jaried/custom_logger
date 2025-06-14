@@ -215,9 +215,27 @@ def create_log_line(
     caller_module, line_number = get_caller_info()
     timestamp = current_time.strftime('%Y-%m-%d %H:%M:%S')
 
-    # 获取第一次启动时间
+    # 获取第一次启动时间并计算运行时长
     first_start_time = getattr(cfg, 'first_start_time', None)
-    elapsed_str = format_elapsed_time(first_start_time, current_time)
+    if first_start_time is not None:
+        # 如果first_start_time是datetime对象，直接计算时间差
+        try:
+            if isinstance(first_start_time, datetime):
+                elapsed = current_time - first_start_time
+                total_seconds = elapsed.total_seconds()
+                hours, remainder = divmod(int(total_seconds), 3_600)
+                minutes, seconds_int = divmod(remainder, 60)
+                fractional_seconds = total_seconds - (hours * 3_600 + minutes * 60)
+                elapsed_str = f"{hours}:{minutes:02d}:{fractional_seconds:05.2f}"
+            else:
+                # 如果是字符串格式，使用原有的format_elapsed_time函数
+                elapsed_str = format_elapsed_time(str(first_start_time), current_time)
+        except (TypeError, AttributeError):
+            # 如果类型检查失败，尝试字符串格式
+            elapsed_str = format_elapsed_time(str(first_start_time), current_time)
+    else:
+        elapsed_str = "0:00:00.00"
+    
     formatted_message = format_log_message(level_name, message, module_name, args, kwargs)
 
     # 组装日志行，新格式：[PID | 模块名 : 行号]，模块名8位左对齐，行号4位对齐，级别左对齐9字符

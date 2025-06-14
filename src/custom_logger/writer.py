@@ -112,19 +112,25 @@ def _writer_thread_func() -> None:
     try:
         from .config import get_root_config
         cfg = get_root_config()
-        # 从paths配置中获取日志目录
+        
+        # 优先从paths配置中获取日志目录
+        session_dir = None
+        
+        # 尝试从paths.log_dir获取
         paths_obj = getattr(cfg, 'paths', None)
         if paths_obj is not None:
             if isinstance(paths_obj, dict):
                 session_dir = paths_obj.get('log_dir', None)
             else:
                 session_dir = getattr(paths_obj, 'log_dir', None)
-        else:
-            session_dir = None
+        
+        # 如果paths.log_dir不存在，尝试直接从config.log_dir获取
+        if session_dir is None:
+            session_dir = getattr(cfg, 'log_dir', None)
 
         if session_dir is None:
             print("无法获取会话目录", file=sys.stderr)
-            return
+            raise Exception("无法获取会话目录")
 
         writer = FileWriter(session_dir)
     except Exception as e:

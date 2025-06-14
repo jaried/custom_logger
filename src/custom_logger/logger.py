@@ -210,8 +210,9 @@ LEVEL_COLORS = _get_level_colors()
 class CustomLogger:
     """自定义日志器"""
 
-    def __init__(self, name: str, console_level: Optional[int] = None, file_level: Optional[int] = None):
+    def __init__(self, name: str, config: Optional[Any] = None, console_level: Optional[int] = None, file_level: Optional[int] = None):
         self.name = name
+        self.config = config
         self._console_level = console_level
         self._file_level = file_level
 
@@ -230,18 +231,22 @@ class CustomLogger:
     @property
     def console_level(self) -> int:
         """获取控制台日志级别"""
+        # 优先使用构造函数传入的级别（向后兼容）
         if self._console_level is not None:
             return self._console_level
-
+        
+        # 否则从配置中获取
         level = get_console_level(self.name)
         return level
 
     @property
     def file_level(self) -> int:
         """获取文件日志级别"""
+        # 优先使用构造函数传入的级别（向后兼容）
         if self._file_level is not None:
             return self._file_level
-
+        
+        # 否则从配置中获取
         level = get_file_level(self.name)
         return level
 
@@ -327,9 +332,21 @@ class CustomLogger:
                 except Exception:
                     pass
 
-        # 文件输出
+        # 文件输出：根据模式选择不同的写入方式
         if should_file:
-            write_log_async(log_line, level_value, exception_info)
+            # 检查是否为队列模式
+            try:
+                from .manager import is_queue_mode
+                if is_queue_mode():
+                    # 队列模式：发送到队列
+                    from .queue_writer import send_log_to_queue
+                    send_log_to_queue(log_line, level_value, exception_info)
+                else:
+                    # 普通模式：使用异步写入器
+                    write_log_async(log_line, level_value, exception_info)
+            except ImportError:
+                # 如果导入失败，回退到普通模式
+                write_log_async(log_line, level_value, exception_info)
 
         return
 

@@ -101,24 +101,55 @@ config.base_dir/{如果是debug模式，加'debug'}/config.project_name/{实验�
 - 配置文件保存到：`src/config/custom_logger.yaml`
 - 持久化配置，防止多进程时丢失
 
-### 2.2 YAML处理库选择
+### 2.2 新API设计（2025年1月变更）
+
+**主要变更**：
+1. `init_custom_logger_system`不再调用config_manager，而是接收config对象
+2. 取消对传入`first_start_time`参数的支持，必须使用`config.first_start_time`
+3. 使用`config.paths.log_dir`作为工作路径
+4. `get_logger`名字超过8个字符直接抛出异常
+5. Worker进程使用专门的初始化函数`init_custom_logger_system_for_worker`
+
+**新API接口**：
+```python
+# 主程序初始化（只接收config对象）
+init_custom_logger_system(config_object: Any) -> None
+
+# Worker进程初始化
+init_custom_logger_system_for_worker(
+    serializable_config_object: Any,
+    worker_id: str = None
+) -> None
+
+# 获取logger（名字长度验证）
+get_logger(name: str, console_level: Optional[str] = None, 
+          file_level: Optional[str] = None) -> CustomLogger
+```
+
+**配置对象要求**：
+- 必须包含`paths.log_dir`属性（字符串路径）
+- 必须包含`first_start_time`属性（datetime对象或ISO字符串）
+- 可选包含`logger`配置对象
+- 可选包含`queue_info.log_queue`用于多进程队列模式
+
+### 2.3 YAML处理库选择
 
 - **使用ruamel.yaml替代PyYAML**：提供更好的格式保持能力
 - **安全性考虑**：避免PyYAML的不安全序列化问题
 - **格式保持**：保持配置文件的原始格式、注释和缩进
 - **功能丰富**：支持更多YAML 1.2规范特性
 
-### 2.3 配置项
+### 2.4 配置项
 
 - `project_name`：项目名称
 - `experiment_name`：实验名称  
 - `global_console_level`：全局控制台日志级别
 - `global_file_level`：全局文件日志级别
 - `module_levels`：模块特定级别配置（可选）
-- `first_start_time`：第一个启动模块的时间戳（自动保存）
+- `first_start_time`：第一个启动模块的时间戳（必须由外部传入）
 - `base_log_dir`：基础日志目录（默认"d:/logs"）
 
-### 2.4 debug模式判断
+### 2.5 debug模式判断
 
 ```python
 from is_debug import is_debug
@@ -126,12 +157,13 @@ from is_debug import is_debug
 
 使用现有的`is_debug()`函数判断调试模式
 
-### 2.5 系统初始化
+### 2.6 系统初始化
 
-- **只有主程序需要调用**：`init_custom_logger_system()`
-- 使用config_manager管理配置
+- **主程序调用**：`init_custom_logger_system(config_object)`
+- **Worker进程调用**：`init_custom_logger_system_for_worker(serializable_config_object, worker_id)`
+- 不再调用config_manager，直接使用传入的配置对象
 - 自动创建必要的目录结构
-- 其他进程/worker直接使用`get_logger()`
+- 支持队列模式用于多进程日志处理
 
 ## 3. 技术要求
 

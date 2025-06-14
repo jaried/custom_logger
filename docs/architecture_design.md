@@ -11,10 +11,14 @@
 ### 1.3 系统概述
 custom_logger是一个高性能、可配置的Python日志系统，支持异步写入、多级别日志、路径管理和灵活的配置方式。系统经过多次迭代优化，现已支持多进程环境下的配置隔离、config_manager集成的稳定性增强，以及配置文件的智能加载机制。系统采用ruamel.yaml作为YAML处理库，提供更好的格式保持能力和安全的序列化机制。
 
-**最新架构变更**：
+**最新架构变更（2025年1月）**：
 - 日志目录管理从 `config.logger.current_session_dir` 迁移到 `config.paths.log_dir`
 - 集成 `is_debug` 模块进行调试模式检测
 - 优化日志目录生成规则：`base_dir\{debug}\{项目名}\{实验名}\{日期yyyy-mm-dd}\{时间HHMMSS}`
+- **新API设计**：`init_custom_logger_system`不再调用config_manager，直接接收config对象
+- **Worker支持**：新增`init_custom_logger_system_for_worker`专门用于worker进程初始化
+- **严格验证**：`get_logger`名字长度限制为8个字符，超过直接抛出异常
+- **队列模式**：支持多进程队列模式，主程序负责文件写入，worker负责日志生成
 
 ## 2. 架构概览
 

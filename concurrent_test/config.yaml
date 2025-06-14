@@ -1,0 +1,21 @@
+__data__:
+  first_start_time: '2025-06-14T08:54:14.028298'
+  config_file_path: 
+    D:\Tony\Documents\yunpan\invest\invest2025\project\custom_logger\concurrent_test\config.yaml
+  base_dir: d:\logs
+  paths.work_dir: d:\logs\project_name\experiment_name
+  paths:
+    work_dir: d:\logs\project_name\experiment_name
+    checkpoint_dir: d:\logs\project_name\experiment_name\checkpoint
+    best_checkpoint_dir: d:\logs\project_name\experiment_name\checkpoint\best
+    debug_dir: d:\logs\project_name\experiment_name\debug
+    tsb_logs_dir: d:\logs\project_name\experiment_name\tsb_logs\2025-06-14\085414
+    log_dir: d:\logs\project_name\experiment_name\logs\2025-06-14\085414
+  paths.checkpoint_dir: d:\logs\project_name\experiment_name\checkpoint
+  paths.best_checkpoint_dir: d:\logs\project_name\experiment_name\checkpoint\best
+  paths.debug_dir: d:\logs\project_name\experiment_name\debug
+  paths.tsb_logs_dir: d:\logs\project_name\experiment_name\tsb_logs\2025-06-14\085414
+  paths.log_dir: d:\logs\project_name\experiment_name\logs\2025-06-14\085414
+  project_name: project_name
+  experiment_name: experiment_name
+__type_hints__: {}
