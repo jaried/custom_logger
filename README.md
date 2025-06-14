@@ -28,7 +28,9 @@ logger.warning("这是一个警告")
 logger.error("发生了错误")
 ```
 
-### Worker进程使用
+### Worker进程使用（队列模式）
+
+当需要在独立的Worker进程中使用队列模式时，使用专用的初始化函数：
 
 ```python
 from custom_logger import init_custom_logger_system_for_worker, get_logger
@@ -38,12 +40,13 @@ def worker_function(serialized_config):
     # 反序列化配置对象
     config = pickle.loads(serialized_config)
     
-    # Worker专用初始化函数
+    # Worker专用初始化函数（启用队列模式）
     init_custom_logger_system_for_worker(config)
     
     # 获取logger
     logger = get_logger("worker")
     logger.info("Worker进程启动")
+    # 日志会通过队列传递给主进程写入文件
 ```
 
 ## 核心函数
@@ -53,7 +56,14 @@ def worker_function(serialized_config):
 初始化日志系统，必须在使用logger前调用。
 
 **参数**:
-- `config_object`: 配置对象，必须包含 `paths.log_dir` 和 `first_start_time` 属性
+- `config_object`: 配置对象，必须包含以下属性：
+  - `paths.log_dir`: 日志文件存储目录
+  - `first_start_time`: 程序首次启动时间（datetime对象）
+  - `logger`: 日志配置（可选），可包含：
+    - `enable_queue_mode`: 是否启用队列模式（布尔值，默认False）
+    - `global_console_level`: 全局控制台日志级别
+    - `global_file_level`: 全局文件日志级别
+    - `module_levels`: 模块特定日志级别配置
 
 **示例**:
 ```python
@@ -63,41 +73,88 @@ config = get_config_manager()
 init_custom_logger_system(config)
 ```
 
+### init_custom_logger_system_for_worker(serializable_config_object, worker_id=None)
+
+Worker进程专用初始化函数，支持队列模式。
+
+**参数**:
+- `serializable_config_object`: 序列化的配置对象，包含：
+  - `paths.log_dir`: 日志文件存储目录
+  - `first_start_time`: 程序首次启动时间
+  - `logger.enable_queue_mode`: 是否启用队列模式（可选）
+  - `queue_info.log_queue`: 队列对象（队列模式时必需）
+- `worker_id`: Worker进程ID（可选，用于标识日志来源）
+
+**队列模式配置**:
+```python
+# 在主进程中配置队列模式
+config = get_config_manager()
+config.logger.enable_queue_mode = True  # 启用队列模式
+config.queue_info.log_queue = queue_object  # 提供队列对象
+```
+
 ### get_logger(name, console_level=None, file_level=None)
 
 获取logger实例。
 
 **参数**:
 - `name`: logger名称（必须8个字符以内）
-- `console_level`: 控制台日志级别（可选）
-- `file_level`: 文件日志级别（可选）
+- `console_level`: 控制台日志级别（可选，已废弃但保留兼容性）
+- `file_level`: 文件日志级别（可选，已废弃但保留兼容性）
+
+**返回**:
+- `CustomLogger`: 自定义日志记录器实例
+
+**异常**:
+- `RuntimeError`: 如果日志系统未初始化
+- `ValueError`: 如果name超过8个字符
 
 **示例**:
 ```python
 # 基本使用
 logger = get_logger("main")
 
-# 指定日志级别
+# 指定日志级别（已废弃，建议通过配置文件设置）
 debug_logger = get_logger("debug", console_level="debug", file_level="detail")
 ```
 
-## 日志级别
+## 日志级别和方法
 
-### 标准级别
+### CustomLogger方法
+
+#### 标准级别方法
 ```python
-logger.debug("调试信息")      # DEBUG
-logger.info("普通信息")       # INFO  
-logger.warning("警告信息")    # WARNING
-logger.error("错误信息")      # ERROR
-logger.critical("严重错误")   # CRITICAL
-logger.exception("异常信息")  # 自动包含堆栈信息
+logger.debug(message, *args, **kwargs)      # DEBUG (10) - 调试信息
+logger.info(message, *args, **kwargs)       # INFO (20) - 普通信息
+logger.warning(message, *args, **kwargs)    # WARNING (30) - 警告信息
+logger.error(message, *args, **kwargs)      # ERROR (40) - 错误信息
+logger.critical(message, *args, **kwargs)   # CRITICAL (50) - 严重错误
+logger.exception(message, *args, **kwargs)  # EXCEPTION (60) - 异常信息（自动包含堆栈）
 ```
 
-### 扩展级别
+#### 扩展级别方法
 ```python
-logger.detail("详细调试信息")           # DETAIL
-logger.worker_summary("Worker摘要")     # W_SUMMARY
-logger.worker_detail("Worker详细信息")  # W_DETAIL
+logger.detail(message, *args, **kwargs)           # DETAIL (8) - 详细调试信息
+logger.worker_summary(message, *args, **kwargs)   # W_SUMMARY (5) - Worker摘要
+logger.worker_detail(message, *args, **kwargs)    # W_DETAIL (3) - Worker详细信息
+```
+
+#### 属性
+```python
+logger.console_level  # 获取当前控制台日志级别（数值）
+logger.file_level     # 获取当前文件日志级别（数值）
+logger.name          # 获取logger名称
+```
+
+#### 参数化日志
+```python
+# 使用位置参数
+logger.info("用户 {} 登录成功", username)
+logger.info("处理了 {} 条记录", count)
+
+# 使用关键字参数
+logger.info("用户 {name} 年龄 {age}", name="张三", age=25)
+logger.info("处理 {count:,} 条记录", count=total_records)
 ```
 
 ## 使用场景
@@ -159,12 +216,14 @@ if __name__ == "__main__":
 
 ### 多进程应用
 
+#### 方式1：自动继承配置（推荐）
 ```python
 import multiprocessing
 from custom_logger import init_custom_logger_system, get_logger
 from config_manager import get_config_manager
 
 def process_worker(worker_id):
+    # 子进程自动继承主进程配置
     worker_logger = get_logger("worker")
     worker_logger.info(f"进程Worker {worker_id} 启动")
     # 处理逻辑...
@@ -182,6 +241,64 @@ def main():
 if __name__ == "__main__":
     main()
 ```
+
+#### 方式2：队列模式（适用于复杂场景）
+```python
+import multiprocessing
+import pickle
+from custom_logger import init_custom_logger_system, init_custom_logger_system_for_worker, get_logger
+from config_manager import get_config_manager
+
+def worker_with_queue(serialized_config, worker_id):
+    # 反序列化配置对象
+    config = pickle.loads(serialized_config)
+    
+    # 使用Worker专用初始化（启用队列模式）
+    init_custom_logger_system_for_worker(config, worker_id=f"worker_{worker_id}")
+    
+    # 获取logger
+    worker_logger = get_logger("worker")
+    worker_logger.info(f"队列模式Worker {worker_id} 启动")
+    # 处理逻辑...
+    worker_logger.info(f"队列模式Worker {worker_id} 完成")
+
+def main():
+    # 主进程初始化
+    config = get_config_manager()
+    
+    # 配置队列模式
+    log_queue = multiprocessing.Queue()
+    config.logger.enable_queue_mode = True  # 启用队列模式
+    config.queue_info = type('QueueInfo', (), {})()  # 创建queue_info对象
+    config.queue_info.log_queue = log_queue  # 设置队列对象
+    
+    init_custom_logger_system(config)
+    
+    # 序列化配置对象传递给子进程
+    serialized_config = pickle.dumps(config)
+    
+    # 启动多个进程
+    processes = []
+    for i in range(2):
+        process = multiprocessing.Process(
+            target=worker_with_queue, 
+            args=(serialized_config, i)
+        )
+        processes.append(process)
+        process.start()
+    
+    for process in processes:
+        process.join()
+
+if __name__ == "__main__":
+    main()
+```
+
+**队列模式说明**:
+- 主进程负责文件写入，Worker进程通过队列发送日志
+- 需要设置 `config.logger.enable_queue_mode = True`
+- 需要提供 `config.queue_info.log_queue` 队列对象
+- Worker进程使用 `init_custom_logger_system_for_worker()` 初始化
 
 ## 常见问题
 
