@@ -155,6 +155,7 @@ def get_config() -> Any
 - 直接使用传入的config对象，不再调用config_manager
 - 严格的配置对象验证（paths.log_dir、first_start_time必须存在）
 - **配置属性自动补充**：自动检查并补充缺失的logger属性，确保config对象完整性
+- **级别获取函数**：`get_console_level()`和`get_file_level()`只返回全局级别，不处理模块特定配置
 - 支持字典和对象两种paths格式
 - 日志目录自动创建（从config.paths.log_dir管理）
 - 支持队列信息传递给worker进程
@@ -169,12 +170,15 @@ class CustomLogger:
     def warning(self, message: str) -> None
     def error(self, message: str) -> None
     def critical(self, message: str) -> None
+    def countdown_info(self, message: str) -> None
+    def countdown_end(self, final_message: Optional[str] = None) -> None
 ```
 
 **设计要点**:
 - 标准日志接口
 - 级别控制
 - 异步写入集成
+- **倒计时功能**：原位更新机制，避免文件写入膨胀
 
 ## 4. 数据流设计
 
@@ -214,7 +218,30 @@ sequenceDiagram
     Log-->>App: 返回
 ```
 
-### 4.3 配置对象处理流程
+### 4.3 倒计时功能流程
+
+```mermaid
+sequenceDiagram
+    participant App as 应用程序
+    participant Log as Logger
+    participant Console as 控制台
+    
+    loop 倒计时循环
+        App->>Log: logger.countdown_info("倒计时...")
+        Log->>Log: 格式化倒计时消息
+        Log->>Console: 输出到控制台（使用\r原位更新）
+        Note over Console: 同一行显示，不换行
+        Note over Wrt: 不写入文件，避免膨胀
+        App->>App: 等待1秒
+    end
+    
+    App->>Log: logger.countdown_end("完成")
+    Log->>Log: 格式化完成消息
+    Log->>Console: 输出完成信息并换行
+    Note over Console: 换行，为后续日志让出空间
+```
+
+### 4.4 配置对象处理流程
 
 ```mermaid
 flowchart TD
@@ -233,7 +260,7 @@ flowchart TD
     J --> K[初始化完成]
 ```
 
-### 4.4 多进程配置加载流程
+### 4.5 多进程配置加载流程
 
 ```mermaid
 sequenceDiagram

@@ -139,41 +139,6 @@ logger.worker_summary(message, *args, **kwargs)   # W_SUMMARY (5) - Worker摘要
 logger.worker_detail(message, *args, **kwargs)    # W_DETAIL (3) - Worker详细信息
 ```
 
-#### 倒计时功能
-倒计时功能用于在同一行显示倒计时进度，适用于等待时间较长的场景：
-
-```python
-# 倒计时使用示例
-import asyncio
-
-async def countdown_example():
-    logger = get_logger("main")
-    
-    # 倒计时循环（在同一行原位更新）
-    for remaining in range(10, 0, -1):
-        logger.countdown_info(f"等待 {remaining} 秒后继续...")
-        await asyncio.sleep(1)
-    
-    # 结束倒计时并显示完成信息（合并到一行）
-    logger.countdown_end("等待完成，开始执行下一步")
-    
-    # 或者只结束倒计时不显示额外信息
-    # logger.countdown_end()
-```
-
-**倒计时功能特点**:
-- **原位更新**: 使用`\r`在同一行更新，不产生多行日志
-- **完整格式**: 保留logger的完整格式（时间戳、PID、模块名、用时等）
-- **自动换行**: 倒计时结束后自动换行，不影响后续日志
-- **文件优化**: 倒计时过程不写入文件，避免日志文件膨胀
-- **一行显示**: 整个倒计时过程只占用一行，结束时可直接显示完成信息
-
-**倒计时方法**:
-```python
-logger.countdown_info(message, *args, **kwargs)    # 倒计时信息（原位更新，不换行）
-logger.countdown_end(final_message=None)           # 结束倒计时，可选显示完成信息
-```
-
 #### 属性
 ```python
 logger.console_level  # 获取当前控制台日志级别（数值）
@@ -199,7 +164,6 @@ logger.info("处理 {count:,} 条记录", count=total_records)
 ```python
 from custom_logger import init_custom_logger_system, get_logger
 from config_manager import get_config_manager
-import asyncio
 
 def main():
     # 初始化
@@ -214,34 +178,8 @@ def main():
     logger.info("处理数据...")
     logger.info("应用程序结束")
 
-async def async_main_with_countdown():
-    # 初始化
-    config = get_config_manager()
-    init_custom_logger_system(config)
-    
-    logger = get_logger("main")
-    logger.info("异步应用程序启动")
-    
-    # 使用倒计时功能
-    logger.info("准备执行长时间操作...")
-    for remaining in range(5, 0, -1):
-        logger.countdown_info(f"等待 {remaining} 秒后开始处理...")
-        await asyncio.sleep(1)
-    
-    logger.countdown_end("等待完成，开始处理数据")
-    
-    # 模拟数据处理
-    logger.info("正在处理数据...")
-    await asyncio.sleep(2)
-    
-    logger.info("应用程序结束")
-
 if __name__ == "__main__":
-    # 同步版本
     main()
-    
-    # 异步版本（带倒计时）
-    # asyncio.run(async_main_with_countdown())
 ```
 
 ### 多线程应用
@@ -406,14 +344,12 @@ logger = get_logger("debug", console_level="debug")
 logger.debug("现在应该能看到这条消息")
 ```
 
-### Logger名字长度限制
+### Logger名字长度
 ```python
-# ✅ 正确：8字符以内
-logger = get_logger("main")      # 4字符
-logger = get_logger("database")  # 8字符
-
-# ❌ 错误：超过8字符会抛出异常
-logger = get_logger("very_long_module_name")  # 会抛出ValueError
+# ✅ 推荐：使用简短有意义的名称
+logger = get_logger("main")      # 简短
+logger = get_logger("database")  # 适中
+logger = get_logger("very_long_module_name")  # 长名称也可以正常使用
 ```
 
 ### 配置对象检查
@@ -448,22 +384,6 @@ def worker_function():
 main_logger = get_logger("main")
 auth_logger = get_logger("auth")
 db_logger = get_logger("database")
-
-# ✅ 倒计时功能的正确使用
-async def process_with_delay():
-    logger = get_logger("process")
-    
-    # 对于较长的等待时间（建议20秒以上）使用倒计时
-    wait_time = 30
-    if wait_time > 20:
-        for remaining in range(wait_time, 0, -1):
-            logger.countdown_info(f"等待 {remaining} 秒后处理下一项...")
-            await asyncio.sleep(1)
-        logger.countdown_end("等待完成，开始处理")
-    else:
-        # 短时间等待直接使用普通日志
-        logger.info(f"等待 {wait_time} 秒...")
-        await asyncio.sleep(wait_time)
 ```
 
 ### 避免做法
@@ -472,30 +392,12 @@ async def process_with_delay():
 def worker_function():
     init_custom_logger_system(config)  # 不要这样做
 
-# ❌ 名字太长
-logger = get_logger("authentication_module")  # 超过8字符
+# ✅ 推荐简短名称便于阅读
+logger = get_logger("auth")  # 简短清晰
 
 # ❌ 在循环中初始化
 for i in range(10):
     init_custom_logger_system(config)  # 不要这样做
-
-# ❌ 倒计时功能的错误使用
-async def bad_countdown_usage():
-    logger = get_logger("bad")
-    
-    # 不要在短时间等待中使用倒计时
-    for remaining in range(3, 0, -1):  # 3秒太短，不适合倒计时
-        logger.countdown_info(f"等待 {remaining} 秒...")
-        await asyncio.sleep(1)
-    
-    # 不要忘记调用countdown_end()
-    # logger.countdown_end()  # 缺少这一行会导致下一行日志在同一行显示
-    
-    # 不要在倒计时中混用普通日志
-    for remaining in range(10, 0, -1):
-        logger.countdown_info(f"倒计时: {remaining}")
-        logger.info("这会破坏倒计时效果")  # 不要这样做
-        await asyncio.sleep(1)
 ```
 
 ---

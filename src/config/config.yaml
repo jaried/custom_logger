@@ -47,6 +47,7 @@ __data__:
     show_debug_call_stack: false
     module_levels: {}
     current_session_dir: d:/test_logs\2025-06-14\083439
+    enable_queue_mode: false
   config_file_path: 
     D:\Tony\Documents\yunpan\invest\invest2025\project\custom_logger\src\config\config.yaml
   debug_mode: false

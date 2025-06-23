@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+本项目（custom_logger）彻底不使用config_manager，只用config_manager创建的对象。

@@ -664,7 +664,7 @@ def _convert_confignode_to_dict(obj) -> dict:
 
 
 def get_console_level(module_name: str) -> int:
-    """获取模块的控制台日志级别"""
+    """获取全局控制台日志级别"""
     global _direct_config_object
     
     # 检查系统是否已初始化
@@ -677,29 +677,14 @@ def get_console_level(module_name: str) -> int:
         # 使用默认配置
         return parse_level_name('info')
     
-    # 获取模块级别配置
-    module_levels = getattr(logger_obj, 'module_levels', {})
+    # 只返回全局控制台级别，不处理模块特定配置
     global_level = getattr(logger_obj, 'global_console_level', 'info')
     
-    # 转换为字典格式
-    if hasattr(module_levels, '__dict__'):
-        module_levels = _convert_confignode_to_dict(module_levels)
-    elif not isinstance(module_levels, dict):
-        module_levels = {}
-    
-    module_config = module_levels.get(module_name, {})
-    
-    # 优先使用模块特定配置
-    if isinstance(module_config, dict) and 'console_level' in module_config:
-        level_name = module_config['console_level']
-    else:
-        level_name = global_level
-    
-    return parse_level_name(level_name)
+    return parse_level_name(global_level)
 
 
 def get_file_level(module_name: str) -> int:
-    """获取模块的文件日志级别"""
+    """获取全局文件日志级别"""
     global _direct_config_object
     
     # 检查系统是否已初始化
@@ -712,25 +697,10 @@ def get_file_level(module_name: str) -> int:
         # 使用默认配置
         return parse_level_name('debug')
     
-    # 获取模块级别配置
-    module_levels = getattr(logger_obj, 'module_levels', {})
+    # 只返回全局文件级别，不处理模块特定配置
     global_level = getattr(logger_obj, 'global_file_level', 'debug')
     
-    # 转换为字典格式
-    if hasattr(module_levels, '__dict__'):
-        module_levels = _convert_confignode_to_dict(module_levels)
-    elif not isinstance(module_levels, dict):
-        module_levels = {}
-    
-    module_config = module_levels.get(module_name, {})
-    
-    # 优先使用模块特定配置
-    if isinstance(module_config, dict) and 'file_level' in module_config:
-        level_name = module_config['file_level']
-    else:
-        level_name = global_level
-    
-    return parse_level_name(level_name)
+    return parse_level_name(global_level)
 
 
 def init_config_from_object(config_object: Any) -> None:

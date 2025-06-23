@@ -239,7 +239,7 @@ def create_log_line(
     formatted_message = format_log_message(level_name, message, module_name, args, kwargs)
 
     # 组装日志行，新格式：[PID | 模块名 : 行号]，模块名8位左对齐，行号4位对齐，级别左对齐9字符
-    log_line = f"[{pid_str} | {caller_module:<8} : {line_number:>4}] {timestamp} - {elapsed_str} - {level_name:<9} - {formatted_message}"
+    log_line = f"[{pid_str:>6} | {caller_module:<8} : {line_number:>4}] {timestamp} - {elapsed_str} - {level_name:^10} - {formatted_message}"
 
     return log_line
 

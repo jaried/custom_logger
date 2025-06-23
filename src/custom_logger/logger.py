@@ -231,22 +231,22 @@ class CustomLogger:
     @property
     def console_level(self) -> int:
         """获取控制台日志级别"""
-        # 优先使用构造函数传入的级别（向后兼容）
+        # 优先使用构造函数传入的级别（通过get_logger参数设置）
         if self._console_level is not None:
             return self._console_level
         
-        # 否则从配置中获取
+        # 否则使用全局配置
         level = get_console_level(self.name)
         return level
 
     @property
     def file_level(self) -> int:
         """获取文件日志级别"""
-        # 优先使用构造函数传入的级别（向后兼容）
+        # 优先使用构造函数传入的级别（通过get_logger参数设置）
         if self._file_level is not None:
             return self._file_level
         
-        # 否则从配置中获取
+        # 否则使用全局配置
         level = get_file_level(self.name)
         return level
 
@@ -260,7 +260,7 @@ class CustomLogger:
         result = level_value >= self.file_level
         return result
 
-    def _print_to_console(self, log_line: str, level_value: int) -> None:
+    def _print_to_console(self, log_line: str, level_value: int, countdown: bool = False) -> None:
         """输出到控制台"""
         try:
             # 选择输出流
@@ -276,7 +276,13 @@ class CustomLogger:
                 # 如果不支持颜色或该级别没有颜色配置，直接输出原始日志
                 colored_line = log_line
 
-            print(colored_line, file=output_stream, flush=True)
+            if countdown:
+                # 倒计时模式：使用\r在原位更新，不换行
+                output_stream.write(f"\r{colored_line}")
+                output_stream.flush()
+            else:
+                # 正常模式：换行输出
+                print(colored_line, file=output_stream, flush=True)
 
         except Exception as e:
             # 如果主要的print失败，尝试备用输出方式
@@ -295,9 +301,19 @@ class CustomLogger:
             message: str,
             *args: Any,
             do_print: bool = True,
+            countdown: bool = False,
             **kwargs: Any
     ) -> None:
-        """底层日志方法"""
+        """底层日志方法
+        
+        Args:
+            level_value: 日志级别数值
+            message: 日志消息
+            *args: 格式化参数
+            do_print: 是否输出到控制台
+            countdown: 是否为倒计时模式（使用\r在原位更新，不换行）
+            **kwargs: 其他关键字参数
+        """
         # 早期过滤：如果都不需要输出，直接返回
         should_console = do_print and self._should_log_console(level_value)
         should_file = self._should_log_file(level_value)
@@ -320,7 +336,7 @@ class CustomLogger:
 
         # 控制台输出
         if should_console:
-            self._print_to_console(log_line, level_value)
+            self._print_to_console(log_line, level_value, countdown)
             if exception_info:
                 try:
                     # 异常信息也添加颜色（如果该级别有颜色）
@@ -334,19 +350,21 @@ class CustomLogger:
 
         # 文件输出：根据模式选择不同的写入方式
         if should_file:
-            # 检查是否为队列模式
-            try:
-                from .manager import is_queue_mode
-                if is_queue_mode():
-                    # 队列模式：发送到队列
-                    from .queue_writer import send_log_to_queue
-                    send_log_to_queue(log_line, level_value, exception_info)
-                else:
-                    # 普通模式：使用异步写入器
+            # 倒计时模式下不写入文件，避免产生大量重复日志
+            if not countdown:
+                # 检查是否为队列模式
+                try:
+                    from .manager import is_queue_mode
+                    if is_queue_mode():
+                        # 队列模式：发送到队列
+                        from .queue_writer import send_log_to_queue
+                        send_log_to_queue(log_line, level_value, exception_info)
+                    else:
+                        # 普通模式：使用异步写入器
+                        write_log_async(log_line, level_value, exception_info)
+                except ImportError:
+                    # 如果导入失败，回退到普通模式
                     write_log_async(log_line, level_value, exception_info)
-            except ImportError:
-                # 如果导入失败，回退到普通模式
-                write_log_async(log_line, level_value, exception_info)
 
         return
 
@@ -395,4 +413,28 @@ class CustomLogger:
     def worker_detail(self, message: str, *args: Any, **kwargs: Any) -> None:
         """Worker详细级别日志"""
         self._log(W_DETAIL, message, *args, **kwargs)
+        return
+
+    # 倒计时专用方法
+    def countdown_info(self, message: str, *args: Any, **kwargs: Any) -> None:
+        """倒计时信息级别日志（使用\\r在原位更新，不换行）"""
+        self._log(INFO, message, *args, countdown=True, **kwargs)
+        return
+
+    def countdown_end(self, final_message: str = None) -> None:
+        """结束倒计时，输出换行符和可选的完成信息
+        
+        Args:
+            final_message: 可选的完成信息，如果提供则会在结束倒计时后立即输出
+        """
+        try:
+            if final_message:
+                # 清除当前行并输出完成信息
+                print(f"\r{' ' * 100}\r", end='')  # 清除当前行
+                self.info(final_message)
+            else:
+                print()  # 输出换行符，结束倒计时行
+                sys.stdout.flush()  # 确保立即输出
+        except Exception:
+            pass
         return

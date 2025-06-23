@@ -227,12 +227,12 @@ def init_custom_logger_system_for_worker(
                     # 如果没有队列，使用普通异步写入器
                     init_writer()
                     _queue_mode = False
-                    print(f"Worker {worker_id}: 使用普通写入模式")
+                    print(f"Worker {worker_id}:  logger没有队列，使用普通写入模式")
             else:
                 # 如果没有队列信息，使用普通异步写入器
                 init_writer()
                 _queue_mode = False
-                print(f"Worker {worker_id}: 使用普通写入模式")
+                print(f"Worker {worker_id}: logger没有队列，使用普通写入模式")
 
         # 注册退出时清理
         atexit.register(tear_down_custom_logger_system)
@@ -261,8 +261,8 @@ def get_logger(
 
     Args:
         name: 日志记录器名称，不超过8个字符
-        console_level: 控制台日志级别（可选，已废弃，保留用于兼容性）
-        file_level: 文件日志级别（可选，已废弃，保留用于兼容性）
+        console_level: 控制台日志级别（可选，用于设置模块特定级别）
+        file_level: 文件日志级别（可选，用于设置模块特定级别）
 
     Returns:
         CustomLogger: 自定义日志记录器实例
@@ -277,12 +277,24 @@ def get_logger(
 
     if not _initialized:
         raise RuntimeError("日志系统未初始化，请先调用 init_custom_logger_system() 或 init_custom_logger_system_for_worker()")
+    
     # 获取配置
     config = get_config()
 
-    # 创建并返回日志记录器
-    # 注意：console_level和file_level参数已废弃，CustomLogger会从配置中获取级别
-    return CustomLogger(name, config)
+    # 转换级别字符串为数值
+    console_level_int = None
+    file_level_int = None
+    
+    if console_level is not None:
+        from .types import parse_level_name
+        console_level_int = parse_level_name(console_level)
+    
+    if file_level is not None:
+        from .types import parse_level_name
+        file_level_int = parse_level_name(file_level)
+
+    # 创建并返回日志记录器，传入级别参数
+    return CustomLogger(name, config, console_level_int, file_level_int)
 
 
 def tear_down_custom_logger_system() -> None:

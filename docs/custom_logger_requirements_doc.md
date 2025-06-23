@@ -64,7 +64,24 @@
 - **方法名称**：
   - 扩展级别对应方法：`detail()`, `worker_summary()`, `worker_detail()`
 
-### 1.2 输出机制
+### 1.2 倒计时功能
+
+- **用途**：用于在同一行显示倒计时进度，适用于等待时间较长的场景（建议20秒以上）
+- **特点**：
+  - **原位更新**：使用`\r`在同一行更新，不产生多行日志
+  - **完整格式**：保留logger的完整格式（时间戳、PID、模块名、用时等）
+  - **自动换行**：倒计时结束后自动换行，不影响后续日志
+  - **文件优化**：倒计时过程不写入文件，避免日志文件膨胀
+  - **一行显示**：整个倒计时过程只占用一行，结束时可直接显示完成信息
+- **方法**：
+  - `countdown_info()`: 倒计时信息（原位更新，不换行）
+  - `countdown_end()`: 结束倒计时，可选显示完成信息
+- **适用场景**：
+  - 长时间等待操作（建议20秒以上）
+  - 需要实时显示进度的场景
+  - 避免日志文件中出现大量重复的等待信息
+
+### 1.3 输出机制
 
 - **控制台输出**：实时输出，支持Windows CMD和PyCharm颜色
   - INFO及以下：无颜色
@@ -73,13 +90,13 @@
   - 全量日志文件：记录所有级别
   - 错误日志文件：仅记录ERROR及以上级别
 
-### 1.3 日志格式
+### 1.4 日志格式
 
 ```
 [{pid:>6} | {模块名:<8} : {行号:>4}] {时间戳} - {运行时长} - {级别:<9} - {消息}
 ```
 
-### 1.4 颜色方案
+### 1.5 颜色方案
 
 - **INFO及以下**：无颜色（普通文本）
 - **WARNING**：黄色（CMD）/ 亮黄色（PyCharm）
@@ -87,7 +104,7 @@
 - **CRITICAL**：洋红色（CMD）/ 亮洋红色（PyCharm）
 - **EXCEPTION**：亮红色（CMD）/ 粗体红色（PyCharm）
 
-### 1.5 文件路径结构
+### 1.6 文件路径结构
 
 ```
 config.base_dir/{如果是debug模式，加'debug'}/config.project_name/{实验名}/{config.first_start_time,yyyy-mm-dd格式}/{config.first_start_time,HHMMSS格式}/
@@ -287,6 +304,10 @@ logger.detail(message, *args, **kwargs)
 logger.worker_summary(message, *args, **kwargs)
 logger.worker_detail(message, *args, **kwargs)
 
+# 倒计时功能
+logger.countdown_info(message, *args, **kwargs)    # 倒计时信息（原位更新，不换行）
+logger.countdown_end(final_message=None)           # 结束倒计时，可选显示完成信息
+
 # 底层方法
 logger._log(level, message, *args, do_print=True, **kwargs)
 ```
@@ -423,7 +444,44 @@ logger = get_logger("data_processor",
                    file_level="detail")
 ```
 
-### 9.4 包安装和使用
+### 9.4 倒计时功能使用
+
+```python
+import asyncio
+from custom_logger import get_logger
+
+async def countdown_example():
+    logger = get_logger("main")
+    
+    # 倒计时循环（在同一行原位更新）
+    for remaining in range(10, 0, -1):
+        logger.countdown_info(f"等待 {remaining} 秒后继续...")
+        await asyncio.sleep(1)
+    
+    # 结束倒计时并显示完成信息（合并到一行）
+    logger.countdown_end("等待完成，开始执行下一步")
+    
+    # 或者只结束倒计时不显示额外信息
+    # logger.countdown_end()
+
+# 适用场景：长时间等待操作
+async def process_with_delay():
+    logger = get_logger("process")
+    
+    # 对于较长的等待时间（建议20秒以上）使用倒计时
+    wait_time = 30
+    if wait_time > 20:
+        for remaining in range(wait_time, 0, -1):
+            logger.countdown_info(f"等待 {remaining} 秒后处理下一项...")
+            await asyncio.sleep(1)
+        logger.countdown_end("等待完成，开始处理")
+    else:
+        # 短时间等待直接使用普通日志
+        logger.info(f"等待 {wait_time} 秒...")
+        await asyncio.sleep(wait_time)
+```
+
+### 9.5 包安装和使用
 
 ```bash
 # 安装包
