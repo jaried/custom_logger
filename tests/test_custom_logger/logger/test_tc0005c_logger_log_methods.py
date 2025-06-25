@@ -38,7 +38,7 @@ def test_tc0005_021_log_method_basic(mock_write_async, mock_create_log_line):
     mock_create_log_line.assert_called_once_with(
         "info", "Test message", "test_logger", ("arg1",), {"kwarg1": "value1"}
     )
-    mock_print.assert_called_once_with("Formatted log line", INFO)
+    mock_print.assert_called_once_with("Formatted log line", INFO, False)
     mock_write_async.assert_called_once_with("Formatted log line", INFO, None)
     pass
 

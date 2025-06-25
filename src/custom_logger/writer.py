@@ -10,7 +10,7 @@ import threading
 import queue
 from typing import Optional, TextIO
 from .config import get_config
-from .types import ERROR
+from .types import WARNING
 
 # 全局队列和线程
 _log_queue: Optional[queue.Queue] = None
@@ -37,7 +37,7 @@ class FileWriter:
     def __init__(self, session_dir: str):
         self.session_dir = session_dir
         self.full_log_file: Optional[TextIO] = None
-        self.error_log_file: Optional[TextIO] = None
+        self.warning_log_file: Optional[TextIO] = None
         self._init_files()
         pass
 
@@ -49,10 +49,10 @@ class FileWriter:
             os.makedirs(normalized_session_dir, exist_ok=True)
 
             full_log_path = os.path.join(normalized_session_dir, "full.log")
-            error_log_path = os.path.join(normalized_session_dir, "error.log")
+            warning_log_path = os.path.join(normalized_session_dir, "warning.log")
 
             self.full_log_file = open(full_log_path, 'a', encoding='utf-8', buffering=1)
-            self.error_log_file = open(error_log_path, 'a', encoding='utf-8', buffering=1)
+            self.warning_log_file = open(warning_log_path, 'a', encoding='utf-8', buffering=1)
 
         except Exception as e:
             try:
@@ -72,12 +72,12 @@ class FileWriter:
                     self.full_log_file.write(entry.exception_info + '\n')
                 self.full_log_file.flush()
 
-            # 写入错误日志（ERROR及以上级别）
-            if entry.level_value >= ERROR and self.error_log_file:
-                self.error_log_file.write(entry.log_line + '\n')
+            # 写入警告日志（WARNING及以上级别）
+            if entry.level_value >= WARNING and self.warning_log_file:
+                self.warning_log_file.write(entry.log_line + '\n')
                 if entry.exception_info:
-                    self.error_log_file.write(entry.exception_info + '\n')
-                self.error_log_file.flush()
+                    self.warning_log_file.write(entry.exception_info + '\n')
+                self.warning_log_file.flush()
 
         except Exception as e:
             try:
@@ -94,9 +94,9 @@ class FileWriter:
                 self.full_log_file.close()
                 self.full_log_file = None
 
-            if self.error_log_file:
-                self.error_log_file.close()
-                self.error_log_file = None
+            if self.warning_log_file:
+                self.warning_log_file.close()
+                self.warning_log_file = None
 
         except Exception as e:
             try:

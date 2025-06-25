@@ -353,7 +353,7 @@ def demo_file_verification(session_dir: str):
 
     if session_dir and os.path.exists(session_dir):
         full_log_path = os.path.join(session_dir, "full.log")
-        error_log_path = os.path.join(session_dir, "error.log")
+        warning_log_path = os.path.join(session_dir, "warning.log")
 
         # 验证完整日志文件
         if os.path.exists(full_log_path):

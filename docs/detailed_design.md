@@ -209,7 +209,7 @@
             └── {YYYY-MM-DD}/
                 └── {HHMMSS}/
                     ├── full.log (完整日志)
-                    └── error.log (错误日志)
+                    └── warning.log (警告日志)
 ```
 
 ## 4. 接口设计

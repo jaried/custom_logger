@@ -15,7 +15,7 @@ import queue
 import multiprocessing as mp
 from typing import Optional, TextIO, Any, Dict
 from dataclasses import dataclass
-from .types import ERROR
+from .types import WARNING
 
 
 @dataclass
@@ -67,7 +67,7 @@ class QueueLogReceiver:
         self.log_queue = log_queue
         self.session_dir = session_dir
         self.full_log_file: Optional[TextIO] = None
-        self.error_log_file: Optional[TextIO] = None
+        self.warning_log_file: Optional[TextIO] = None
         self._receiver_thread: Optional[threading.Thread] = None
         self._stop_event = threading.Event()
         self._init_files()
@@ -80,10 +80,10 @@ class QueueLogReceiver:
             os.makedirs(normalized_session_dir, exist_ok=True)
 
             full_log_path = os.path.join(normalized_session_dir, "full.log")
-            error_log_path = os.path.join(normalized_session_dir, "error.log")
+            warning_log_path = os.path.join(normalized_session_dir, "warning.log")
 
             self.full_log_file = open(full_log_path, 'a', encoding='utf-8', buffering=1)
-            self.error_log_file = open(error_log_path, 'a', encoding='utf-8', buffering=1)
+            self.warning_log_file = open(warning_log_path, 'a', encoding='utf-8', buffering=1)
 
         except Exception as e:
             try:
@@ -156,12 +156,12 @@ class QueueLogReceiver:
                     self.full_log_file.write(entry.exception_info + '\n')
                 self.full_log_file.flush()
 
-            # 写入错误日志（ERROR及以上级别）
-            if entry.level_value >= ERROR and self.error_log_file:
-                self.error_log_file.write(entry.log_line + '\n')
+            # 写入警告日志（WARNING及以上级别）
+            if entry.level_value >= WARNING and self.warning_log_file:
+                self.warning_log_file.write(entry.log_line + '\n')
                 if entry.exception_info:
-                    self.error_log_file.write(entry.exception_info + '\n')
-                self.error_log_file.flush()
+                    self.warning_log_file.write(entry.exception_info + '\n')
+                self.warning_log_file.flush()
 
         except Exception as e:
             try:
@@ -176,9 +176,9 @@ class QueueLogReceiver:
                 self.full_log_file.close()
                 self.full_log_file = None
 
-            if self.error_log_file:
-                self.error_log_file.close()
-                self.error_log_file = None
+            if self.warning_log_file:
+                self.warning_log_file.close()
+                self.warning_log_file = None
 
         except Exception as e:
             try:

@@ -347,7 +347,7 @@ logger:
 │   │   │   ├── {YYYYMMDD}/          # 按日期分组
 │   │   │   │   ├── {HHMMSS}/        # 按启动时间分组
 │   │   │   │   │   ├── full.log     # 完整日志
-│   │   │   │   │   └── error.log    # 错误日志
+│   │   │   │   │   └── warning.log  # 警告日志
 ```
 
 示例: `d:/logs/my_project/default/logs/20241201/143022/full.log`

@@ -171,7 +171,7 @@ def demo_custom_config_workers():
         # 验证日志文件
         if session_dir and os.path.exists(session_dir):
             full_log_path = os.path.join(session_dir, "full.log")
-            error_log_path = os.path.join(session_dir, "error.log")
+            warning_log_path = os.path.join(session_dir, "warning.log")
 
             if os.path.exists(full_log_path):
                 file_size = os.path.getsize(full_log_path)

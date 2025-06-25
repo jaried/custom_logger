@@ -44,10 +44,10 @@ def test_tc0004_003_file_writer_init():
 
         # 验证文件被创建
         full_log_path = os.path.join(temp_dir, "full.log")
-        error_log_path = os.path.join(temp_dir, "error.log")
+        warning_log_path = os.path.join(temp_dir, "warning.log")
 
         assert os.path.exists(full_log_path)
-        assert os.path.exists(error_log_path)
+        assert os.path.exists(warning_log_path)
 
         writer.close()
     pass
@@ -76,23 +76,48 @@ def test_tc0004_005_file_writer_write_info_log():
         writer.write_log(entry)
         writer.close()
 
-        # 检查full.log有内容，error.log为空
+        # 检查full.log有内容，warning.log为空
         full_log_path = os.path.join(temp_dir, "full.log")
-        error_log_path = os.path.join(temp_dir, "error.log")
+        warning_log_path = os.path.join(temp_dir, "warning.log")
 
         with open(full_log_path, 'r', encoding='utf-8') as f:
             content = f.read()
             assert "Info message" in content
 
-        # INFO级别不应写入error.log
-        with open(error_log_path, 'r', encoding='utf-8') as f:
+        # INFO级别不应写入warning.log
+        with open(warning_log_path, 'r', encoding='utf-8') as f:
             content = f.read()
             assert content.strip() == ""
     pass
 
 
-def test_tc0004_006_file_writer_write_error_log():
-    """测试写入ERROR级别日志"""
+def test_tc0004_006_file_writer_write_warning_log():
+    """测试写入WARNING级别日志"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        writer = FileWriter(temp_dir)
+        entry = LogEntry("Warning message", WARNING, "Stack trace")
+
+        writer.write_log(entry)
+        writer.close()
+
+        # 检查两个文件都有内容
+        full_log_path = os.path.join(temp_dir, "full.log")
+        warning_log_path = os.path.join(temp_dir, "warning.log")
+
+        with open(full_log_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            assert "Warning message" in content
+            assert "Stack trace" in content
+
+        with open(warning_log_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            assert "Warning message" in content
+            assert "Stack trace" in content
+    pass
+
+
+def test_tc0004_006b_file_writer_write_error_log():
+    """测试写入ERROR级别日志也会写入warning.log"""
     with tempfile.TemporaryDirectory() as temp_dir:
         writer = FileWriter(temp_dir)
         entry = LogEntry("Error message", ERROR, "Stack trace")
@@ -102,14 +127,15 @@ def test_tc0004_006_file_writer_write_error_log():
 
         # 检查两个文件都有内容
         full_log_path = os.path.join(temp_dir, "full.log")
-        error_log_path = os.path.join(temp_dir, "error.log")
+        warning_log_path = os.path.join(temp_dir, "warning.log")
 
         with open(full_log_path, 'r', encoding='utf-8') as f:
             content = f.read()
             assert "Error message" in content
             assert "Stack trace" in content
 
-        with open(error_log_path, 'r', encoding='utf-8') as f:
+        # ERROR级别应该写入warning.log
+        with open(warning_log_path, 'r', encoding='utf-8') as f:
             content = f.read()
             assert "Error message" in content
             assert "Stack trace" in content
@@ -123,7 +149,7 @@ def test_tc0004_007_file_writer_write_failure():
 
         # 关闭文件句柄模拟写入失败
         writer.full_log_file.close()
-        writer.error_log_file.close()
+        writer.warning_log_file.close()
 
         entry = LogEntry("Test message", ERROR)
 
@@ -141,13 +167,13 @@ def test_tc0004_008_file_writer_close():
 
         # 验证文件被打开
         assert writer.full_log_file is not None
-        assert writer.error_log_file is not None
+        assert writer.warning_log_file is not None
 
         writer.close()
 
         # 验证文件被关闭
         assert writer.full_log_file is None
-        assert writer.error_log_file is None
+        assert writer.warning_log_file is None
     pass
 
 
@@ -158,16 +184,16 @@ def test_tc0004_009_file_writer_close_failure():
 
         # 确保文件被正确创建
         assert writer.full_log_file is not None
-        assert writer.error_log_file is not None
+        assert writer.warning_log_file is not None
 
         # 先正常关闭一次以释放文件句柄
         writer.close()
 
         # 然后模拟关闭失败
         writer.full_log_file = MagicMock()
-        writer.error_log_file = MagicMock()
+        writer.warning_log_file = MagicMock()
         writer.full_log_file.close = MagicMock(side_effect=Exception("Close error"))
-        writer.error_log_file.close = MagicMock(side_effect=Exception("Close error"))
+        writer.warning_log_file.close = MagicMock(side_effect=Exception("Close error"))
 
         with patch('sys.stderr'):
             writer.close()  # 应该不抛出异常

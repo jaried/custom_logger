@@ -198,6 +198,55 @@ def get_logger(name: str) -> CustomLogger:
 #### 功能特点
 - **原位更新**: 使用`\r`在同一行更新，不产生多行日志
 - **完整格式**: 保留logger的完整格式（时间戳、PID、模块名、用时等）
+
+---
+
+### 变更005 - 日志文件级别调整 (2025-06-25)
+
+**变更类型**: 功能变更  
+**优先级**: 中等  
+**状态**: 已完成  
+
+#### 变更描述
+将第二个日志文件从error.log改名为warning.log，并调整其包含的日志级别从ERROR及以上改为WARNING及以上。
+
+#### 具体需求
+1. **文件名变更**: 将error.log改名为warning.log
+2. **级别调整**: warning.log包含WARNING(30)及以上级别的日志（WARNING、ERROR、CRITICAL、EXCEPTION）
+3. **保持full.log**: full.log继续记录所有级别的日志
+4. **测试更新**: 更新相关测试用例以验证新的级别过滤逻辑
+
+#### 技术实现
+- 修改`src/custom_logger/writer.py`：文件名和级别判断
+- 修改`src/custom_logger/queue_writer.py`：队列模式的相应调整
+- 更新测试用例：验证WARNING级别及以上的日志写入warning.log
+- 更新文档：需求文档、架构设计、详细设计文档
+
+#### 影响范围
+- `src/custom_logger/writer.py`: FileWriter类的文件创建和写入逻辑
+- `src/custom_logger/queue_writer.py`: QueueLogReceiver类的文件创建和写入逻辑
+- `tests/test_custom_logger/test_tc0004_writer.py`: 相关测试用例更新
+- `src/demo/`: 部分demo文件中的文件路径引用
+- 所有设计文档：需求、架构设计、详细设计文档
+
+#### 测试验证
+- ✅ INFO级别日志不写入warning.log
+- ✅ WARNING级别日志写入warning.log
+- ✅ ERROR级别日志写入warning.log
+- ✅ CRITICAL级别日志写入warning.log
+- ✅ 所有级别日志都写入full.log
+- ✅ 文件正确创建和关闭
+
+#### 向后兼容性
+❌ 不兼容变更：
+- 日志文件名从error.log变为warning.log
+- 第二个日志文件包含的日志级别从ERROR及以上变为WARNING及以上
+- 需要更新依赖此日志文件的外部系统
+
+#### 迁移指南
+1. 更新所有引用error.log的代码改为warning.log
+2. 调整日志监控和分析系统的配置
+3. 更新文档和说明中的文件名引用
 - **自动换行**: 倒计时结束后自动换行，不影响后续日志
 - **文件优化**: 倒计时过程不写入文件，避免日志文件膨胀
 - **一行显示**: 整个倒计时过程只占用一行，结束时可直接显示完成信息
