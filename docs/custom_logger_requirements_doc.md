@@ -87,8 +87,17 @@
   - INFO及以下：无颜色
   - WARNING以上：彩色输出，不同级别使用不同颜色
 - **文件输出**：异步批量写入
-  - 全量日志文件：记录所有级别
-  - 警告日志文件：仅记录WARNING及以上级别
+  - **全局日志文件**：
+    - `full.log`：记录所有模块的所有级别日志
+    - `warning.log`：记录所有模块的WARNING及以上级别日志
+  - **模块日志文件**：
+    - `{logger_name}_full.log`：记录指定模块的所有级别日志
+    - `{logger_name}_warning.log`：记录指定模块的WARNING及以上级别日志
+  - **写入策略**：
+    - 每条日志根据级别和配置决定写入哪些文件
+    - `full.log`和`{logger_name}_full.log`：写入所有级别日志（受文件级别配置限制）
+    - `warning.log`和`{logger_name}_warning.log`：仅写入WARNING及以上级别日志
+    - 级别控制：遵循现有的console_level和file_level配置机制
 
 ### 1.4 日志格式
 

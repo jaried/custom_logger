@@ -85,11 +85,17 @@ custom_logger采用分层架构设计，主要包含以下层次：
   - 异步写入调度
 
 #### 2.2.4 Writer (异步写入器)
-- **职责**: 异步日志写入、文件管理
+- **职责**: 异步日志写入、文件管理、模块化日志存储
 - **关键功能**:
   - 异步队列处理
-  - 文件轮转和管理
+  - 全局和模块化双重文件管理
+  - 动态文件创建和管理
+  - 级别过滤和写入策略
   - 性能优化
+- **文件存储策略**:
+  - **全局文件**: `full.log`（所有模块）、`warning.log`（WARNING+级别）
+  - **模块文件**: `{logger_name}_full.log`、`{logger_name}_warning.log`
+  - **写入机制**: 每条日志根据级别同时写入对应的全局和模块文件
 
 ## 3. 模块设计
 
@@ -212,9 +218,20 @@ sequenceDiagram
     App->>Log: logger.info("message")
     Log->>Log: 格式化日志
     Log->>Log: 级别检查
-    Log->>Wrt: write_log_async()
+    Log->>Wrt: write_log_async(log_line, level, logger_name)
+    Wrt->>Wrt: 创建LogEntry(包含logger_name)
     Wrt->>Wrt: 加入异步队列
-    Wrt->>FS: 写入文件
+    
+    note over Wrt: 异步写入器线程处理
+    Wrt->>Wrt: 检查/创建模块文件
+    Wrt->>FS: 写入full.log（全局）
+    alt level >= WARNING
+        Wrt->>FS: 写入warning.log（全局）
+    end
+    Wrt->>FS: 写入{logger_name}_full.log（模块）
+    alt level >= WARNING
+        Wrt->>FS: 写入{logger_name}_warning.log（模块）
+    end
     Log-->>App: 返回
 ```
 

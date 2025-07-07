@@ -208,9 +208,20 @@
         └── {experiment_name}/
             └── {YYYY-MM-DD}/
                 └── {HHMMSS}/
-                    ├── full.log (完整日志)
-                    └── warning.log (警告日志)
+                    ├── full.log (全局完整日志)
+                    ├── warning.log (全局警告日志)
+                    ├── {logger_name}_full.log (模块完整日志)
+                    ├── {logger_name}_warning.log (模块警告日志)
+                    ├── {other_logger}_full.log (其他模块完整日志)
+                    └── {other_logger}_warning.log (其他模块警告日志)
 ```
+
+**文件存储策略**:
+- **全局文件**: 记录所有模块的日志，保持原有功能
+- **模块文件**: 按logger名称分别存储，便于模块化调试
+- **级别过滤**: 所有文件都遵循相同的级别过滤规则
+  - `*_full.log`: 记录所有级别日志（受file_level配置限制）
+  - `*_warning.log`: 仅记录WARNING及以上级别日志
 
 ## 4. 接口设计
 
@@ -315,6 +326,92 @@ def init_custom_logger_system_for_worker(
   - 自动换行，为后续日志让出空间
   - 完成信息会正常写入文件
 
+### 4.3 Writer模块接口设计
+
+#### 4.3.1 LogEntry类接口变更
+**原有接口**:
+```python
+class LogEntry:
+    def __init__(self, log_line: str, level_value: int, exception_info: Optional[str] = None)
+```
+
+**新设计接口**:
+```python
+class LogEntry:
+    def __init__(self, log_line: str, level_value: int, logger_name: str, exception_info: Optional[str] = None)
+```
+
+**变更说明**:
+- 新增`logger_name`参数：用于标识日志来源模块
+- 参数位置：插入在`level_value`之后，`exception_info`之前
+- 向后兼容性：破坏性变更，需要同步更新所有调用方
+
+#### 4.3.2 FileWriter类接口扩展
+**原有功能**:
+- 管理2个文件：`full.log`和`warning.log`
+- 写入方法：`write_log(entry: LogEntry)`
+
+**新设计功能**:
+- 管理动态文件集合：全局文件 + 各模块文件
+- 新增文件类型：
+  - 全局文件：`full.log`、`warning.log`
+  - 模块文件：`{logger_name}_full.log`、`{logger_name}_warning.log`
+- 动态文件创建：首次遇到新logger_name时自动创建对应文件
+- 文件句柄管理：维护所有打开文件的句柄字典
+
+**扩展接口设计**:
+```python
+class FileWriter:
+    def __init__(self, session_dir: str):
+        self.session_dir = session_dir
+        self.full_log_file: Optional[TextIO] = None
+        self.warning_log_file: Optional[TextIO] = None
+        self.module_files: Dict[str, Dict[str, TextIO]] = {}  # {logger_name: {"full": file, "warning": file}}
+        
+    def _ensure_module_files(self, logger_name: str) -> None:
+        """确保指定模块的日志文件已创建"""
+        
+    def write_log(self, entry: LogEntry) -> None:
+        """写入日志条目到相应的文件"""
+        # 1. 写入全局文件
+        # 2. 确保模块文件存在
+        # 3. 写入模块文件
+        # 4. 根据级别决定是否写入warning类型文件
+```
+
+#### 4.3.3 异步写入接口变更
+**原有接口**:
+```python
+def write_log_async(log_line: str, level_value: int, exception_info: Optional[str] = None) -> None
+```
+
+**新设计接口**:
+```python
+def write_log_async(log_line: str, level_value: int, logger_name: str, exception_info: Optional[str] = None) -> None
+```
+
+**变更说明**:
+- 新增`logger_name`参数：必需参数，用于创建LogEntry对象
+- 参数传递：将logger_name传递给LogEntry构造函数
+- 调用方更新：logger.py中的_log方法需要传递self.name
+
+#### 4.3.4 文件管理策略设计
+**动态文件创建**:
+- 延迟创建：首次使用某个logger_name时才创建对应文件
+- 命名规范：`{logger_name}_full.log`、`{logger_name}_warning.log`
+- 文件位置：与全局文件相同目录
+
+**写入策略**:
+- 每条日志同时写入2-4个文件（取决于级别）
+- 全局文件：始终写入（受file_level限制）
+- 模块文件：始终写入（受file_level限制）
+- Warning文件：仅当level >= WARNING时写入
+
+**资源管理**:
+- 文件句柄缓存：保持所有文件打开状态以提高性能
+- 清理机制：系统关闭时统一关闭所有文件句柄
+- 异常处理：文件操作失败时的降级策略
+
 ## 5. 业务流程设计
 
 ### 5.1 系统初始化流程
@@ -342,14 +439,20 @@ def init_custom_logger_system_for_worker(
 2. **调用者识别**: 获取调用者模块名和行号
 3. **消息格式化**: 格式化日志消息和参数
 4. **控制台输出**: 根据级别决定是否输出到控制台
-5. **异步写入**: 将日志加入异步写入队列
+5. **异步写入**: 创建LogEntry(包含logger_name)并加入异步写入队列
 
 #### 5.2.2 异步写入子流程
-1. **队列接收**: 从异步队列接收日志消息
+1. **队列接收**: 从异步队列接收LogEntry（包含logger_name）
 2. **批量处理**: 批量处理多条日志消息
-3. **文件写入**: 写入到相应的日志文件
-4. **错误处理**: 处理写入过程中的异常
-5. **状态更新**: 更新写入状态和统计信息
+3. **模块文件管理**: 检查并创建对应logger的文件（如不存在）
+4. **分层文件写入**: 同时写入4种文件
+   - 全局full.log：所有模块的完整日志
+   - 全局warning.log：所有模块的WARNING+日志
+   - 模块{logger_name}_full.log：该模块的完整日志
+   - 模块{logger_name}_warning.log：该模块的WARNING+日志
+5. **级别过滤**: 根据日志级别决定写入哪些文件
+6. **错误处理**: 处理写入过程中的异常
+7. **状态更新**: 更新写入状态和统计信息
 
 #### 5.2.3 倒计时功能流程
 1. **倒计时信息处理**:

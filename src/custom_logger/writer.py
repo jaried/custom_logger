@@ -24,9 +24,10 @@ QUEUE_SENTINEL = object()
 class LogEntry:
     """日志条目"""
 
-    def __init__(self, log_line: str, level_value: int, exception_info: Optional[str] = None):
+    def __init__(self, log_line: str, level_value: int, logger_name: str, exception_info: Optional[str] = None):
         self.log_line = log_line
         self.level_value = level_value
+        self.logger_name = logger_name
         self.exception_info = exception_info
         pass
 
@@ -38,6 +39,7 @@ class FileWriter:
         self.session_dir = session_dir
         self.full_log_file: Optional[TextIO] = None
         self.warning_log_file: Optional[TextIO] = None
+        self.module_files: dict[str, dict[str, TextIO]] = {}  # {logger_name: {"full": file, "warning": file}}
         self._init_files()
         pass
 
@@ -62,22 +64,75 @@ class FileWriter:
 
         return
 
+    def _ensure_module_files(self, logger_name: str) -> None:
+        """确保指定模块的日志文件已创建"""
+        if logger_name in self.module_files:
+            return  # 文件已经创建
+        
+        try:
+            # 规范化路径，确保使用正确的分隔符
+            normalized_session_dir = os.path.normpath(self.session_dir)
+            
+            full_log_path = os.path.join(normalized_session_dir, f"{logger_name}_full.log")
+            warning_log_path = os.path.join(normalized_session_dir, f"{logger_name}_warning.log")
+            
+            # 创建文件句柄
+            full_file = open(full_log_path, 'a', encoding='utf-8', buffering=1)
+            warning_file = open(warning_log_path, 'a', encoding='utf-8', buffering=1)
+            
+            # 存储到module_files字典
+            self.module_files[logger_name] = {
+                "full": full_file,
+                "warning": warning_file
+            }
+            
+        except Exception as e:
+            try:
+                print(f"无法创建模块日志文件 {logger_name}: {e}", file=sys.stderr)
+            except (ValueError, AttributeError):
+                pass
+        
+        return
+
     def write_log(self, entry: LogEntry) -> None:
         """写入日志条目"""
         try:
-            # 写入完整日志
+            # 确保模块文件存在
+            self._ensure_module_files(entry.logger_name)
+            
+            # 1. 写入全局完整日志
             if self.full_log_file:
                 self.full_log_file.write(entry.log_line + '\n')
                 if entry.exception_info:
                     self.full_log_file.write(entry.exception_info + '\n')
                 self.full_log_file.flush()
 
-            # 写入警告日志（WARNING及以上级别）
+            # 2. 写入全局警告日志（WARNING及以上级别）
             if entry.level_value >= WARNING and self.warning_log_file:
                 self.warning_log_file.write(entry.log_line + '\n')
                 if entry.exception_info:
                     self.warning_log_file.write(entry.exception_info + '\n')
                 self.warning_log_file.flush()
+            
+            # 3. 写入模块文件
+            if entry.logger_name in self.module_files:
+                module_file_handles = self.module_files[entry.logger_name]
+                
+                # 写入模块完整日志
+                if "full" in module_file_handles and module_file_handles["full"]:
+                    module_file_handles["full"].write(entry.log_line + '\n')
+                    if entry.exception_info:
+                        module_file_handles["full"].write(entry.exception_info + '\n')
+                    module_file_handles["full"].flush()
+                
+                # 写入模块警告日志（WARNING及以上级别）
+                if (entry.level_value >= WARNING and 
+                    "warning" in module_file_handles and 
+                    module_file_handles["warning"]):
+                    module_file_handles["warning"].write(entry.log_line + '\n')
+                    if entry.exception_info:
+                        module_file_handles["warning"].write(entry.exception_info + '\n')
+                    module_file_handles["warning"].flush()
 
         except Exception as e:
             try:
@@ -90,6 +145,7 @@ class FileWriter:
     def close(self) -> None:
         """关闭文件"""
         try:
+            # 关闭全局文件
             if self.full_log_file:
                 self.full_log_file.close()
                 self.full_log_file = None
@@ -97,6 +153,22 @@ class FileWriter:
             if self.warning_log_file:
                 self.warning_log_file.close()
                 self.warning_log_file = None
+            
+            # 关闭所有模块文件
+            for logger_name, file_handles in self.module_files.items():
+                try:
+                    if "full" in file_handles and file_handles["full"]:
+                        file_handles["full"].close()
+                    if "warning" in file_handles and file_handles["warning"]:
+                        file_handles["warning"].close()
+                except Exception as e:
+                    try:
+                        print(f"关闭模块文件失败 {logger_name}: {e}", file=sys.stderr)
+                    except (ValueError, AttributeError):
+                        pass
+            
+            # 清空模块文件字典
+            self.module_files.clear()
 
         except Exception as e:
             try:
@@ -191,13 +263,13 @@ def init_writer() -> None:
     return
 
 
-def write_log_async(log_line: str, level_value: int, exception_info: Optional[str] = None) -> None:
+def write_log_async(log_line: str, level_value: int, logger_name: str, exception_info: Optional[str] = None) -> None:
     """异步写入日志"""
     if _log_queue is None:
         return
 
     try:
-        entry = LogEntry(log_line, level_value, exception_info)
+        entry = LogEntry(log_line, level_value, logger_name, exception_info)
         _log_queue.put_nowait(entry)
 
     except queue.Full:

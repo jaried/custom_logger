@@ -361,10 +361,10 @@ class CustomLogger:
                         send_log_to_queue(log_line, level_value, exception_info)
                     else:
                         # 普通模式：使用异步写入器
-                        write_log_async(log_line, level_value, exception_info)
+                        write_log_async(log_line, level_value, self.name, exception_info)
                 except ImportError:
                     # 如果导入失败，回退到普通模式
-                    write_log_async(log_line, level_value, exception_info)
+                    write_log_async(log_line, level_value, self.name, exception_info)
 
         return
 

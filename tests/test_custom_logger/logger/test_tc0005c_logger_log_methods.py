@@ -39,7 +39,7 @@ def test_tc0005_021_log_method_basic(mock_write_async, mock_create_log_line):
         "info", "Test message", "test_logger", ("arg1",), {"kwarg1": "value1"}
     )
     mock_print.assert_called_once_with("Formatted log line", INFO, False)
-    mock_write_async.assert_called_once_with("Formatted log line", INFO, None)
+    mock_write_async.assert_called_once_with("Formatted log line", INFO, "test_logger", None)
     pass
 
 
@@ -76,7 +76,7 @@ def test_tc0005_023_log_method_exception_level(mock_write_async, mock_get_except
             logger._log(EXCEPTION, "Exception occurred")
 
     mock_get_exception.assert_called_once()
-    mock_write_async.assert_called_once_with("Exception log line", EXCEPTION, "Stack trace info")
+    mock_write_async.assert_called_once_with("Exception log line", EXCEPTION, "test_logger", "Stack trace info")
     
     # 验证异常信息输出，考虑可能包含颜色代码
     mock_print_exc.assert_called_once()
