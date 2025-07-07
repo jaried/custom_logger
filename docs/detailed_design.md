@@ -271,15 +271,15 @@ def init_custom_logger_system_for_worker(
 **接口名称**: `get_logger`
 **功能描述**: 获取logger实例
 **输入参数**:
-- `name`: logger名称（必须，严格限制8字符以内）
+- `name`: logger名称（必须，严格限制16字符以内）
 - `console_level`: 控制台级别（可选，已废弃，保留用于兼容性）
 - `file_level`: 文件级别（可选，已废弃，保留用于兼容性）
 **输出**: CustomLogger实例
 **异常**: 
 - 系统未初始化时抛出RuntimeError
-- 名称超过8个字符时抛出ValueError
+- 名称超过16个字符时抛出ValueError
 **新增验证**:
-- 严格的名称长度检查，超过8个字符直接抛出异常
+- 严格的名称长度检查，超过16个字符直接抛出异常
 - 提示信息明确指出字符数限制
 
 #### 4.1.3 系统清理接口

@@ -17,7 +17,7 @@ custom_logger是一个高性能、可配置的Python日志系统，支持异步�
 - 优化日志目录生成规则：`base_dir\{debug}\{项目名}\{实验名}\{日期yyyy-mm-dd}\{时间HHMMSS}`
 - **新API设计**：`init_custom_logger_system`不再调用config_manager，直接接收config对象
 - **Worker支持**：新增`init_custom_logger_system_for_worker`专门用于worker进程初始化
-- **严格验证**：`get_logger`名字长度限制为8个字符，超过直接抛出异常
+- **严格验证**：`get_logger`名字长度限制为16个字符，超过直接抛出异常
 - **队列模式**：支持多进程队列模式，主程序负责文件写入，worker负责日志生成
 
 ## 2. 架构概览

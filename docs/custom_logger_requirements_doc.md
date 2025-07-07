@@ -124,7 +124,7 @@ config.base_dir/{如果是debug模式，加'debug'}/config.project_name/{实验�
 1. `init_custom_logger_system`不再调用config_manager，而是接收config对象
 2. 取消对传入`first_start_time`参数的支持，必须使用`config.first_start_time`
 3. 使用`config.paths.log_dir`作为工作路径
-4. `get_logger`名字超过8个字符直接抛出异常
+4. `get_logger`名字超过16个字符直接抛出异常
 5. Worker进程使用专门的初始化函数`init_custom_logger_system_for_worker`
 
 **新API接口**：
@@ -146,7 +146,7 @@ get_logger(name: str, console_level: Optional[str] = None,
 **API变更说明**：
 1. `init_custom_logger_system`不再接收`config_path`和`first_start_time`参数，只接收`config_object`
 2. 所有配置信息（包括`first_start_time`、日志级别等）必须通过`config_object`提供
-3. `get_logger`名字长度限制为8个字符，超过会抛出`ValueError`异常
+3. `get_logger`名字长度限制为16个字符，超过会抛出`ValueError`异常
 4. Worker进程使用专门的`init_custom_logger_system_for_worker`函数
 5. 支持队列模式用于多进程日志处理
 

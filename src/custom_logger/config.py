@@ -23,7 +23,7 @@ DEFAULT_CONFIG = {
         "current_session_dir": None,
         "module_levels": {},
         "show_call_chain": True,  # 控制是否显示调用链
-        "show_debug_call_stack": False,  # 控制是否显示调试调用链
+        "show_debug_call_stack": True,  # 控制是否显示调试调用链
     },
 }
 

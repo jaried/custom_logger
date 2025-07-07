@@ -19,7 +19,7 @@ from config_manager import get_config_manager
 config = get_config_manager()
 init_custom_logger_system(config)
 
-# 2. 获取logger实例（名字不能超过8个字符）
+# 2. 获取logger实例（名字不能超过16个字符）
 logger = get_logger("main")
 
 # 3. 记录日志
@@ -97,7 +97,7 @@ config.queue_info.log_queue = queue_object  # 提供队列对象
 获取logger实例。
 
 **参数**:
-- `name`: logger名称（必须8个字符以内）
+- `name`: logger名称（必须16个字符以内）
 - `console_level`: 控制台日志级别（可选，用于设置模块特定级别）
 - `file_level`: 文件日志级别（可选，用于设置模块特定级别）
 
@@ -106,7 +106,7 @@ config.queue_info.log_queue = queue_object  # 提供队列对象
 
 **异常**:
 - `RuntimeError`: 如果日志系统未初始化
-- `ValueError`: 如果name超过8个字符
+- `ValueError`: 如果name超过16个字符
 
 **示例**:
 ```python

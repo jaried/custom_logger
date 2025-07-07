@@ -40,7 +40,7 @@ def get_caller_info() -> Tuple[str, int]:
         try:
             from .config import get_config
             cfg = get_config()
-            show_call_chain = getattr(cfg.logger, 'show_call_chain', False)
+            show_call_chain = cfg.show_call_chain
         except:
             pass
 
@@ -57,7 +57,7 @@ def get_caller_info() -> Tuple[str, int]:
             try:
                 from .config import get_config
                 cfg = get_config()
-                show_debug = getattr(cfg.logger, 'show_debug_call_stack', False)
+                show_debug = cfg.show_debug_call_stack
                 
                 if show_debug:
                     call_stack = _get_call_stack_info()
@@ -122,13 +122,13 @@ def get_caller_info() -> Tuple[str, int]:
             
             # 如果不是框架文件，这就是真正的调用者
             if not is_framework_file:
-                module_name = name_without_ext[:8] if len(name_without_ext) > 8 else name_without_ext
+                module_name = name_without_ext[:16] if len(name_without_ext) > 16 else name_without_ext
                 return module_name, line_number
 
         # 如果没找到外部调用者，但有custom_logger文件，返回最后一个custom_logger文件
         if custom_logger_frames:
             module_name, line_number = custom_logger_frames[-1]  # 取最后一个
-            module_name = module_name[:8] if len(module_name) > 8 else module_name
+            module_name = module_name[:16] if len(module_name) > 16 else module_name
             return module_name, line_number
 
         # 如果没找到合适的调用者，返回默认值
@@ -139,7 +139,7 @@ def get_caller_info() -> Tuple[str, int]:
         try:
             from .config import get_config
             cfg = get_config()
-            show_call_chain = getattr(cfg.logger, 'show_call_chain', False)
+            show_call_chain = cfg.show_call_chain
             if show_call_chain:
                 print(f"[调用链异常] {e}")
         except:
@@ -238,8 +238,8 @@ def create_log_line(
     
     formatted_message = format_log_message(level_name, message, module_name, args, kwargs)
 
-    # 组装日志行，新格式：[PID | 模块名 : 行号]，模块名8位左对齐，行号4位对齐，级别左对齐9字符
-    log_line = f"[{pid_str:>6} | {caller_module:<8} : {line_number:>4}] {timestamp} - {elapsed_str} - {level_name:^10} - {formatted_message}"
+    # 组装日志行，新格式：[PID | 模块名 : 行号]，模块名16位居中对齐，行号4位对齐，级别居中对齐10字符
+    log_line = f"[{pid_str:>6} | {module_name:^16} : {line_number:>4}] {timestamp} - {elapsed_str} - {level_name:^10} - {formatted_message}"
 
     return log_line
 

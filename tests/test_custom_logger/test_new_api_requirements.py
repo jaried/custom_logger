@@ -39,6 +39,13 @@ class TestNewAPIRequirements:
         self.base_config.logger.global_console_level = "info"
         self.base_config.logger.global_file_level = "debug"
         self.base_config.logger.module_levels = {}
+        self.base_config.logger.enable_queue_mode = False
+        self.base_config.queue_info = None
+        self.base_config.writer = Mock()
+        self.base_config.writer.max_queue_size = 1000
+        self.base_config.writer.worker_thread_timeout = 5
+        self.base_config.writer.show_call_chain = True
+        self.base_config.writer.show_debug_call_stack = False
 
     def teardown_method(self):
         """每个测试后的清理"""
@@ -145,20 +152,26 @@ class TestNewAPIRequirements:
     def test_get_logger_name_length_validation(self):
         """测试get_logger名字长度验证"""
         # 先初始化系统
+        self.base_config.logger.enable_queue_mode = False
+        self.base_config.queue_info = None
         init_custom_logger_system(self.base_config)
-        
+
         # 测试有效长度的名字
-        valid_names = ["a", "ab", "abc", "abcd", "abcde", "abcdef", "abcdefg", "abcdefgh"]
+        valid_names = ["a", "ab", "abc", "abcd", "abcde", "abcdef", "abcdefg", "abcdefgh",
+                      "abcdefghi", "abcdefghij", "abcdefghijk", "abcdefghijkl",
+                      "abcdefghijklmn", "abcdefghijklmno", "abcdefghijklmnop"]
         for name in valid_names:
             logger = get_logger(name)
             assert logger is not None
             assert logger.name == name
-        
-        # 测试超过8个字符的名字
-        invalid_names = ["abcdefghi", "very_long_name", "超过八个字符的名字"]
+
+        # 测试超过16个字符的名字
+        invalid_names = ["abcdefghijklmnopq", "very_very_long_name", "超过十六个字符的日志记录器名字太长了"]
         for name in invalid_names:
-            with pytest.raises(ValueError, match=f"日志记录器名称不能超过8个字符，当前长度: {len(name)}"):
+            with pytest.raises(ValueError) as exc_info:
                 get_logger(name)
+            assert "不能超过16个字符" in str(exc_info.value)
+            assert str(len(name)) in str(exc_info.value)
 
     def test_get_logger_requires_initialization(self):
         """测试get_logger需要先初始化系统"""
@@ -346,12 +359,17 @@ class TestNewAPIRequirements:
         assert logger.name == "12345678"
 
     def test_edge_case_9_characters(self):
-        """测试边界情况：9个字符的名字"""
+        """测试边界情况：16个字符的名字"""
         init_custom_logger_system(self.base_config)
-        
-        # 9个字符应该抛出异常
-        with pytest.raises(ValueError, match="日志记录器名称不能超过8个字符，当前长度: 9"):
-            get_logger("123456789")
+
+        # 16个字符应该正常
+        logger = get_logger("1234567890123456")
+        assert logger is not None
+        assert logger.name == "1234567890123456"
+
+        # 17个字符应该抛出异常
+        with pytest.raises(ValueError, match=r"日志记录器名称.*不能超过16个字符，当前长度: \d+"):
+            get_logger("12345678901234567")
 
     def test_config_object_missing_logger_attribute(self):
         """测试配置对象缺少logger属性的情况"""

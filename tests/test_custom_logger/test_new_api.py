@@ -171,12 +171,12 @@ def test_new_api_logger_name_length(temp_log_dir):
             first_start_time=datetime.now()
         )
         init_custom_logger_system(config_object=config)
-        
+
         # 测试超长名称
-        with pytest.raises(ValueError, match="日志记录器名称不能超过8个字符"):
-            get_logger("very_long_logger_name")
-    finally:
-        tear_down_custom_logger_system()
+        with pytest.raises(ValueError, match=r"日志记录器名称.*不能超过16个字符，当前长度: \d+"):
+            get_logger("very_very_long_logger_name")  # 超过16个字符
+    except Exception as e:
+        raise e
 
 
 def test_new_api_system_not_initialized():

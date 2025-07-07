@@ -211,7 +211,7 @@ def get_logger(
 
 **参数说明**:
 - `name`: logger名称
-  - **必须8个字符以内**，因为日志输出时只显示前8位字符
+  - **必须16个字符以内**，因为日志输出时只显示前16位字符
   - 用于标识不同模块或组件
   - 示例: "main", "worker", "db", "api", "auth", "cache"
 - `console_level`: 控制台日志级别（可选）
@@ -233,7 +233,7 @@ logger.info("程序启动")
 
 #### 2. 模块化使用
 ```python
-# 不同模块使用不同的logger名称（必须8字符以内）
+# 不同模块使用不同的logger名称（必须16字符以内）
 auth_logger = get_logger("auth")      # 认证模块 (4字符)
 db_logger = get_logger("database")    # 数据库模块 (8字符)
 api_logger = get_logger("api")        # API模块 (3字符)
@@ -588,10 +588,10 @@ def worker_function():
 
 ### 1. 初始化模式
 
-**重要提示**: 日志输出格式中模块名只显示8位字符，因此logger名称必须控制在8个字符以内。
+**重要提示**: 日志输出格式中模块名只显示16位字符，因此logger名称必须控制圩16个字符以内。
 
 ```python
-# ✅ 推荐：8字符以内的简短有意义名称
+# ✅ 推荐：16字符以内的简短有意义名称
 main_logger = get_logger("main")      # 主程序 (4字符)
 auth_logger = get_logger("auth")      # 认证模块 (4字符)
 db_logger = get_logger("database")    # 数据库模块 (8字符)
@@ -601,11 +601,11 @@ cache_logger = get_logger("cache")    # 缓存模块 (5字符)
 proc_logger = get_logger("proc")      # 处理器 (4字符)
 net_logger = get_logger("network")    # 网络模块 (7字符)
 
-# ❌ 避免：超过8字符的名称（会被截断显示）
+# ❌ 避免：超过16字符的名称（会被截断显示）
 logger = get_logger("authentication_module")  # 太长，只显示"authenti"
 logger = get_logger("data_processing_engine")  # 太长，只显示"data_pro"
 
-# 📋 常用模块名称建议（8字符以内）：
+# 📋 常用模块名称建议（16字符以内）：
 # main     - 主程序
 # auth     - 认证
 # database - 数据库  
