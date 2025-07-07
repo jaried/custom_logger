@@ -97,7 +97,7 @@ config.queue_info.log_queue = queue_object  # 提供队列对象
 获取logger实例。
 
 **参数**:
-- `name`: logger名称（必须8个字符以内）
+- `name`: logger名称（必须16个字符以内）
 - `console_level`: 控制台日志级别（可选，用于设置模块特定级别）
 - `file_level`: 文件日志级别（可选，用于设置模块特定级别）
 
@@ -106,7 +106,7 @@ config.queue_info.log_queue = queue_object  # 提供队列对象
 
 **异常**:
 - `RuntimeError`: 如果日志系统未初始化
-- `ValueError`: 如果name超过8个字符
+- `ValueError`: 如果name超过16个字符
 
 **示例**:
 ```python
@@ -408,12 +408,13 @@ logger.debug("现在应该能看到这条消息")
 
 ### Logger名字长度限制
 ```python
-# ✅ 正确：8字符以内
+# ✅ 正确：16字符以内
 logger = get_logger("main")      # 4字符
 logger = get_logger("database")  # 8字符
+logger = get_logger("authentication")  # 14字符
 
-# ❌ 错误：超过8字符会抛出异常
-logger = get_logger("very_long_module_name")  # 会抛出ValueError
+# ❌ 错误：超过16字符会抛出异常
+logger = get_logger("very_long_module_name_exceeds_limit")  # 会抛出ValueError
 ```
 
 ### 配置对象检查
@@ -473,7 +474,7 @@ def worker_function():
     init_custom_logger_system(config)  # 不要这样做
 
 # ❌ 名字太长
-logger = get_logger("authentication_module")  # 超过8字符
+logger = get_logger("authentication_module_name")  # 超过16字符
 
 # ❌ 在循环中初始化
 for i in range(10):

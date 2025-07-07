@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(true)",
+      "Bash(python -m pytest -v)",
+      "Bash(pip install:*)",
+      "Bash(python -m pytest tests/ -v --tb=short)",
+      "Bash(python:*)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(git add:*)",
+      "Bash(mkdir:*)",
+      "Bash(source:*)",
+      "Bash(conda activate:*)",
+      "Bash(gh issue view:*)",
+      "Bash(rm:*)"
+    ],
+    "deny": []
+  }
+}

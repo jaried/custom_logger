@@ -175,7 +175,7 @@ def get_logger(name: str) -> CustomLogger:
 1. 将`init_custom_logger_system(config_path, first_start_time)`改为`init_custom_logger_system(config_object)`
 2. 确保config_object包含必要的属性：paths.log_dir、first_start_time
 3. Worker进程使用`init_custom_logger_system_for_worker`
-4. 检查所有logger名字长度不超过8个字符
+4. 检查所有logger名字长度不超过16个字符
 
 ---
 

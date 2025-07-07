@@ -261,15 +261,12 @@ class TestNewAPIRequirements:
         logger1 = get_logger("test")
         assert logger1 is not None
         
-        logger2 = get_logger("12345678")  # 8个字符，边界情况
+        logger2 = get_logger("1234567890123456")  # 16个字符，边界情况
         assert logger2 is not None
         
-        # 超过8个字符的名字
-        with pytest.raises(ValueError, match="日志记录器名称不能超过8个字符"):
-            get_logger("123456789")  # 9个字符
-        
-        with pytest.raises(ValueError, match="日志记录器名称不能超过8个字符"):
-            get_logger("very_long_name")
+        # 超过16个字符的名字
+        with pytest.raises(ValueError, match=r"日志记录器名称.*不能超过16个字符，当前长度: \d+"):
+            get_logger("12345678901234567")  # 17个字符
     
     def test_get_logger_without_init(self):
         """测试未初始化时调用get_logger"""

@@ -19,20 +19,22 @@ from custom_logger.types import ERROR, WARNING, INFO
 
 def test_tc0004_001_log_entry_creation():
     """测试日志条目创建"""
-    entry = LogEntry("Test log line", INFO, "Exception info")
+    entry = LogEntry("Test log line", INFO, "test_logger", "Exception info")
 
     assert entry.log_line == "Test log line"
     assert entry.level_value == INFO
+    assert entry.logger_name == "test_logger"
     assert entry.exception_info == "Exception info"
     pass
 
 
 def test_tc0004_002_log_entry_no_exception():
     """测试无异常信息的日志条目"""
-    entry = LogEntry("Test log line", ERROR)
+    entry = LogEntry("Test log line", ERROR, "test_logger")
 
     assert entry.log_line == "Test log line"
     assert entry.level_value == ERROR
+    assert entry.logger_name == "test_logger"
     assert entry.exception_info is None
     pass
 
@@ -71,7 +73,7 @@ def test_tc0004_005_file_writer_write_info_log():
     """测试写入INFO级别日志"""
     with tempfile.TemporaryDirectory() as temp_dir:
         writer = FileWriter(temp_dir)
-        entry = LogEntry("Info message", INFO)
+        entry = LogEntry("Info message", INFO, "test_logger")
 
         writer.write_log(entry)
         writer.close()
@@ -95,7 +97,7 @@ def test_tc0004_006_file_writer_write_warning_log():
     """测试写入WARNING级别日志"""
     with tempfile.TemporaryDirectory() as temp_dir:
         writer = FileWriter(temp_dir)
-        entry = LogEntry("Warning message", WARNING, "Stack trace")
+        entry = LogEntry("Warning message", WARNING, "test_logger", "Stack trace")
 
         writer.write_log(entry)
         writer.close()
@@ -120,7 +122,7 @@ def test_tc0004_006b_file_writer_write_error_log():
     """测试写入ERROR级别日志也会写入warning.log"""
     with tempfile.TemporaryDirectory() as temp_dir:
         writer = FileWriter(temp_dir)
-        entry = LogEntry("Error message", ERROR, "Stack trace")
+        entry = LogEntry("Error message", ERROR, "test_logger", "Stack trace")
 
         writer.write_log(entry)
         writer.close()
@@ -151,7 +153,7 @@ def test_tc0004_007_file_writer_write_failure():
         writer.full_log_file.close()
         writer.warning_log_file.close()
 
-        entry = LogEntry("Test message", ERROR)
+        entry = LogEntry("Test message", ERROR, "test_logger")
 
         with patch('sys.stderr'):
             writer.write_log(entry)  # 应该不抛出异常
@@ -264,7 +266,7 @@ def test_tc0004_012_write_log_async(mock_get_config):
         init_writer()
 
     # 写入日志
-    write_log_async("Test log line", INFO)
+    write_log_async("Test log line", INFO, "test_logger")
 
     # 等待一小段时间让队列处理
     time.sleep(0.1)
@@ -283,7 +285,7 @@ def test_tc0004_013_write_log_async_not_initialized():
     shutdown_writer()
 
     # 直接写入（应该不报错）
-    write_log_async("Test log line", INFO)
+    write_log_async("Test log line", INFO, "test_logger")
     pass
 
 
@@ -297,7 +299,7 @@ def test_tc0004_014_write_log_async_queue_full():
 
         with patch('custom_logger.writer._log_queue', mock_queue):
             with patch('sys.stderr'):
-                write_log_async("Test log line", INFO)  # 应该不抛出异常
+                write_log_async("Test log line", INFO, "test_logger")  # 应该不抛出异常
     pass
 
 
@@ -352,19 +354,22 @@ def test_tc0004_017_queue_sentinel():
 def test_tc0004_018_log_entry_edge_cases():
     """测试日志条目的边界情况"""
     # 空字符串
-    entry1 = LogEntry("", 0)
+    entry1 = LogEntry("", 0, "test_logger")
     assert entry1.log_line == ""
     assert entry1.level_value == 0
+    assert entry1.logger_name == "test_logger"
 
     # 很长的日志行
     long_message = "x" * 10000
-    entry2 = LogEntry(long_message, ERROR)
+    entry2 = LogEntry(long_message, ERROR, "test_logger")
     assert entry2.log_line == long_message
+    assert entry2.logger_name == "test_logger"
 
     # 特殊字符
     special_message = "日志\t消息\n换行"
-    entry3 = LogEntry(special_message, WARNING)
+    entry3 = LogEntry(special_message, WARNING, "test_logger")
     assert entry3.log_line == special_message
+    assert entry3.logger_name == "test_logger"
     pass
 
 
@@ -405,7 +410,7 @@ def test_tc0004_020_concurrent_write():
         for i in range(10):
             thread = threading.Thread(
                 target=write_log_async,
-                args=(f"Message {i}", INFO)
+                args=(f"Message {i}", INFO, "test_logger")
             )
             threads.append(thread)
             thread.start()
