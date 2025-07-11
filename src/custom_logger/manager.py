@@ -277,7 +277,7 @@ def get_logger(
 
     if not _initialized:
         raise RuntimeError(
-            "日志系统未初始化，请先调用 init_custom_logger_system() 或 init_custom_logger_system_for_worker()")
+            "日志系统未初始化，请先调用 init_custom_logger_system() 或 init_custom_logger_system_for_worker()。如果是测试用例或者简单脚本，建议使用系统logger.")
 
     # 获取配置
     config = get_config()
