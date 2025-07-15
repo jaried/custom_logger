@@ -8,6 +8,7 @@ import os
 import sys
 import threading
 import queue
+import time
 from typing import Optional, TextIO
 from .config import get_config
 from .types import WARNING
@@ -249,7 +250,7 @@ def init_writer() -> None:
     try:
         _log_queue = queue.Queue(maxsize=1_000)
         _stop_event = threading.Event()
-        _writer_thread = threading.Thread(target=_writer_thread_func, daemon=True)
+        _writer_thread = threading.Thread(target=_writer_thread_func, daemon=False)
         _writer_thread.start()
 
     except Exception as e:
@@ -286,11 +287,53 @@ def write_log_async(log_line: str, level_value: int, logger_name: str, exception
     return
 
 
+def flush_writer() -> None:
+    """刷新写入器，确保所有队列中的数据都被写入文件"""
+    global _log_queue, _writer_thread
+    
+    if _log_queue is None or _writer_thread is None:
+        return
+    
+    try:
+        # 等待队列变空
+        max_wait_time = 5.0  # 最大等待5秒
+        wait_interval = 0.1  # 每次等待0.1秒
+        waited_time = 0.0
+        
+        while waited_time < max_wait_time:
+            if _log_queue.empty():
+                # 队列为空，再等待一小段时间确保写入线程处理完毕
+                time.sleep(0.1)
+                if _log_queue.empty():
+                    break
+            
+            time.sleep(wait_interval)
+            waited_time += wait_interval
+        
+        # 如果仍有数据，打印警告
+        if not _log_queue.empty():
+            try:
+                print(f"警告: flush_writer超时，队列中还有 {_log_queue.qsize()} 条数据", file=sys.stderr)
+            except (ValueError, AttributeError):
+                pass
+                
+    except Exception as e:
+        try:
+            print(f"刷新写入器失败: {e}", file=sys.stderr)
+        except (ValueError, AttributeError):
+            pass
+    
+    return
+
+
 def shutdown_writer() -> None:
     """关闭异步写入器"""
     global _log_queue, _writer_thread, _stop_event
 
     try:
+        # 先尝试刷新所有数据
+        flush_writer()
+        
         if _log_queue is not None:
             _log_queue.put(QUEUE_SENTINEL)
 

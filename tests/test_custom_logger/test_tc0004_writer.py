@@ -201,11 +201,11 @@ def test_tc0004_009_file_writer_close_failure():
             writer.close()  # 应该不抛出异常
     pass
 
-@patch('custom_logger.writer.get_config')
+@patch('custom_logger.config.get_root_config')
 def test_tc0004_010_init_writer(mock_get_config):
     """测试初始化异步写入器"""
     mock_config = MagicMock()
-    mock_config.current_session_dir = "/tmp/test"
+    mock_config.paths.log_dir = "/tmp/test"
     mock_get_config.return_value = mock_config
 
     # 清理全局状态
@@ -229,9 +229,9 @@ def test_tc0004_011_init_writer_already_initialized():
     # 清理全局状态
     shutdown_writer()
 
-    with patch('custom_logger.writer.get_config') as mock_get_config:
+    with patch('custom_logger.config.get_root_config') as mock_get_config:
         mock_config = MagicMock()
-        mock_config.current_session_dir = "/tmp/test"
+        mock_config.paths.log_dir = "/tmp/test"
         mock_get_config.return_value = mock_config
 
         with patch('os.makedirs'):
@@ -252,11 +252,11 @@ def test_tc0004_011_init_writer_already_initialized():
     pass
 
 
-@patch('custom_logger.writer.get_config')
+@patch('custom_logger.config.get_root_config')
 def test_tc0004_012_write_log_async(mock_get_config):
     """测试异步写入日志"""
     mock_config = MagicMock()
-    mock_config.current_session_dir = "/tmp/test"
+    mock_config.paths.log_dir = "/tmp/test"
     mock_get_config.return_value = mock_config
 
     # 清理并初始化
@@ -306,9 +306,9 @@ def test_tc0004_014_write_log_async_queue_full():
 def test_tc0004_015_shutdown_writer():
     """测试关闭异步写入器"""
     # 先初始化
-    with patch('custom_logger.writer.get_config') as mock_get_config:
+    with patch('custom_logger.config.get_root_config') as mock_get_config:
         mock_config = MagicMock()
-        mock_config.current_session_dir = "/tmp/test"
+        mock_config.paths.log_dir = "/tmp/test"
         mock_get_config.return_value = mock_config
 
         shutdown_writer()  # 清理
@@ -375,9 +375,9 @@ def test_tc0004_018_log_entry_edge_cases():
 
 def test_tc0004_019_writer_thread_timeout():
     """测试写入线程超时处理"""
-    with patch('custom_logger.writer.get_config') as mock_get_config:
+    with patch('custom_logger.config.get_root_config') as mock_get_config:
         mock_config = MagicMock()
-        mock_config.current_session_dir = "/tmp/test"
+        mock_config.paths.log_dir = "/tmp/test"
         mock_get_config.return_value = mock_config
 
         shutdown_writer()
@@ -395,9 +395,9 @@ def test_tc0004_019_writer_thread_timeout():
 
 def test_tc0004_020_concurrent_write():
     """测试并发写入"""
-    with patch('custom_logger.writer.get_config') as mock_get_config:
+    with patch('custom_logger.config.get_root_config') as mock_get_config:
         mock_config = MagicMock()
-        mock_config.current_session_dir = "/tmp/test"
+        mock_config.paths.log_dir = "/tmp/test"
         mock_get_config.return_value = mock_config
 
         shutdown_writer()
