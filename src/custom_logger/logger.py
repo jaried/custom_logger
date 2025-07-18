@@ -329,9 +329,9 @@ class CustomLogger:
         # 创建日志行
         log_line = create_log_line(level_name, message, self.name, args, kwargs)
 
-        # 获取异常信息（如果是exception级别）
+        # 获取异常信息（ERROR级别及以上）
         exception_info = None
-        if level_value == EXCEPTION:
+        if level_value >= ERROR:
             exception_info = get_exception_info()
 
         # 控制台输出

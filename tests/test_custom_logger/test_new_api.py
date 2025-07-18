@@ -43,11 +43,50 @@ class MockConfig:
 
 @pytest.fixture
 def temp_log_dir():
-    """创建临时日志目录"""
-    with tempfile.TemporaryDirectory() as temp_dir:
-        log_dir = os.path.join(temp_dir, "logs")
-        os.makedirs(log_dir, exist_ok=True)
+    """创建临时日志目录，解决Windows文件锁定问题"""
+    import shutil
+    import time
+    
+    # 创建临时目录
+    temp_dir = tempfile.mkdtemp(prefix="custom_logger_test_")
+    log_dir = os.path.join(temp_dir, "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    
+    try:
         yield log_dir
+    finally:
+        # 确保清理日志系统
+        try:
+            tear_down_custom_logger_system()
+        except Exception:
+            pass
+        
+        # 等待一段时间确保所有文件句柄释放
+        time.sleep(0.5)
+        
+        # 安全删除临时目录
+        max_retries = 5
+        for retry in range(max_retries):
+            try:
+                shutil.rmtree(temp_dir)
+                break
+            except (OSError, PermissionError) as e:
+                if retry < max_retries - 1:
+                    time.sleep(0.5)
+                else:
+                    # 最后一次重试失败，尝试重置权限
+                    try:
+                        for root, dirs, files in os.walk(temp_dir):
+                            for file in files:
+                                file_path = os.path.join(root, file)
+                                try:
+                                    os.chmod(file_path, 0o777)
+                                except (OSError, PermissionError):
+                                    pass
+                        shutil.rmtree(temp_dir)
+                    except Exception:
+                        print(f"警告：无法完全清理临时目录 {temp_dir}")
+                        pass
 
 
 def test_new_api_basic_config_object(temp_log_dir):

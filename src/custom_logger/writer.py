@@ -148,20 +148,36 @@ class FileWriter:
         try:
             # 关闭全局文件
             if self.full_log_file:
-                self.full_log_file.close()
+                try:
+                    self.full_log_file.flush()  # 确保数据写入
+                    self.full_log_file.close()
+                except Exception:
+                    pass
                 self.full_log_file = None
 
             if self.warning_log_file:
-                self.warning_log_file.close()
+                try:
+                    self.warning_log_file.flush()  # 确保数据写入
+                    self.warning_log_file.close()
+                except Exception:
+                    pass
                 self.warning_log_file = None
             
             # 关闭所有模块文件
             for logger_name, file_handles in self.module_files.items():
                 try:
                     if "full" in file_handles and file_handles["full"]:
-                        file_handles["full"].close()
+                        try:
+                            file_handles["full"].flush()  # 确保数据写入
+                            file_handles["full"].close()
+                        except Exception:
+                            pass
                     if "warning" in file_handles and file_handles["warning"]:
-                        file_handles["warning"].close()
+                        try:
+                            file_handles["warning"].flush()  # 确保数据写入
+                            file_handles["warning"].close()
+                        except Exception:
+                            pass
                 except Exception as e:
                     try:
                         print(f"关闭模块文件失败 {logger_name}: {e}", file=sys.stderr)
@@ -170,6 +186,10 @@ class FileWriter:
             
             # 清空模块文件字典
             self.module_files.clear()
+            
+            # 在Windows环境下，额外等待确保文件句柄释放
+            if sys.platform.startswith('win'):
+                time.sleep(0.1)
 
         except Exception as e:
             try:
@@ -341,7 +361,12 @@ def shutdown_writer() -> None:
             _stop_event.set()
 
         if _writer_thread is not None and _writer_thread.is_alive():
-            _writer_thread.join(timeout=5.0)
+            _writer_thread.join(timeout=10.0)  # 增加超时时间
+            
+            # 如果线程仍在运行，给更多时间
+            if _writer_thread.is_alive():
+                time.sleep(1.0)
+                _writer_thread.join(timeout=5.0)
 
     except Exception as e:
         try:
@@ -352,5 +377,9 @@ def shutdown_writer() -> None:
         _log_queue = None
         _writer_thread = None
         _stop_event = None
+        
+        # 在Windows环境下，额外等待一段时间确保文件句柄释放
+        if sys.platform.startswith('win'):
+            time.sleep(0.5)
 
     return
