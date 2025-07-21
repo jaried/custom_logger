@@ -9,6 +9,7 @@ import sys
 import threading
 import queue
 import time
+import signal
 from typing import Optional, TextIO
 from .config import get_config
 from .types import WARNING
@@ -270,8 +271,11 @@ def init_writer() -> None:
     try:
         _log_queue = queue.Queue(maxsize=1_000)
         _stop_event = threading.Event()
-        _writer_thread = threading.Thread(target=_writer_thread_func, daemon=False)
+        _writer_thread = threading.Thread(target=_writer_thread_func, daemon=True)
         _writer_thread.start()
+
+        # 设置信号处理器增强清理机制
+        _setup_signal_handlers()
 
     except Exception as e:
         # 避免在测试环境中输出到可能已关闭的stderr
@@ -382,4 +386,34 @@ def shutdown_writer() -> None:
         if sys.platform.startswith('win'):
             time.sleep(0.5)
 
+    return
+
+
+def _setup_signal_handlers() -> None:
+    """设置信号处理器增强线程清理机制"""
+    def signal_handler(signum: int, frame) -> None:
+        """信号处理器：触发writer清理"""
+        try:
+            shutdown_writer()
+        except Exception as e:
+            try:
+                print(f"信号处理器中清理writer失败: {e}", file=sys.stderr)
+            except (ValueError, AttributeError):
+                pass
+        
+        # 重新安装默认信号处理器并重新发送信号
+        signal.signal(signum, signal.SIG_DFL)
+        os.kill(os.getpid(), signum)
+
+    try:
+        # 注册SIGTERM和SIGINT信号处理器
+        signal.signal(signal.SIGTERM, signal_handler)
+        signal.signal(signal.SIGINT, signal_handler)
+    except (ValueError, OSError) as e:
+        # 在某些环境中信号注册可能失败，静默处理
+        try:
+            print(f"信号处理器注册失败: {e}", file=sys.stderr)
+        except (ValueError, AttributeError):
+            pass
+    
     return
