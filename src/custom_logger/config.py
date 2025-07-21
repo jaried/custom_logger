@@ -22,8 +22,8 @@ DEFAULT_CONFIG = {
         "global_file_level": "debug",
         "current_session_dir": None,
         "module_levels": {},
-        "show_call_chain": True,  # 控制是否显示调用链
-        "show_debug_call_stack": True,  # 控制是否显示调试调用链
+        "show_call_chain": False,  # 控制是否显示调用链
+        "show_debug_call_stack": False,  # 控制是否显示调试调用链
     },
 }
 
@@ -756,19 +756,17 @@ def _ensure_logger_attributes(config_object: Any) -> None:
     # 检查并创建logger属性
     logger_obj = getattr(config_object, 'logger', None)
     if logger_obj is None:
-        # 创建logger配置对象
+        # 创建logger配置字典（避免动态类导致的序列化问题）
         try:
-            # 尝试创建一个简单的配置对象
-            class LoggerConfig:
-                def __init__(self):
-                    self.global_console_level = "info"
-                    self.global_file_level = "debug"
-                    self.module_levels = {}
-                    self.show_call_chain = True
-                    self.show_debug_call_stack = False
-                    self.enable_queue_mode = False
-            
-            setattr(config_object, 'logger', LoggerConfig())
+            logger_config = {
+                'global_console_level': 'info',
+                'global_file_level': 'debug',
+                'module_levels': {},
+                'show_call_chain': False,
+                'show_debug_call_stack': False,
+                'enable_queue_mode': False
+            }
+            setattr(config_object, 'logger', logger_config)
             logger_obj = getattr(config_object, 'logger')
         except Exception:
             # 如果无法设置属性，则跳过（某些只读对象）
@@ -778,7 +776,7 @@ def _ensure_logger_attributes(config_object: Any) -> None:
     _ensure_attribute(logger_obj, 'global_console_level', 'info')
     _ensure_attribute(logger_obj, 'global_file_level', 'debug')
     _ensure_attribute(logger_obj, 'module_levels', {})
-    _ensure_attribute(logger_obj, 'show_call_chain', True)
+    _ensure_attribute(logger_obj, 'show_call_chain', False)
     _ensure_attribute(logger_obj, 'show_debug_call_stack', False)
     _ensure_attribute(logger_obj, 'enable_queue_mode', False)
     
@@ -789,28 +787,38 @@ def _ensure_attribute(obj: Any, attr_name: str, default_value: Any) -> None:
     """确保对象包含指定属性，如果缺失则设置默认值
     
     Args:
-        obj: 目标对象
+        obj: 目标对象（支持对象属性和字典键值）
         attr_name: 属性名
         default_value: 默认值
     """
     try:
-        # 检查属性是否存在
-        if not hasattr(obj, attr_name):
-            setattr(obj, attr_name, default_value)
+        # 判断是字典还是对象
+        if isinstance(obj, dict):
+            # 字典类型：使用键值访问
+            if attr_name not in obj:
+                obj[attr_name] = default_value
+            else:
+                current_value = obj.get(attr_name)
+                # 对于Mock对象，我们需要特殊处理
+                from unittest.mock import Mock
+                if isinstance(current_value, Mock):
+                    if not hasattr(current_value, '_mock_name') or current_value._mock_name.endswith(f'.{attr_name}'):
+                        obj[attr_name] = default_value
+                elif current_value is None:
+                    obj[attr_name] = default_value
         else:
-            # 检查属性值是否为None或Mock对象（需要替换）
-            current_value = getattr(obj, attr_name, None)
-            
-            # 对于Mock对象，我们需要特殊处理
-            # 如果当前值是Mock对象且不是我们明确设置的值，则替换为默认值
-            from unittest.mock import Mock
-            if isinstance(current_value, Mock):
-                # 检查Mock对象是否有实际的配置值
-                # 如果Mock对象没有被明确配置，则替换为默认值
-                if not hasattr(current_value, '_mock_name') or current_value._mock_name.endswith(f'.{attr_name}'):
-                    setattr(obj, attr_name, default_value)
-            elif current_value is None:
+            # 对象类型：使用属性访问
+            if not hasattr(obj, attr_name):
                 setattr(obj, attr_name, default_value)
+            else:
+                current_value = getattr(obj, attr_name, None)
+                # 对于Mock对象，我们需要特殊处理
+                from unittest.mock import Mock
+                if isinstance(current_value, Mock):
+                    if not hasattr(current_value, '_mock_name') or current_value._mock_name.endswith(f'.{attr_name}'):
+                        setattr(obj, attr_name, default_value)
+                elif current_value is None:
+                    setattr(obj, attr_name, default_value)
     except Exception:
         # 如果无法设置属性（只读对象等），则跳过
         pass
