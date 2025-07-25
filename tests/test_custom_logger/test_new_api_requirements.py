@@ -39,12 +39,14 @@ class TestNewAPIRequirements:
         self.base_config.logger.global_console_level = "info"
         self.base_config.logger.global_file_level = "debug"
         self.base_config.logger.module_levels = {}
+        self.base_config.logger.show_call_chain = False  # 修复：添加缺失的配置
+        self.base_config.logger.show_debug_call_stack = False  # 修复：添加缺失的配置
         self.base_config.logger.enable_queue_mode = False
         self.base_config.queue_info = None
         self.base_config.writer = Mock()
         self.base_config.writer.max_queue_size = 1000
         self.base_config.writer.worker_thread_timeout = 5
-        self.base_config.writer.show_call_chain = True
+        self.base_config.writer.show_call_chain = False  # 修复：使用新的默认值
         self.base_config.writer.show_debug_call_stack = False
 
     def teardown_method(self):
@@ -408,24 +410,45 @@ class TestNewAPIRequirements:
         assert hasattr(config, 'logger')
         assert config.logger is not None
         
-        # 验证logger的各个子属性都被正确设置
-        assert hasattr(config.logger, 'global_console_level')
-        assert config.logger.global_console_level == "info"
-        
-        assert hasattr(config.logger, 'global_file_level')
-        assert config.logger.global_file_level == "debug"
-        
-        assert hasattr(config.logger, 'module_levels')
-        assert config.logger.module_levels == {}
-        
-        assert hasattr(config.logger, 'show_call_chain')
-        assert config.logger.show_call_chain == True
-        
-        assert hasattr(config.logger, 'show_debug_call_stack')
-        assert config.logger.show_debug_call_stack == False
-        
-        assert hasattr(config.logger, 'enable_queue_mode')
-        assert config.logger.enable_queue_mode == False
+        # 验证logger的各个子属性都被正确设置（现在logger是字典类型）
+        if isinstance(config.logger, dict):
+            # 字典类型的logger配置
+            assert 'global_console_level' in config.logger
+            assert config.logger['global_console_level'] == "info"
+            
+            assert 'global_file_level' in config.logger
+            assert config.logger['global_file_level'] == "debug"
+            
+            assert 'module_levels' in config.logger
+            assert config.logger['module_levels'] == {}
+            
+            assert 'show_call_chain' in config.logger
+            assert config.logger['show_call_chain'] == False  # 修复：默认值改为False
+            
+            assert 'show_debug_call_stack' in config.logger
+            assert config.logger['show_debug_call_stack'] == False
+            
+            assert 'enable_queue_mode' in config.logger
+            assert config.logger['enable_queue_mode'] == False
+        else:
+            # 对象类型的logger配置（向后兼容）
+            assert hasattr(config.logger, 'global_console_level')
+            assert config.logger.global_console_level == "info"
+            
+            assert hasattr(config.logger, 'global_file_level')
+            assert config.logger.global_file_level == "debug"
+            
+            assert hasattr(config.logger, 'module_levels')
+            assert config.logger.module_levels == {}
+            
+            assert hasattr(config.logger, 'show_call_chain')
+            assert config.logger.show_call_chain == False  # 修复：默认值改为False
+            
+            assert hasattr(config.logger, 'show_debug_call_stack')
+            assert config.logger.show_debug_call_stack == False
+            
+            assert hasattr(config.logger, 'enable_queue_mode')
+            assert config.logger.enable_queue_mode == False
 
     def test_config_partial_logger_attributes_supplement(self):
         """测试config部分logger属性自动补充功能"""
@@ -461,7 +484,7 @@ class TestNewAPIRequirements:
         assert config.logger.module_levels == {}
         
         assert hasattr(config.logger, 'show_call_chain')
-        assert config.logger.show_call_chain == True
+        assert config.logger.show_call_chain == False  # 修复：默认值改为False
         
         assert hasattr(config.logger, 'show_debug_call_stack')
         assert config.logger.show_debug_call_stack == False
@@ -493,7 +516,7 @@ class TestNewAPIRequirements:
         assert config.logger.global_console_level == "info"
         assert config.logger.global_file_level == "debug"
         assert config.logger.module_levels == {}
-        assert config.logger.show_call_chain == True
+        assert config.logger.show_call_chain == False  # 修复：默认值改为False
         assert config.logger.show_debug_call_stack == False
         assert config.logger.enable_queue_mode == False
 

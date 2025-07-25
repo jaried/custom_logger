@@ -15,7 +15,10 @@
       "Bash(source:*)",
       "Bash(conda activate:*)",
       "Bash(gh issue view:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(git config:*)",
+      "Bash(gh issue list:*)",
+      "Bash(timeout:*)"
     ],
     "deny": []
   }

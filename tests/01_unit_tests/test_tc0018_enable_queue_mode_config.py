@@ -55,7 +55,7 @@ class TestEnableQueueModeConfig(unittest.TestCase):
             "global_console_level": "info",
             "global_file_level": "debug",
             "module_levels": {},
-            "show_call_chain": True,
+            "show_call_chain": False,  # 修复：使用新的默认值
             "show_debug_call_stack": False,
         }
     
