@@ -18,7 +18,8 @@
       "Bash(rm:*)",
       "Bash(git config:*)",
       "Bash(gh issue list:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   }

@@ -280,7 +280,9 @@ def get_logger(
             "日志系统未初始化。"
             "\n如果需要调用生产代码，请先调用 init_custom_logger_system() "
             "或 init_custom_logger_system_for_worker()。\n"
-            "如果是测试用例或者简单脚本，建议使用系统logger。")
+            "如果是测试用例或者简单脚本，建议使用系统logger。\n"
+            "集成测试建议使用生产环境配置，初始化config=get_config_manager(first_datetime=start_datetime)。"
+            "\n再初始化custom_logger  init_custom_logger_system(config)")
 
     # 获取配置
     config = get_config()
