@@ -1,0 +1,326 @@
+<problems>
+<problem>
+  <file>file://$PROJECT_DIR$/src/custom_logger/config.py</file>
+  <line>7</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/custom_logger/config.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">未解析的引用</problem_class>
+  <description>未使用的 import 语句 &lt;code&gt;Dict&lt;/code&gt;</description>
+  <highlighted_element>Dict</highlighted_element>
+  <language>Python</language>
+  <offset>19</offset>
+  <length>4</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/custom_logger/config.py</file>
+  <line>183</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/custom_logger/config.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">未解析的引用</problem_class>
+  <description>未解析的引用 '_managers'</description>
+  <highlighted_element>_managers</highlighted_element>
+  <language>Python</language>
+  <offset>19</offset>
+  <length>9</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/custom_logger/config.py</file>
+  <line>187</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/custom_logger/config.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">未解析的引用</problem_class>
+  <description>未解析的引用 '_managers'</description>
+  <highlighted_element>_managers</highlighted_element>
+  <language>Python</language>
+  <offset>16</offset>
+  <length>9</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/custom_logger/config.py</file>
+  <line>192</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/custom_logger/config.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">未解析的引用</problem_class>
+  <description>未解析的引用 'get_config_manager'</description>
+  <highlighted_element>get_config_manager</highlighted_element>
+  <language>Python</language>
+  <offset>10</offset>
+  <length>18</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/custom_logger/config.py</file>
+  <line>429</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/custom_logger/config.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">未解析的引用</problem_class>
+  <description>未解析的引用 '_managers'</description>
+  <highlighted_element>_managers</highlighted_element>
+  <language>Python</language>
+  <offset>23</offset>
+  <length>9</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/custom_logger/config.py</file>
+  <line>433</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/custom_logger/config.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">未解析的引用</problem_class>
+  <description>未解析的引用 '_managers'</description>
+  <highlighted_element>_managers</highlighted_element>
+  <language>Python</language>
+  <offset>20</offset>
+  <length>9</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/custom_logger/config.py</file>
+  <line>438</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/custom_logger/config.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">未解析的引用</problem_class>
+  <description>未解析的引用 'get_config_manager'</description>
+  <highlighted_element>get_config_manager</highlighted_element>
+  <language>Python</language>
+  <offset>10</offset>
+  <length>18</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/demo/custom_logger_comprehensive/comprehensive_demo.py</file>
+  <line>11</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/demo/custom_logger_comprehensive/comprehensive_demo.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">未解析的引用</problem_class>
+  <description>未使用的 import 语句 &lt;code&gt;import multiprocessing&lt;/code&gt;</description>
+  <highlighted_element>import multiprocessing</highlighted_element>
+  <language>Python</language>
+  <offset>0</offset>
+  <length>22</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/demo/custom_logger_comprehensive/comprehensive_demo.py</file>
+  <line>381</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/demo/custom_logger_comprehensive/comprehensive_demo.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">未解析的引用</problem_class>
+  <description>未解析的引用 'error_log_path'</description>
+  <highlighted_element>error_log_path</highlighted_element>
+  <language>Python</language>
+  <offset>26</offset>
+  <length>14</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/demo/custom_logger_comprehensive/comprehensive_demo.py</file>
+  <line>382</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/demo/custom_logger_comprehensive/comprehensive_demo.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">未解析的引用</problem_class>
+  <description>未解析的引用 'error_log_path'</description>
+  <highlighted_element>error_log_path</highlighted_element>
+  <language>Python</language>
+  <offset>41</offset>
+  <length>14</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/demo/demo_comprehensive_custom_logger.py</file>
+  <line>15</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/demo/demo_comprehensive_custom_logger.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">未解析的引用</problem_class>
+  <description>在 '__init__.py' 中找不到引用 'parse_level_name'</description>
+  <highlighted_element>parse_level_name</highlighted_element>
+  <language>Python</language>
+  <offset>4</offset>
+  <length>16</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/demo/demo_comprehensive_custom_logger.py</file>
+  <line>15</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/demo/demo_comprehensive_custom_logger.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">未解析的引用</problem_class>
+  <description>在 '__init__.py' 中找不到引用 'get_level_name'</description>
+  <highlighted_element>get_level_name</highlighted_element>
+  <language>Python</language>
+  <offset>22</offset>
+  <length>14</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/demo/demo_comprehensive_custom_logger.py</file>
+  <line>232</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/demo/demo_comprehensive_custom_logger.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">未解析的引用</problem_class>
+  <description>类 'CustomLogger' 的未解析的特性引用 'w_summary'</description>
+  <highlighted_element>w_summary</highlighted_element>
+  <language>Python</language>
+  <offset>15</offset>
+  <length>9</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/demo/demo_comprehensive_custom_logger.py</file>
+  <line>233</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/demo/demo_comprehensive_custom_logger.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">未解析的引用</problem_class>
+  <description>类 'CustomLogger' 的未解析的特性引用 'w_detail'</description>
+  <highlighted_element>w_detail</highlighted_element>
+  <language>Python</language>
+  <offset>15</offset>
+  <length>8</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/demo/demo_comprehensive_custom_logger.py</file>
+  <line>345</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/demo/demo_comprehensive_custom_logger.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">未解析的引用</problem_class>
+  <description>类 'CustomLogger' 的未解析的特性引用 'w_summary'</description>
+  <highlighted_element>w_summary</highlighted_element>
+  <language>Python</language>
+  <offset>15</offset>
+  <length>9</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/demo/demo_comprehensive_custom_logger.py</file>
+  <line>749</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/demo/demo_comprehensive_custom_logger.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">未解析的引用</problem_class>
+  <description>在 'None' 中找不到引用 'invalid_attr'</description>
+  <highlighted_element>invalid_attr</highlighted_element>
+  <language>Python</language>
+  <offset>44</offset>
+  <length>12</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/demo/worker_params_demo.py</file>
+  <line>25</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/demo/worker_params_demo.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">未解析的引用</problem_class>
+  <description>在 '__init__.py' 中找不到引用 'init_custom_logger_system_with_params'</description>
+  <highlighted_element>init_custom_logger_system_with_params</highlighted_element>
+  <language>Python</language>
+  <offset>4</offset>
+  <length>37</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/demo/worker_params_demo.py</file>
+  <line>26</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/demo/worker_params_demo.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">未解析的引用</problem_class>
+  <description>在 '__init__.py' 中找不到引用 'init_custom_logger_system_from_serializable_config'</description>
+  <highlighted_element>init_custom_logger_system_from_serializable_config</highlighted_element>
+  <language>Python</language>
+  <offset>4</offset>
+  <length>50</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/demo/worker_params_demo.py</file>
+  <line>28</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/demo/worker_params_demo.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">未解析的引用</problem_class>
+  <description>在 '__init__.py' 中找不到引用 'get_logger_init_params'</description>
+  <highlighted_element>get_logger_init_params</highlighted_element>
+  <language>Python</language>
+  <offset>4</offset>
+  <length>22</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/demo/worker_params_demo.py</file>
+  <line>29</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/demo/worker_params_demo.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">未解析的引用</problem_class>
+  <description>在 '__init__.py' 中找不到引用 'get_serializable_config'</description>
+  <highlighted_element>get_serializable_config</highlighted_element>
+  <language>Python</language>
+  <offset>4</offset>
+  <length>23</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/demo/worker_path_demo/demo_worker_custom_config.py</file>
+  <line>9</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/demo/worker_path_demo/demo_worker_custom_config.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">未解析的引用</problem_class>
+  <description>未使用的 import 语句 &lt;code&gt;import threading&lt;/code&gt;</description>
+  <highlighted_element>import threading</highlighted_element>
+  <language>Python</language>
+  <offset>0</offset>
+  <length>16</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/demo/worker_path_demo/demo_worker_custom_config.py</file>
+  <line>10</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/demo/worker_path_demo/demo_worker_custom_config.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">未解析的引用</problem_class>
+  <description>未使用的 import 语句 &lt;code&gt;import multiprocessing&lt;/code&gt;</description>
+  <highlighted_element>import multiprocessing</highlighted_element>
+  <language>Python</language>
+  <offset>0</offset>
+  <length>22</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/demo/worker_path_demo/demo_worker_custom_config.py</file>
+  <line>195</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/demo/worker_path_demo/demo_worker_custom_config.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">未解析的引用</problem_class>
+  <description>未解析的引用 'error_log_path'</description>
+  <highlighted_element>error_log_path</highlighted_element>
+  <language>Python</language>
+  <offset>30</offset>
+  <length>14</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/demo/worker_path_demo/demo_worker_custom_config.py</file>
+  <line>196</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/demo/worker_path_demo/demo_worker_custom_config.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">未解析的引用</problem_class>
+  <description>未解析的引用 'error_log_path'</description>
+  <highlighted_element>error_log_path</highlighted_element>
+  <language>Python</language>
+  <offset>45</offset>
+  <length>14</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/demo/worker_path_demo/demo_worker_custom_config.py</file>
+  <line>197</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/demo/worker_path_demo/demo_worker_custom_config.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">未解析的引用</problem_class>
+  <description>未解析的引用 'error_log_path'</description>
+  <highlighted_element>error_log_path</highlighted_element>
+  <language>Python</language>
+  <offset>35</offset>
+  <length>14</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/demo/worker_serializable_config_demo.py</file>
+  <line>24</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/demo/worker_serializable_config_demo.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">未解析的引用</problem_class>
+  <description>在 '__init__.py' 中找不到引用 'init_custom_logger_system_from_serializable_config'</description>
+  <highlighted_element>init_custom_logger_system_from_serializable_config</highlighted_element>
+  <language>Python</language>
+  <offset>4</offset>
+  <length>50</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/demo/worker_serializable_config_demo.py</file>
+  <line>26</line>
+  <module>custom_logger</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/demo/worker_serializable_config_demo.py" />
+  <problem_class id="PyUnresolvedReferencesInspection" severity="ERROR" attribute_key="ERRORS_ATTRIBUTES">未解析的引用</problem_class>
+  <description>在 '__init__.py' 中找不到引用 'get_serializable_config'</description>
+  <highlighted_element>get_serializable_config</highlighted_element>
+  <language>Python</language>
+  <offset>4</offset>
+  <length>23</length>
+</problem>
+</problems>
