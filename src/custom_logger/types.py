@@ -1,10 +1,9 @@
 # src/custom_logger/types.py
 from __future__ import annotations
 from datetime import datetime
+from typing import Dict
 
 start_time = datetime.now()
-
-from typing import Dict, Any
 
 # 日志级别常量定义
 DEBUG = 10

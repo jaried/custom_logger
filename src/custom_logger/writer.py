@@ -1,9 +1,6 @@
 # src/custom_logger/writer.py
 from __future__ import annotations
 from datetime import datetime
-
-start_time = datetime.now()
-
 import os
 import sys
 import threading
@@ -11,8 +8,9 @@ import queue
 import time
 import signal
 from typing import Optional, TextIO
-from .config import get_config
 from .types import WARNING
+
+start_time = datetime.now()
 
 # 全局队列和线程
 _log_queue: Optional[queue.Queue] = None

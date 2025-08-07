@@ -13,14 +13,20 @@ from .manager import (
     get_logger,
     tear_down_custom_logger_system,
     is_initialized,
-    is_queue_mode
+    is_queue_mode,
+    # 占位函数（未实现）
+    init_custom_logger_system_with_params,
+    init_custom_logger_system_from_serializable_config,
+    get_logger_init_params,
+    get_serializable_config
 )
 
 from .logger import CustomLogger
 
 from .types import (
     DEBUG, INFO, WARNING, ERROR, CRITICAL, EXCEPTION,
-    DETAIL, W_SUMMARY, W_DETAIL
+    DETAIL, W_SUMMARY, W_DETAIL,
+    parse_level_name, get_level_name
 )
 
 __all__ = [
@@ -39,5 +45,14 @@ __all__ = [
     
     # 日志级别常量
     'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL', 'EXCEPTION',
-    'DETAIL', 'W_SUMMARY', 'W_DETAIL'
+    'DETAIL', 'W_SUMMARY', 'W_DETAIL',
+    
+    # 级别处理函数
+    'parse_level_name', 'get_level_name',
+    
+    # 占位函数（未实现）
+    'init_custom_logger_system_with_params',
+    'init_custom_logger_system_from_serializable_config',
+    'get_logger_init_params',
+    'get_serializable_config'
 ]

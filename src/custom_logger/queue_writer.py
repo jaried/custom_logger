@@ -13,7 +13,7 @@ import sys
 import threading
 import queue
 import multiprocessing as mp
-from typing import Optional, TextIO, Any, Dict
+from typing import Optional, TextIO
 from dataclasses import dataclass
 from .types import WARNING
 
@@ -109,7 +109,7 @@ class QueueLogReceiver:
         # 发送停止信号到队列
         try:
             self.log_queue.put_nowait("STOP_LOGGING")
-        except:
+        except Exception:
             pass
         
         # 等待线程结束

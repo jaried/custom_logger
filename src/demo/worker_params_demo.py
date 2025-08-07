@@ -22,14 +22,16 @@ sys.path.insert(0, str(src_dir))
 
 from custom_logger import (
     init_custom_logger_system,
-    init_custom_logger_system_with_params,
-    init_custom_logger_system_from_serializable_config,
+    init_custom_logger_system_with_params,  # 占位函数，抛出NotImplementedError
+    init_custom_logger_system_from_serializable_config,  # 占位函数，抛出NotImplementedError
     get_logger,
-    get_logger_init_params,
-    get_serializable_config,
+    get_logger_init_params,  # 占位函数，抛出NotImplementedError
+    get_serializable_config,  # 占位函数，抛出NotImplementedError
     tear_down_custom_logger_system
 )
 
+# 注意：此demo依赖于尚未实现的函数，暂时无法正常运行
+DEMO_DISABLED = True
 
 def traditional_worker(worker_id: int, config_path: str, first_start_time: datetime = None):
     """传统的worker函数 - 每个worker都会初始化config_manager"""
@@ -146,7 +148,7 @@ logger:
         # 清理临时文件
         try:
             os.unlink(config_path)
-        except:
+        except Exception:
             pass
 
 
@@ -212,7 +214,7 @@ logger:
         # 清理临时文件
         try:
             os.unlink(config_path)
-        except:
+        except Exception:
             pass
 
 
@@ -279,7 +281,7 @@ logger:
         # 清理临时文件
         try:
             os.unlink(config_path)
-        except:
+        except Exception:
             pass
 
 
@@ -307,7 +309,7 @@ logger:
         print("测试传统方式性能...")
         start_time = time.time()
         with mp.Pool(processes=3) as pool:
-            results = pool.starmap(
+            pool.starmap(
                 traditional_worker,
                 [(i, config_path) for i in range(1, 4)]
             )
@@ -325,7 +327,7 @@ logger:
         
         # worker执行
         with mp.Pool(processes=3) as pool:
-            results = pool.starmap(
+            pool.starmap(
                 params_worker,
                 [(i, params) for i in range(1, 4)]
             )
@@ -343,7 +345,7 @@ logger:
         
         # worker执行
         with mp.Pool(processes=3) as pool:
-            results = pool.starmap(
+            pool.starmap(
                 serializable_config_worker,
                 [(i, serializable_config) for i in range(1, 4)]
             )
@@ -362,12 +364,21 @@ logger:
         # 清理临时文件
         try:
             os.unlink(config_path)
-        except:
+        except Exception:
             pass
 
 
 def main():
     """主函数"""
+    if DEMO_DISABLED:
+        print("警告：此demo依赖于尚未实现的函数，暂时无法运行")
+        print("需要实现以下函数：")
+        print("  - init_custom_logger_system_with_params")
+        print("  - init_custom_logger_system_from_serializable_config")
+        print("  - get_logger_init_params")
+        print("  - get_serializable_config")
+        return
+    
     print("Worker参数化初始化演示")
     print("="*60)
     print("这个演示展示了如何在worker进程中使用参数化初始化")

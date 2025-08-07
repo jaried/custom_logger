@@ -4,7 +4,7 @@ from datetime import datetime
 
 import os
 import traceback
-from typing import Dict, Any, Optional
+from typing import Any, Optional
 from is_debug import is_debug
 from .types import parse_level_name
 
@@ -168,36 +168,35 @@ def _create_session_dir(cfg) -> str:
 
 
 def _init_from_config_object(config_object: Any) -> None:
-    """从传入的配置对象初始化config_manager
+    """从传入的配置对象初始化配置
+    
+    重要约束：本项目彻底不使用config_manager，只用config_manager创建的对象。
+    此函数直接使用传入的config_object，避免调用get_config_manager()。
     
     Args:
-        config_object: 主程序传入的配置对象
+        config_object: 主程序传入的配置对象（已经是config_manager创建的对象）
+                      包含paths.log_dir、first_start_time等必要属性
+    
+    Returns:
+        None
+        
+    Note:
+        - 设置全局_direct_config_object变量供其他函数使用
+        - 确保config对象包含必要的属性和目录结构
     """
-    # 获取正确的配置文件路径
+    # 直接使用传入的config_object，不需要调用get_config_manager
+    global _direct_config_object
+    _direct_config_object = config_object
+    cfg = config_object
+    
+    # 获取配置文件路径（如果需要）
     actual_config_path = get_config_file_path()
-    
-    # 清理config_manager缓存，确保使用新的配置
-    try:
-        # 清理所有相关的缓存
-        keys_to_remove = []
-        for key in _managers.keys():
-            if key == actual_config_path or key.endswith(os.path.basename(actual_config_path)):
-                keys_to_remove.append(key)
-        for key in keys_to_remove:
-            del _managers[key]
-    except (ImportError, AttributeError, KeyError):
-        pass
-    
-    # 使用正确的配置路径获取config_manager实例
-    cfg = get_config_manager(config_path=actual_config_path)
-    
-    # 设置config_file_path属性，确保config_manager知道自己的配置文件路径
     try:
         cfg.config_file_path = actual_config_path
     except Exception:
         pass
     
-    # 复制配置对象的所有属性到config_manager
+    # 复制配置对象的所有属性到cfg（如果需要）
     if isinstance(config_object, dict):
         # 字典格式的配置对象
         for key, value in config_object.items():
@@ -383,7 +382,7 @@ def init_config(config_path: Optional[str] = None, config_object: Optional[Any] 
         try:
             call_stack = _get_call_stack_info()
             print(f"DEBUG: init_config called from: {call_stack}")
-        except:
+        except Exception:
             pass
 
     # 设置配置路径
@@ -416,26 +415,21 @@ def init_config(config_path: Optional[str] = None, config_object: Optional[Any] 
             if 'test_tc0015' in str(os.environ.get('PYTEST_CURRENT_TEST', '')) or 'test_tc0016' in str(os.environ.get('PYTEST_CURRENT_TEST', '')):
                 try:
                     print(f"DEBUG: Read original config before config_manager init: {original_config}")
-                except:
+                except Exception:
                     pass
         except Exception:
             original_config = None
 
-    if should_force_reload:
-        # 更彻底地清理config_manager缓存
-        try:
-            # 清理所有相关的缓存
-            keys_to_remove = []
-            for key in _managers.keys():
-                if key == actual_config_path or key.endswith(os.path.basename(actual_config_path)):
-                    keys_to_remove.append(key)
-            for key in keys_to_remove:
-                del _managers[key]
-        except (ImportError, AttributeError, KeyError):
-            pass
-
-    # 强制使用指定的配置文件路径初始化config_manager
-    cfg = get_config_manager(config_path=actual_config_path)
+    # 创建或使用配置对象
+    if config_object is not None:
+        # 如果传入了config_object，直接使用它
+        cfg = config_object
+        global _direct_config_object
+        _direct_config_object = config_object
+    else:
+        # 否则创建一个简单的配置对象
+        from types import SimpleNamespace
+        cfg = SimpleNamespace()
 
     # 设置config_file_path属性，确保config_manager知道自己的配置文件路径
     try:
@@ -450,7 +444,7 @@ def init_config(config_path: Optional[str] = None, config_object: Optional[Any] 
         if 'test_tc0015' in str(os.environ.get('PYTEST_CURRENT_TEST', '')) or 'test_tc0016' in str(os.environ.get('PYTEST_CURRENT_TEST', '')):
             try:
                 print(f"DEBUG: Using original config: {original_config}")
-            except:
+            except Exception:
                 pass
 
         # 检查config_manager是否已经有正确的配置内容
@@ -476,7 +470,7 @@ def init_config(config_path: Optional[str] = None, config_object: Optional[Any] 
                 try:
                     print(f"DEBUG: Force updated config from original - project_name: {getattr(cfg, 'project_name', 'NOT_SET')}")
                     print(f"DEBUG: Force updated config from original - logger: {getattr(cfg, 'logger', 'NOT_SET')}")
-                except:
+                except Exception:
                     pass
     else:
         # 如果没有原始配置，回退到从当前文件读取
@@ -494,7 +488,7 @@ def init_config(config_path: Optional[str] = None, config_object: Optional[Any] 
                     try:
                         print(f"DEBUG: Loading current config from {actual_config_path}")
                         print(f"DEBUG: raw_config = {raw_config}")
-                    except:
+                    except Exception:
                         pass
 
                 # 处理config_manager的包装格式
@@ -525,7 +519,7 @@ def init_config(config_path: Optional[str] = None, config_object: Optional[Any] 
                 if 'test_tc0015' in str(os.environ.get('PYTEST_CURRENT_TEST', '')) or 'test_tc0016' in str(os.environ.get('PYTEST_CURRENT_TEST', '')):
                     try:
                         print(f"DEBUG: Manual config loading failed: {e}")
-                    except:
+                    except Exception:
                         pass
 
     # 处理first_start_time：只从配置文件或config对象获取，不再支持传入参数
@@ -536,7 +530,7 @@ def init_config(config_path: Optional[str] = None, config_object: Optional[Any] 
         cfg.first_start_time = current_time.isoformat()
 
     # 创建日志目录
-    log_dir = _create_log_dir(cfg)
+    _create_log_dir(cfg)  # 创建日志目录
 
     return
 

@@ -2,13 +2,11 @@
 from __future__ import annotations
 
 import atexit
-import multiprocessing as mp
-from typing import Optional, Any, Dict
-from .config import init_config_from_object, get_config, set_config_path, get_root_config
+from typing import Optional, Any
+from .config import init_config_from_object, get_config
 from .writer import init_writer, shutdown_writer
 from .queue_writer import init_queue_sender, init_queue_receiver, shutdown_queue_writer
 from .logger import CustomLogger
-from .types import parse_level_name
 
 # 全局状态
 _initialized = False
@@ -80,7 +78,7 @@ def init_custom_logger_system(config_object: Any) -> None:
                     # 启用队列模式：主程序作为日志接收器
                     init_queue_receiver(log_queue, log_dir)
                     _queue_mode = True
-                    print(f"主程序启用队列模式（配置启用），日志接收器已初始化")
+                    print("主程序启用队列模式（配置启用），日志接收器已初始化")
                 else:
                     raise ValueError("配置启用队列模式但未提供queue_info.log_queue")
             else:
@@ -99,7 +97,7 @@ def init_custom_logger_system(config_object: Any) -> None:
                     # 启用队列模式：主程序作为日志接收器（向后兼容）
                     init_queue_receiver(log_queue, log_dir)
                     _queue_mode = True
-                    print(f"主程序启用队列模式（自动检测），日志接收器已初始化")
+                    print("主程序启用队列模式（自动检测），日志接收器已初始化")
                 else:
                     # 普通模式：使用异步写入器
                     init_writer()
@@ -348,3 +346,77 @@ def is_queue_mode() -> bool:
         bool: 如果为队列模式返回True，否则返回False
     """
     return _queue_mode
+
+
+# ============================================================================
+# 占位函数（未实现功能）
+# ============================================================================
+
+def init_custom_logger_system_with_params(**params) -> None:
+    """使用参数初始化日志系统（占位函数）
+    
+    注意：此函数为占位实现，实际功能未开发。
+    项目约束：本项目彻底不使用config_manager，只用config_manager创建的对象。
+    
+    Args:
+        **params: 初始化参数
+        
+    Raises:
+        NotImplementedError: 功能未实现
+    """
+    raise NotImplementedError(
+        "init_custom_logger_system_with_params功能未实现。"
+        "请使用init_custom_logger_system()并传入config对象。"
+    )
+
+
+def init_custom_logger_system_from_serializable_config(config_dict: dict) -> None:
+    """从可序列化配置初始化日志系统（占位函数）
+    
+    注意：此函数为占位实现，实际功能未开发。
+    项目约束：本项目彻底不使用config_manager，只用config_manager创建的对象。
+    
+    Args:
+        config_dict: 可序列化的配置字典
+        
+    Raises:
+        NotImplementedError: 功能未实现
+    """
+    raise NotImplementedError(
+        "init_custom_logger_system_from_serializable_config功能未实现。"
+        "请使用init_custom_logger_system_for_worker()进行worker初始化。"
+    )
+
+
+def get_logger_init_params() -> dict:
+    """获取日志系统初始化参数（占位函数）
+    
+    注意：此函数为占位实现，实际功能未开发。
+    
+    Returns:
+        dict: 初始化参数字典
+        
+    Raises:
+        NotImplementedError: 功能未实现
+    """
+    raise NotImplementedError(
+        "get_logger_init_params功能未实现。"
+        "日志系统配置应通过config对象传递。"
+    )
+
+
+def get_serializable_config() -> dict:
+    """获取可序列化的配置（占位函数）
+    
+    注意：此函数为占位实现，实际功能未开发。
+    
+    Returns:
+        dict: 可序列化的配置字典
+        
+    Raises:
+        NotImplementedError: 功能未实现
+    """
+    raise NotImplementedError(
+        "get_serializable_config功能未实现。"
+        "配置序列化应在主程序中处理。"
+    )

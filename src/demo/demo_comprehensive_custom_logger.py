@@ -229,8 +229,8 @@ logger:
         
         print("\n4. 特殊级别:")
         logger.detail("详细信息级别消息")
-        logger.w_summary("警告摘要级别消息")
-        logger.w_detail("警告详情级别消息")
+        logger.worker_summary("警告摘要级别消息")
+        logger.worker_detail("警告详情级别消息")
         
     finally:
         tear_down_custom_logger_system()
@@ -342,7 +342,7 @@ logger:
             logger.info(f"Worker {worker_id} 执行任务 {i+1}")
             time.sleep(0.1)  # 模拟工作
         
-        logger.w_summary(f"Worker {worker_id} 完成所有任务")
+        logger.worker_summary(f"Worker {worker_id} 完成所有任务")
         return f"worker_{worker_id}_completed"
     
     try:

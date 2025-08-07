@@ -133,17 +133,24 @@ def get_logger(
 ) -> CustomLogger
 
 def tear_down_custom_logger_system() -> None
+
+# 占位函数（抛出NotImplementedError）
+def init_custom_logger_system_with_params(**params) -> None
+def init_custom_logger_system_from_serializable_config(config_dict: dict) -> None
+def get_logger_init_params() -> dict
+def get_serializable_config() -> dict
 ```
 
 **设计要点**:
 - 单例模式管理全局状态
 - 只接收config对象，不再支持config_path和first_start_time参数
 - 严格的配置对象验证（必须包含paths.log_dir和first_start_time）
-- get_logger名字长度限制为8个字符
+- get_logger名字长度限制为16个字符
 - 支持队列模式用于多进程环境
 - 优先检查`config.logger.enable_queue_mode`参数控制队列模式
 - 向后兼容：没有`enable_queue_mode`时根据`queue_info.log_queue`自动判断
 - 自动清理资源
+- **占位函数设计**：提供4个未实现函数，用于保留API扩展点
 
 #### 3.2.2 config.py
 ```python

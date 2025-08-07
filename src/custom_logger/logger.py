@@ -1,9 +1,6 @@
 # src/custom_logger/logger.py
 from __future__ import annotations
 from datetime import datetime
-
-start_time = datetime.now()
-
 import sys
 import os
 from typing import Optional, Any
@@ -14,6 +11,8 @@ from .types import (
 from .config import get_console_level, get_file_level
 from .formatter import create_log_line, get_exception_info
 from .writer import write_log_async
+
+start_time = datetime.now()
 
 
 def _check_registry_ansi_support() -> bool:

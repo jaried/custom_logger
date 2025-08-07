@@ -1,14 +1,13 @@
 # src/custom_logger/formatter.py
 from __future__ import annotations
 from datetime import datetime
-
-start_time = datetime.now()
-
 import os
 import sys
 import traceback
 import inspect
 from typing import Tuple, Optional
+
+start_time = datetime.now()
 
 
 def _get_call_stack_info() -> str:
@@ -41,7 +40,7 @@ def get_caller_info() -> Tuple[str, int]:
             from .config import get_config
             cfg = get_config()
             show_call_chain = cfg.show_call_chain
-        except:
+        except Exception:
             pass
 
         # 如果启用调用链显示，打印调用链信息
@@ -62,7 +61,7 @@ def get_caller_info() -> Tuple[str, int]:
                 if show_debug:
                     call_stack = _get_call_stack_info()
                     print(f"DEBUG: get_caller_info调用链: {call_stack}")
-            except:
+            except Exception:
                 pass
 
         # 策略：从调用栈中找到第一个非custom_logger的用户代码文件
@@ -142,7 +141,7 @@ def get_caller_info() -> Tuple[str, int]:
             show_call_chain = cfg.show_call_chain
             if show_call_chain:
                 print(f"[调用链异常] {e}")
-        except:
+        except Exception:
             pass
         return "error", 0
 

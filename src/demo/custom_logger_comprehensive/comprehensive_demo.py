@@ -8,7 +8,6 @@ import os
 import time
 import tempfile
 import threading
-import multiprocessing
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from custom_logger import init_custom_logger_system, get_logger, tear_down_custom_logger_system
 
@@ -354,6 +353,7 @@ def demo_file_verification(session_dir: str):
     if session_dir and os.path.exists(session_dir):
         full_log_path = os.path.join(session_dir, "full.log")
         warning_log_path = os.path.join(session_dir, "warning.log")
+        error_log_path = os.path.join(session_dir, "error.log")
 
         # 验证完整日志文件
         if os.path.exists(full_log_path):

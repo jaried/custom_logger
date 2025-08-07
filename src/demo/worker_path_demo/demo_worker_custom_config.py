@@ -6,8 +6,6 @@ start_time = datetime.now()
 
 import os
 import time
-import threading
-import multiprocessing
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from custom_logger import init_custom_logger_system, get_logger, tear_down_custom_logger_system
 
@@ -172,6 +170,7 @@ def demo_custom_config_workers():
         if session_dir and os.path.exists(session_dir):
             full_log_path = os.path.join(session_dir, "full.log")
             warning_log_path = os.path.join(session_dir, "warning.log")
+            error_log_path = os.path.join(session_dir, "error.log")
 
             if os.path.exists(full_log_path):
                 file_size = os.path.getsize(full_log_path)

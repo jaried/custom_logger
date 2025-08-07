@@ -300,6 +300,76 @@ def init_custom_logger_system_for_worker(
 **输出**: 无
 **异常**: 无
 
+#### 4.1.4 占位函数接口（未实现）
+
+以下函数为API设计占位，调用时抛出`NotImplementedError`：
+
+**参数化初始化接口**:
+```python
+def init_custom_logger_system_with_params(**params) -> None:
+    """
+    使用参数初始化日志系统（占位函数）
+    
+    示例（如果实现）:
+        init_custom_logger_system_with_params(
+            log_dir="/var/logs/myapp",
+            first_start_time=datetime.now(),
+            console_level="info",
+            file_level="debug"
+        )
+    
+    当前状态: 抛出NotImplementedError，建议使用init_custom_logger_system()
+    """
+```
+
+**序列化配置初始化接口**:
+```python
+def init_custom_logger_system_from_serializable_config(config_dict: dict) -> None:
+    """
+    从可序列化配置初始化日志系统（占位函数）
+    
+    示例（如果实现）:
+        config = {"log_dir": "/logs", "first_start_time": "2025-01-01T00:00:00"}
+        init_custom_logger_system_from_serializable_config(config)
+    
+    当前状态: 抛出NotImplementedError，建议使用init_custom_logger_system_for_worker()
+    """
+```
+
+**获取初始化参数接口**:
+```python
+def get_logger_init_params() -> dict:
+    """
+    获取日志系统初始化参数（占位函数）
+    
+    示例（如果实现）:
+        params = get_logger_init_params()
+        # 返回: {"log_dir": "/logs", "console_level": "info", ...}
+    
+    当前状态: 抛出NotImplementedError，配置应通过config对象传递
+    """
+```
+
+**获取序列化配置接口**:
+```python
+def get_serializable_config() -> dict:
+    """
+    获取可序列化的配置（占位函数）
+    
+    示例（如果实现）:
+        config = get_serializable_config()
+        # 返回可以通过pickle/json序列化的配置字典
+    
+    当前状态: 抛出NotImplementedError，序列化应在主程序中处理
+    """
+```
+
+**设计意图**:
+- 为未来的参数化和序列化功能预留接口
+- 保持API的完整性和一致性
+- 提供清晰的错误信息和替代方案
+- 演示代码可以导入但运行时会得到明确的未实现提示
+
 ### 4.2 日志记录接口
 
 #### 4.2.1 标准级别接口

@@ -150,6 +150,21 @@ init_custom_logger_system_for_worker(
 # 获取logger（名字长度验证）
 get_logger(name: str, console_level: Optional[str] = None, 
           file_level: Optional[str] = None) -> CustomLogger
+
+# =================== 占位函数（未实现） ===================
+# 以下函数为API设计占位，抛出NotImplementedError
+
+# 使用参数初始化（占位）
+init_custom_logger_system_with_params(**params) -> None
+
+# 从可序列化配置初始化（占位）
+init_custom_logger_system_from_serializable_config(config_dict: dict) -> None
+
+# 获取初始化参数（占位）
+get_logger_init_params() -> dict
+
+# 获取可序列化配置（占位）
+get_serializable_config() -> dict
 ```
 
 **API变更说明**：
@@ -158,6 +173,10 @@ get_logger(name: str, console_level: Optional[str] = None,
 3. `get_logger`名字长度限制为16个字符，超过会抛出`ValueError`异常
 4. Worker进程使用专门的`init_custom_logger_system_for_worker`函数
 5. 支持队列模式用于多进程日志处理
+6. **占位函数**：提供4个未实现的占位函数，用于保留API设计意图
+   - 这些函数调用时会抛出`NotImplementedError`
+   - 错误信息中提供明确的替代方案指引
+   - 主要用于演示代码和未来扩展
 
 **配置对象要求**：
 - 必须包含`paths.log_dir`属性（字符串路径）
