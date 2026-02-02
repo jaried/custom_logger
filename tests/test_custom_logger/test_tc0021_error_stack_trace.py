@@ -174,31 +174,34 @@ def test_tc0021_error_method_no_stack_when_no_exception(config_object, temp_log_
 
 
 def test_tc0021_warning_method_no_stack_even_with_exception(config_object, temp_log_dir):
-    """测试warning()方法即使有活动异常也不打印异常栈"""
+    """测试warning()方法记录调用栈（OPT-001：WARNING使用调用栈）"""
     try:
         init_custom_logger_system(config_object)
         logger = get_logger("warning_test")
-        
+
         # 创建一个异常情况，然后在except块中使用warning()
         try:
             result = 1 / 0
         except ZeroDivisionError:
             logger.warning("警告消息")
-        
+
         # 刷新确保写入
         from custom_logger.writer import flush_writer
         flush_writer()
-        
+
         # 检查日志文件
         full_log_path = os.path.join(temp_log_dir, "full.log")
         assert os.path.exists(full_log_path), "full.log文件不存在"
-        
+
         with open(full_log_path, 'r', encoding='utf-8') as f:
             log_content = f.read()
-        
+
         assert "警告消息" in log_content, "警告日志消息不存在"
-        assert "Traceback" not in log_content, "WARNING级别不应该有异常栈信息"
-        
+        # OPT-001: WARNING级别使用调用栈（traceback.extract_stack()）
+        # 调用栈格式包含 'File "' 而不是 "Traceback"
+        assert 'File "' in log_content, "WARNING级别应该有调用栈信息"
+        assert "line " in log_content, "调用栈应包含行号"
+
     finally:
         tear_down_custom_logger_system()
 
@@ -232,39 +235,49 @@ def test_tc0021_mixed_levels_stack_behavior(config_object, temp_log_dir):
     try:
         init_custom_logger_system(config_object)
         logger = get_logger("mixed_test")
-        
+
         # 在异常上下文中测试所有级别
         try:
             result = 1 / 0
         except ZeroDivisionError:
             logger.info("信息级别")          # 不应该有栈
-            logger.warning("警告级别")       # 不应该有栈  
-            logger.error("错误级别")         # 应该有栈
-            logger.critical("严重级别")      # 应该有栈
-            logger.exception("异常级别")     # 应该有栈
-        
+            logger.warning("警告级别")       # OPT-001: 应该有调用栈
+            logger.error("错误级别")         # 应该有错误栈
+            logger.critical("严重级别")      # 应该有错误栈
+            logger.exception("异常级别")     # 应该有错误栈
+
         # 刷新确保写入
         from custom_logger.writer import flush_writer
         flush_writer()
-        
+
         # 检查日志文件
         full_log_path = os.path.join(temp_log_dir, "full.log")
         assert os.path.exists(full_log_path), "full.log文件不存在"
-        
+
         with open(full_log_path, 'r', encoding='utf-8') as f:
             log_content = f.read()
-        
+
         # 检查所有消息都存在
         assert "信息级别" in log_content
         assert "警告级别" in log_content
         assert "错误级别" in log_content
         assert "严重级别" in log_content
         assert "异常级别" in log_content
-        
-        # 检查异常栈出现的次数（应该是3次：error, critical, exception）
+
+        # OPT-001: WARNING使用调用栈（'File "'格式），ERROR+/EXCEPTION使用错误栈（"Traceback"）
+        # "Traceback" 应该出现 3 次（error, critical, exception）
         traceback_count = log_content.count("Traceback")
-        assert traceback_count == 3, f"异常栈出现次数应该是3，实际是{traceback_count}"
-        
+        assert traceback_count == 3, f"错误栈出现次数应该是3，实际是{traceback_count}"
+
+        # WARNING 应该有调用栈信息（'File "'格式）
+        # 检查警告级别后有调用栈信息
+        warning_index = log_content.find("警告级别")
+        assert warning_index > 0, "找不到警告级别"
+        # 获取警告级别后的一段内容（到下一个日志级别为止）
+        after_warning = log_content[warning_index:warning_index + 2000]
+        # WARNING应该有调用栈，包含 'File "' 或 'in <module>'
+        assert ('File "' in after_warning or "in " in after_warning), "WARNING级别应该有调用栈信息"
+
     finally:
         tear_down_custom_logger_system()
 

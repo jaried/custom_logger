@@ -14,6 +14,7 @@ def _get_call_stack_info() -> str:
     """获取调用栈信息（用于调试）"""
     try:
         import traceback
+
         stack = traceback.extract_stack()
         # 获取最近的几个调用栈帧
         recent_calls = []
@@ -38,6 +39,7 @@ def get_caller_info() -> Tuple[str, int]:
         show_call_chain = False
         try:
             from .config import get_config
+
             cfg = get_config()
             show_call_chain = cfg.show_call_chain
         except Exception:
@@ -49,15 +51,18 @@ def get_caller_info() -> Tuple[str, int]:
             print(f"[调用链] {call_stack}")
 
         # 检查是否在测试环境中（过滤None栈帧）
-        in_test = any('test_tc' in frame.filename for frame in stack if frame is not None)
-        
+        in_test = any(
+            "test_tc" in frame.filename for frame in stack if frame is not None
+        )
+
         # 在测试环境中显示完整调用链以便调试（基于配置参数）
         if in_test:
             try:
                 from .config import get_config
+
                 cfg = get_config()
                 show_debug = cfg.show_debug_call_stack
-                
+
                 if show_debug:
                     call_stack = _get_call_stack_info()
                     print(f"DEBUG: get_caller_info调用链: {call_stack}")
@@ -67,14 +72,14 @@ def get_caller_info() -> Tuple[str, int]:
         # 策略：从调用栈中找到第一个非custom_logger的用户代码文件
         # 同时记录所有custom_logger文件，以备没有找到外部文件时使用最后一个
         custom_logger_frames = []
-        
+
         for i in range(1, len(stack)):
             frame_info = stack[i]
-            
+
             # 跳过None栈帧
             if frame_info is None:
                 continue
-                
+
             filename = frame_info.filename
             basename = os.path.basename(filename)
             line_number = frame_info.lineno
@@ -87,41 +92,62 @@ def get_caller_info() -> Tuple[str, int]:
             name_without_ext = os.path.splitext(basename)[0]
 
             # 特殊处理：测试文件优先
-            if name_without_ext.startswith('test_tc'):
+            if name_without_ext.startswith("test_tc"):
                 return "test_tc0", line_number
 
             # 检查是否为custom_logger相关文件（需要跳过）
-            normalized_filename = filename.replace('\\', '/').lower()
+            normalized_filename = filename.replace("\\", "/").lower()
             is_custom_logger_file = (
-                'custom_logger' in normalized_filename and
-                (basename in ['logger.py', 'formatter.py', 'writer.py', 'config.py', 'manager.py'] or
-                 basename.startswith('module') or basename.startswith('internal'))  # 支持测试中的module*.py和internal*.py文件
+                "custom_logger" in normalized_filename
+                and (
+                    basename
+                    in [
+                        "logger.py",
+                        "formatter.py",
+                        "writer.py",
+                        "config.py",
+                        "manager.py",
+                    ]
+                    or basename.startswith("module")
+                    or basename.startswith("internal")
+                )  # 支持测试中的module*.py和internal*.py文件
             )
-            
+
             # 如果是custom_logger文件，记录所有，但继续查找外部文件
             if is_custom_logger_file:
                 custom_logger_frames.append((name_without_ext, line_number))
                 continue
-            
+
             # 检查是否为需要跳过的系统框架文件
             framework_files = [
-                'python', '_callers', '_hooks', '_manager', 'runner',  # pytest框架
-                'threading', '_threading_local',  # threading相关
-                'spawn', 'process', 'popen_spawn_win32',  # multiprocessing相关
+                "python",
+                "_callers",
+                "_hooks",
+                "_manager",
+                "runner",  # pytest框架
+                "threading",
+                "_threading_local",  # threading相关
+                "spawn",
+                "process",
+                "popen_spawn_win32",  # multiprocessing相关
             ]
-            
+
             is_framework_file = (
-                name_without_ext in framework_files or
-                (basename == '<string>')  # 跳过<string>这种特殊文件名
+                name_without_ext in framework_files
+                or (basename == "<string>")  # 跳过<string>这种特殊文件名
             )
-            
+
             # 跳过mock相关文件
-            if 'mock' in name_without_ext.lower():
+            if "mock" in name_without_ext.lower():
                 continue
-            
+
             # 如果不是框架文件，这就是真正的调用者
             if not is_framework_file:
-                module_name = name_without_ext[:16] if len(name_without_ext) > 16 else name_without_ext
+                module_name = (
+                    name_without_ext[:16]
+                    if len(name_without_ext) > 16
+                    else name_without_ext
+                )
                 return module_name, line_number
 
         # 如果没找到外部调用者，但有custom_logger文件，返回最后一个custom_logger文件
@@ -137,6 +163,7 @@ def get_caller_info() -> Tuple[str, int]:
         # 显示异常信息（如果启用调用链显示）
         try:
             from .config import get_config
+
             cfg = get_config()
             show_call_chain = cfg.show_call_chain
             if show_call_chain:
@@ -173,11 +200,7 @@ def format_pid(pid: int) -> str:
 
 
 def format_log_message(
-        level_name: str,
-        message: str,
-        module_name: str,
-        args: tuple,
-        kwargs: dict
+    level_name: str, message: str, module_name: str, args: tuple, kwargs: dict
 ) -> str:
     """格式化日志消息内容"""
     try:
@@ -197,11 +220,7 @@ def format_log_message(
 
 
 def create_log_line(
-        level_name: str,
-        message: str,
-        module_name: str,
-        args: tuple,
-        kwargs: dict
+    level_name: str, message: str, module_name: str, args: tuple, kwargs: dict
 ) -> str:
     """创建完整的日志行"""
     from .config import get_root_config
@@ -212,10 +231,10 @@ def create_log_line(
     # 获取各个组件
     pid_str = format_pid(os.getpid())
     caller_module, line_number = get_caller_info()
-    timestamp = current_time.strftime('%Y-%m-%d %H:%M:%S')
+    timestamp = current_time.strftime("%Y-%m-%d %H:%M:%S")
 
     # 获取第一次启动时间并计算运行时长
-    first_start_time = getattr(cfg, 'first_start_time', None)
+    first_start_time = getattr(cfg, "first_start_time", None)
     if first_start_time is not None:
         # 如果first_start_time是datetime对象，直接计算时间差
         try:
@@ -234,8 +253,10 @@ def create_log_line(
             elapsed_str = format_elapsed_time(str(first_start_time), current_time)
     else:
         elapsed_str = "0:00:00.00"
-    
-    formatted_message = format_log_message(level_name, message, module_name, args, kwargs)
+
+    formatted_message = format_log_message(
+        level_name, message, module_name, args, kwargs
+    )
 
     # 组装日志行，新格式：[PID | 模块名 : 行号]，模块名16位居中对齐，行号4位对齐，级别居中对齐10字符
     # 使用动态获取的 caller_module 而不是传入的 module_name，以支持自动识别调用模块名（US-002）
@@ -250,7 +271,7 @@ def get_exception_info() -> Optional[str]:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         if exc_type is not None:
             tb_lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
-            tb_str = ''.join(tb_lines)
+            tb_str = "".join(tb_lines)
             return tb_str
         return None
     except Exception:
@@ -285,7 +306,7 @@ def get_call_stack() -> str:
         # 格式化调用栈
         if user_frames:
             formatted = traceback.format_list(user_frames)
-            return ''.join(formatted)
+            return "".join(formatted)
 
         return ""
     except Exception:
