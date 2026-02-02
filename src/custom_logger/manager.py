@@ -112,6 +112,21 @@ def init_custom_logger_system(config_object: Any) -> None:
 
         _initialized = True
 
+        # 执行日志过期清理（仅主进程，初始化完成后执行一次）
+        try:
+            from .log_cleaner import cleanup_expired_logs, reset_cleanup_flag
+            reset_cleanup_flag()  # 重置标记以执行清理
+            # 获取一个临时logger用于记录清理结果
+            temp_logger = None
+            try:
+                temp_logger = get_logger("manager")
+            except Exception:
+                pass
+            cleanup_expired_logs(config_object, temp_logger)
+        except Exception:
+            # 清理失败不影响初始化
+            pass
+
     except Exception as e:
         # 避免在测试环境中输出到可能已关闭的stderr
         try:
