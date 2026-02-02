@@ -238,7 +238,8 @@ def create_log_line(
     formatted_message = format_log_message(level_name, message, module_name, args, kwargs)
 
     # 组装日志行，新格式：[PID | 模块名 : 行号]，模块名16位居中对齐，行号4位对齐，级别居中对齐10字符
-    log_line = f"[{pid_str:>6} | {module_name:^16} : {line_number:>4}] {timestamp} - {elapsed_str} - {level_name:^10} - {formatted_message}"
+    # 使用动态获取的 caller_module 而不是传入的 module_name，以支持自动识别调用模块名（US-002）
+    log_line = f"[{pid_str:>6} | {caller_module:^16} : {line_number:>4}] {timestamp} - {elapsed_str} - {level_name:^10} - {formatted_message}"
 
     return log_line
 
@@ -254,3 +255,39 @@ def get_exception_info() -> Optional[str]:
         return None
     except Exception:
         return None
+
+
+def get_call_stack() -> str:
+    """获取当前调用栈信息（用于warning及以上级别）
+
+    使用 traceback.extract_stack() 获取完整调用栈，过滤掉logger内部调用，
+    只保留用户代码的调用栈信息。
+
+    Returns:
+        str: 格式化的调用栈，或空字符串（获取失败时）
+    """
+    try:
+        # 获取完整调用栈
+        stack = traceback.extract_stack()
+
+        # 过滤掉logger内部调用，只保留用户代码
+        user_frames: list = []
+        for frame in stack:
+            # 跳过当前函数（get_call_stack自身）
+            if frame.name == "get_call_stack":
+                continue
+            # 跳过formatter模块的其他内部函数
+            if "formatter.py" in frame.filename:
+                # 只跳过formatter.py，允许其他模块
+                continue
+            user_frames.append(frame)
+
+        # 格式化调用栈
+        if user_frames:
+            formatted = traceback.format_list(user_frames)
+            return ''.join(formatted)
+
+        return ""
+    except Exception:
+        # 获取失败时返回空字符串
+        return ""
