@@ -20,7 +20,7 @@ def init_custom_logger_system(config_object: Any) -> None:
         config_object: 配置对象（必须），主程序传递config_manager的config对象或序列化的config对象
                       必须包含paths.log_dir和first_start_time属性
                       如果包含queue_info.log_queue，则启用队列模式
-    
+
     Raises:
         ValueError: 如果config_object为None或缺少必要属性
     """
@@ -34,19 +34,19 @@ def init_custom_logger_system(config_object: Any) -> None:
 
     # 验证必要属性
     # 检查paths.log_dir
-    paths_obj = getattr(config_object, 'paths', None)
+    paths_obj = getattr(config_object, "paths", None)
     if paths_obj is None:
         raise ValueError("config_object必须包含paths属性")
 
     if isinstance(paths_obj, dict):
-        log_dir = paths_obj.get('log_dir')
+        log_dir = paths_obj.get("log_dir")
     else:
-        log_dir = getattr(paths_obj, 'log_dir', None)
+        log_dir = getattr(paths_obj, "log_dir", None)
 
     if log_dir is None:
         raise ValueError("config_object必须包含paths.log_dir属性")
 
-    if not hasattr(config_object, 'first_start_time'):
+    if not hasattr(config_object, "first_start_time"):
         raise ValueError("config_object必须包含first_start_time属性")
 
     try:
@@ -56,23 +56,23 @@ def init_custom_logger_system(config_object: Any) -> None:
         # 检查是否启用队列模式
         # 优先检查config.logger.enable_queue_mode参数
         enable_queue_mode = False
-        logger_config = getattr(config_object, 'logger', None)
+        logger_config = getattr(config_object, "logger", None)
         if logger_config is not None:
             if isinstance(logger_config, dict):
-                enable_queue_mode = logger_config.get('enable_queue_mode', False)
+                enable_queue_mode = logger_config.get("enable_queue_mode", False)
             else:
-                enable_queue_mode = getattr(logger_config, 'enable_queue_mode', False)
+                enable_queue_mode = getattr(logger_config, "enable_queue_mode", False)
 
         # 如果配置中明确指定了enable_queue_mode，则使用该配置
         if enable_queue_mode:
             # 检查是否有队列信息
-            queue_info = getattr(config_object, 'queue_info', None)
+            queue_info = getattr(config_object, "queue_info", None)
             if queue_info is not None:
                 log_queue = None
                 if isinstance(queue_info, dict):
-                    log_queue = queue_info.get('log_queue')
+                    log_queue = queue_info.get("log_queue")
                 else:
-                    log_queue = getattr(queue_info, 'log_queue', None)
+                    log_queue = getattr(queue_info, "log_queue", None)
 
                 if log_queue is not None:
                     # 启用队列模式：主程序作为日志接收器
@@ -85,13 +85,13 @@ def init_custom_logger_system(config_object: Any) -> None:
                 raise ValueError("配置启用队列模式但未提供queue_info")
         else:
             # 如果配置中没有enable_queue_mode或为False，则检查是否有队列信息（向后兼容）
-            queue_info = getattr(config_object, 'queue_info', None)
+            queue_info = getattr(config_object, "queue_info", None)
             if queue_info is not None:
                 log_queue = None
                 if isinstance(queue_info, dict):
-                    log_queue = queue_info.get('log_queue')
+                    log_queue = queue_info.get("log_queue")
                 else:
-                    log_queue = getattr(queue_info, 'log_queue', None)
+                    log_queue = getattr(queue_info, "log_queue", None)
 
                 if log_queue is not None:
                     # 启用队列模式：主程序作为日志接收器（向后兼容）
@@ -112,9 +112,16 @@ def init_custom_logger_system(config_object: Any) -> None:
 
         _initialized = True
 
+        # 打印日志路径信息
+        init_logger = get_logger("manager")
+        init_logger.info(
+            f"日志系统初始化成功，日志目录: {log_dir}, 文件: full.log, warning.log"
+        )
+
         # 执行日志过期清理（仅主进程，初始化完成后执行一次）
         try:
             from .log_cleaner import cleanup_expired_logs, reset_cleanup_flag
+
             reset_cleanup_flag()  # 重置标记以执行清理
             # 获取一个临时logger用于记录清理结果
             temp_logger = None
@@ -131,6 +138,7 @@ def init_custom_logger_system(config_object: Any) -> None:
         # 避免在测试环境中输出到可能已关闭的stderr
         try:
             import sys
+
             print(f"日志系统初始化失败: {e}", file=sys.stderr)
         except (ValueError, AttributeError, ImportError):
             # 如果所有输出都失败，则静默处理
@@ -141,14 +149,13 @@ def init_custom_logger_system(config_object: Any) -> None:
 
 
 def init_custom_logger_system_for_worker(
-        serializable_config_object: Any,
-        worker_id: str = None
+    serializable_config_object: Any, worker_id: str = None
 ) -> None:
     """为worker进程初始化自定义日志系统
-    
+
     这个函数专门用于worker进程，接收主程序传过来的包含队列信息的
     config_manager的config对象(序列化后的)。
-    
+
     Worker进程：
     - 自己打印日志到控制台
     - 把需要存文件的信息传给队列
@@ -158,7 +165,7 @@ def init_custom_logger_system_for_worker(
         serializable_config_object: 序列化的配置对象，包含paths.log_dir、first_start_time、
                                    以及队列信息等
         worker_id: worker进程ID，用于标识日志来源
-    
+
     Raises:
         ValueError: 如果serializable_config_object为None或缺少必要属性
     """
@@ -168,23 +175,25 @@ def init_custom_logger_system_for_worker(
         return
 
     if serializable_config_object is None:
-        raise ValueError("serializable_config_object不能为None，必须传入序列化的config对象")
+        raise ValueError(
+            "serializable_config_object不能为None，必须传入序列化的config对象"
+        )
 
     # 验证必要属性
     # 检查paths.log_dir
-    paths_obj = getattr(serializable_config_object, 'paths', None)
+    paths_obj = getattr(serializable_config_object, "paths", None)
     if paths_obj is None:
         raise ValueError("serializable_config_object必须包含paths属性")
 
     if isinstance(paths_obj, dict):
-        log_dir = paths_obj.get('log_dir')
+        log_dir = paths_obj.get("log_dir")
     else:
-        log_dir = getattr(paths_obj, 'log_dir', None)
+        log_dir = getattr(paths_obj, "log_dir", None)
 
     if log_dir is None:
         raise ValueError("serializable_config_object必须包含paths.log_dir属性")
 
-    if not hasattr(serializable_config_object, 'first_start_time'):
+    if not hasattr(serializable_config_object, "first_start_time"):
         raise ValueError("serializable_config_object必须包含first_start_time属性")
 
     try:
@@ -194,48 +203,52 @@ def init_custom_logger_system_for_worker(
         # 检查是否启用队列模式
         # 优先检查config.logger.enable_queue_mode参数
         enable_queue_mode = False
-        logger_config = getattr(serializable_config_object, 'logger', None)
+        logger_config = getattr(serializable_config_object, "logger", None)
         if logger_config is not None:
             if isinstance(logger_config, dict):
-                enable_queue_mode = logger_config.get('enable_queue_mode', False)
+                enable_queue_mode = logger_config.get("enable_queue_mode", False)
             else:
-                enable_queue_mode = getattr(logger_config, 'enable_queue_mode', False)
+                enable_queue_mode = getattr(logger_config, "enable_queue_mode", False)
 
         # 如果配置中明确指定了enable_queue_mode，则使用该配置
         if enable_queue_mode:
             # 检查队列信息
-            queue_info = getattr(serializable_config_object, 'queue_info', None)
+            queue_info = getattr(serializable_config_object, "queue_info", None)
             if queue_info is not None:
                 log_queue = None
                 if isinstance(queue_info, dict):
-                    log_queue = queue_info.get('log_queue')
+                    log_queue = queue_info.get("log_queue")
                 else:
-                    log_queue = getattr(queue_info, 'log_queue', None)
+                    log_queue = getattr(queue_info, "log_queue", None)
 
                 if log_queue is not None:
                     # Worker模式：初始化队列发送器
                     init_queue_sender(log_queue, worker_id)
                     _queue_mode = True
-                    print(f"Worker {worker_id}: 启用队列模式（配置启用），日志发送器已初始化")
+                    print(
+                        f"Worker {worker_id}: 启用队列模式（配置启用），日志发送器已初始化"
+                    )
                 else:
                     raise ValueError("配置启用队列模式但未提供queue_info.log_queue")
             else:
                 raise ValueError("配置启用队列模式但未提供queue_info")
         else:
             # 如果配置中没有enable_queue_mode或为False，则检查是否有队列信息（向后兼容）
-            queue_info = getattr(serializable_config_object, 'queue_info', None)
+            queue_info = getattr(serializable_config_object, "queue_info", None)
             if queue_info is not None:
                 log_queue = None
                 if isinstance(queue_info, dict):
-                    log_queue = queue_info.get('log_queue')
+                    log_queue = queue_info.get("log_queue")
                 else:
-                    log_queue = getattr(queue_info, 'log_queue', None)
+                    log_queue = getattr(queue_info, "log_queue", None)
 
                 if log_queue is not None:
                     # Worker模式：初始化队列发送器（向后兼容）
                     init_queue_sender(log_queue, worker_id)
                     _queue_mode = True
-                    print(f"Worker {worker_id}: 启用队列模式（自动检测），日志发送器已初始化")
+                    print(
+                        f"Worker {worker_id}: 启用队列模式（自动检测），日志发送器已初始化"
+                    )
                 else:
                     # 如果没有队列，使用普通异步写入器
                     init_writer()
@@ -256,6 +269,7 @@ def init_custom_logger_system_for_worker(
         # 避免在测试环境中输出到可能已关闭的stderr
         try:
             import sys
+
             print(f"Worker日志系统初始化失败: {e}", file=sys.stderr)
         except (ValueError, AttributeError, ImportError):
             # 如果所有输出都失败，则静默处理
@@ -266,9 +280,7 @@ def init_custom_logger_system_for_worker(
 
 
 def get_logger(
-        name: str,
-        console_level: Optional[str] = None,
-        file_level: Optional[str] = None
+    name: str, console_level: Optional[str] = None, file_level: Optional[str] = None
 ) -> CustomLogger:
     """获取指定名称的日志记录器
 
@@ -295,7 +307,8 @@ def get_logger(
             "或 init_custom_logger_system_for_worker()。\n"
             "如果是测试用例或者简单脚本，建议使用系统logger。\n"
             "集成测试建议使用生产环境配置，初始化config=get_config_manager(first_datetime=start_datetime)。"
-            "\n再初始化custom_logger  init_custom_logger_system(config)")
+            "\n再初始化custom_logger  init_custom_logger_system(config)"
+        )
 
     # 获取配置
     config = get_config()
@@ -306,10 +319,12 @@ def get_logger(
 
     if console_level is not None:
         from .types import parse_level_name
+
         console_level_int = parse_level_name(console_level)
 
     if file_level is not None:
         from .types import parse_level_name
+
         file_level_int = parse_level_name(file_level)
 
     # 创建并返回日志记录器，传入级别参数
@@ -337,6 +352,7 @@ def tear_down_custom_logger_system() -> None:
         # 避免在测试环境中输出到可能已关闭的stderr
         try:
             import sys
+
             print(f"日志系统清理失败: {e}", file=sys.stderr)
         except (ValueError, AttributeError, ImportError):
             # 如果所有输出都失败，则静默处理
@@ -367,15 +383,16 @@ def is_queue_mode() -> bool:
 # 占位函数（未实现功能）
 # ============================================================================
 
+
 def init_custom_logger_system_with_params(**params) -> None:
     """使用参数初始化日志系统（占位函数）
-    
+
     注意：此函数为占位实现，实际功能未开发。
     项目约束：本项目彻底不使用config_manager，只用config_manager创建的对象。
-    
+
     Args:
         **params: 初始化参数
-        
+
     Raises:
         NotImplementedError: 功能未实现
     """
@@ -387,13 +404,13 @@ def init_custom_logger_system_with_params(**params) -> None:
 
 def init_custom_logger_system_from_serializable_config(config_dict: dict) -> None:
     """从可序列化配置初始化日志系统（占位函数）
-    
+
     注意：此函数为占位实现，实际功能未开发。
     项目约束：本项目彻底不使用config_manager，只用config_manager创建的对象。
-    
+
     Args:
         config_dict: 可序列化的配置字典
-        
+
     Raises:
         NotImplementedError: 功能未实现
     """
@@ -405,33 +422,31 @@ def init_custom_logger_system_from_serializable_config(config_dict: dict) -> Non
 
 def get_logger_init_params() -> dict:
     """获取日志系统初始化参数（占位函数）
-    
+
     注意：此函数为占位实现，实际功能未开发。
-    
+
     Returns:
         dict: 初始化参数字典
-        
+
     Raises:
         NotImplementedError: 功能未实现
     """
     raise NotImplementedError(
-        "get_logger_init_params功能未实现。"
-        "日志系统配置应通过config对象传递。"
+        "get_logger_init_params功能未实现。日志系统配置应通过config对象传递。"
     )
 
 
 def get_serializable_config() -> dict:
     """获取可序列化的配置（占位函数）
-    
+
     注意：此函数为占位实现，实际功能未开发。
-    
+
     Returns:
         dict: 可序列化的配置字典
-        
+
     Raises:
         NotImplementedError: 功能未实现
     """
     raise NotImplementedError(
-        "get_serializable_config功能未实现。"
-        "配置序列化应在主程序中处理。"
+        "get_serializable_config功能未实现。配置序列化应在主程序中处理。"
     )
