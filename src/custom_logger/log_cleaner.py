@@ -163,6 +163,19 @@ def scan_log_directories(log_dir: str) -> List[Tuple[str, datetime]]:
     return result
 
 
+def _format_released_space(freed_bytes: int) -> str:
+    """格式化释放空间显示"""
+    if freed_bytes < 0:
+        raise ValueError("freed_bytes不能为负数")
+
+    if freed_bytes >= 1024 * 1024:
+        freed_mb = freed_bytes / (1024 * 1024)
+        return f"{freed_mb:.2f} MB"
+
+    freed_kb = freed_bytes / 1024 if freed_bytes > 0 else 0
+    return f"{freed_kb:.2f} KB"
+
+
 def delete_expired_directories(
     expired_dirs: List[str], logger_instance: Any = None
 ) -> Tuple[int, int]:
@@ -252,11 +265,11 @@ def cleanup_expired_logs(config: Any, logger_instance: Any = None) -> Tuple[int,
 
     # 输出日志
     if logger_instance is not None:
-        freed_kb = freed_bytes / 1024 if freed_bytes > 0 else 0
+        released_space = _format_released_space(freed_bytes)
         try:
             logger_instance.info(
                 f"日志过期清理完成: 删除 {deleted_count} 个目录, "
-                f"释放 {freed_kb:.2f} KB 空间"
+                f"释放 {released_space} 空间"
             )
         except Exception:
             pass

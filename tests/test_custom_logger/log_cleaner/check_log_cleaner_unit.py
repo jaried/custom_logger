@@ -18,6 +18,9 @@ from custom_logger.log_cleaner import (
     is_expired,
     get_retention_days,
     _ensure_retention_config,
+    _format_released_space,
+    cleanup_expired_logs,
+    reset_cleanup_flag,
 )
 
 
@@ -157,3 +160,57 @@ class TestEnsureRetentionConfig:
         result = _ensure_retention_config(config)
         assert result == 14
         assert config.logger["log_retention_days"] == 14
+
+class TestFormatReleasedSpace:
+    """测试释放空间格式化"""
+
+    def test_tc401_use_kb_when_less_than_1mb(self):
+        """UT-401: 小于1MB时显示KB"""
+        result = _format_released_space(512 * 1024)
+        assert result == "512.00 KB"
+
+    def test_tc402_use_mb_when_reach_1mb(self):
+        """UT-402: 大于等于1MB时显示MB"""
+        result = _format_released_space(1024 * 1024)
+        assert result == "1.00 MB"
+
+    def test_tc403_raise_when_negative(self):
+        """UT-403: 负数字节数抛出异常"""
+        with pytest.raises(ValueError, match="freed_bytes不能为负数"):
+            _format_released_space(-1)
+
+
+class TestCleanupExpiredLogsSummary:
+    """测试清理摘要日志"""
+
+    def test_tc404_log_summary_use_mb_when_reach_1mb(self, monkeypatch):
+        """UT-404: 清理摘要日志在大于等于1MB时显示MB"""
+        reset_cleanup_flag()
+
+        config = Mock()
+        config.paths = {"work_dir": "/tmp/work_dir"}
+        config.logger = {"log_retention_days": 7}
+        logger_instance = Mock()
+
+        monkeypatch.setattr(
+            "custom_logger.log_cleaner.scan_log_directories",
+            lambda log_dir: [("/tmp/work_dir/logs/20260101", datetime(2026, 1, 1))],
+        )
+        monkeypatch.setattr(
+            "custom_logger.log_cleaner.is_expired",
+            lambda dir_date, retention_days: True,
+        )
+        monkeypatch.setattr(
+            "custom_logger.log_cleaner.delete_expired_directories",
+            lambda expired_dirs, logger: (1, 1024 * 1024),
+        )
+
+        deleted_count, freed_bytes = cleanup_expired_logs(config, logger_instance)
+
+        assert deleted_count == 1
+        assert freed_bytes == 1024 * 1024
+        logger_instance.info.assert_called_once_with(
+            "日志过期清理完成: 删除 1 个目录, 释放 1.00 MB 空间"
+        )
+        reset_cleanup_flag()
+
