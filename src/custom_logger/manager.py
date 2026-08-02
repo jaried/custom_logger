@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import atexit
+import os
 from typing import Optional, Any
 from .config import init_config_from_object, get_config
 from .writer import init_writer, shutdown_writer
@@ -114,8 +115,9 @@ def init_custom_logger_system(config_object: Any) -> None:
 
         # 打印日志路径信息
         init_logger = get_logger("manager")
+        display_log_dir = str(log_dir).rstrip("/\\") + os.sep
         init_logger.info(
-            f"日志系统初始化成功，日志目录: {log_dir}, 文件: full.log, warning.log"
+            f"日志系统初始化成功，日志目录: {display_log_dir}, 文件: full.log, warning.log"
         )
 
         # 执行日志过期清理（仅主进程，初始化完成后执行一次）
