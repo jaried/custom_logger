@@ -2,12 +2,14 @@
 from __future__ import annotations
 
 import atexit
+import logging
 import os
-from typing import Optional, Any
-from .config import init_config_from_object, get_config
-from .writer import init_writer, shutdown_writer
-from .queue_writer import init_queue_sender, init_queue_receiver, shutdown_queue_writer
+from typing import Any, Optional
+
+from .config import get_config, init_config_from_object
 from .logger import CustomLogger
+from .queue_writer import init_queue_receiver, init_queue_sender, shutdown_queue_writer
+from .writer import init_writer, shutdown_writer
 
 # 全局状态
 _initialized = False
@@ -130,11 +132,15 @@ def init_custom_logger_system(config_object: Any) -> None:
             try:
                 temp_logger = get_logger("manager")
             except Exception:
-                pass
+                logging.getLogger(__name__).debug(
+                    "无法创建用于过期日志清理的记录器", exc_info=True
+                )
             cleanup_expired_logs(config_object, temp_logger)
         except Exception:
             # 清理失败不影响初始化
-            pass
+            logging.getLogger(__name__).debug(
+                "日志过期清理失败，不影响初始化", exc_info=True
+            )
 
     except Exception as e:
         # 避免在测试环境中输出到可能已关闭的stderr
@@ -151,7 +157,8 @@ def init_custom_logger_system(config_object: Any) -> None:
 
 
 def init_custom_logger_system_for_worker(
-    serializable_config_object: Any, worker_id: str = None
+    serializable_config_object: Any,
+    worker_id: Optional[str] = None,  # noqa: UP045 - package supports Python 3.7.
 ) -> None:
     """为worker进程初始化自定义日志系统
 
@@ -282,7 +289,9 @@ def init_custom_logger_system_for_worker(
 
 
 def get_logger(
-    name: str, console_level: Optional[str] = None, file_level: Optional[str] = None
+    name: str,
+    console_level: Optional[str] = None,  # noqa: UP045 - package supports Python 3.7.
+    file_level: Optional[str] = None,  # noqa: UP045 - package supports Python 3.7.
 ) -> CustomLogger:
     """获取指定名称的日志记录器
 
@@ -300,8 +309,6 @@ def get_logger(
     """
     if len(name) > 16:
         raise ValueError(f"日志记录器名称{name}不能超过16个字符，当前长度: {len(name)}")
-    global _initialized
-
     if not _initialized:
         raise RuntimeError(
             "日志系统未初始化。"
@@ -350,7 +357,7 @@ def tear_down_custom_logger_system() -> None:
 
         _initialized = False
         _queue_mode = False
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - teardown errors are intentionally non-fatal.
         # 避免在测试环境中输出到可能已关闭的stderr
         try:
             import sys

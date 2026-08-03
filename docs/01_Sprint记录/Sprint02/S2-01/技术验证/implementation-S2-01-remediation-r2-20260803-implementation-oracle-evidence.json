@@ -1,0 +1,210 @@
+{
+  "schema_version": "implementation-stage-executor-oracle-evidence-1.0",
+  "issue_id": "S2-01",
+  "review_stage": "implementation",
+  "execution_mode": "independent",
+  "batch_id": "implementation-S2-01-remediation-r2-20260803",
+  "design_batch_id": "design-plan-S2-01-remediation-r5-20260803",
+  "worker_context_id": "main-agent:S2-01:implementation-remediation-r2:20260803",
+  "evidence_owner": "stage-executor",
+  "stage_executor_context_id": "main-agent:S2-01:implementation-remediation-r2:20260803",
+  "stage_model": "gpt-5.6-terra",
+  "context_inheritance": "not_applicable",
+  "review_exemption": {
+    "authority": "当前用户指令：terra模型不需要评审",
+    "scope": "implementation-S2-01-remediation-r2-20260803",
+    "mechanism": "validate_execution_assurance.py 的 gpt-5.6-terra stage-executor evidence 模式",
+    "independent_reviewer_started": false
+  },
+  "manifest_path": "docs/01_Sprint记录/Sprint02/S2-01/S2-01_执行保证清单.json",
+  "manifest_sha256": "0bcf2002bd7703f1ba97a815e8be7b4ad6bc295fddecef15bebccff95fa19538",
+  "freeze_path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/freeze/design-plan-S2-01-remediation-r5-20260803.freeze.json",
+  "freeze_sha256": "390a6b6e948c13a078420a473e2c5a4faea2c175c8ccfc676792d0a91a13fa49",
+  "design_execution_evidence_path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/design-plan-S2-01-remediation-r5-20260803-design-oracle-evidence.json",
+  "design_execution_evidence_sha256": "86ada42f3ea9653590dac598e54cad1457397751712cf351308a7e5b00e35056",
+  "oracle_asset_digests": [
+    {
+      "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_display_normalization.py",
+      "sha256": "c5bd58bbe7e2223cfabb17b391a8c0bea9f78389906464bf247e4f68a078a31d"
+    },
+    {
+      "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_contract.py",
+      "sha256": "fe3269420c590e9113ca5494fbb45b64912c4731c57189f96c0aaa64b49d6dfd"
+    },
+    {
+      "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py",
+      "sha256": "55b582ef53ada7d9008a41579dff992f3149f0d2137c05b62b0883363f3760cf"
+    },
+    {
+      "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_runtime.py",
+      "sha256": "7b487b9773ea7f061a78fa89ec1d61f41a629009e4ff379b3ab657f4bd6bb28b"
+    }
+  ],
+  "deterministic_verify": {
+    "command": ".venv/Scripts/python.exe D:/Tony/ubuntu_settings/.claude/skills/resources/helpers/validate_execution_assurance.py verify --root . --manifest docs/01_Sprint记录/Sprint02/S2-01/S2-01_执行保证清单.json --freeze docs/01_Sprint记录/Sprint02/S2-01/技术验证/freeze/design-plan-S2-01-remediation-r5-20260803.freeze.json",
+    "exit_code": 0,
+    "status": "pass",
+    "manifest_sha256_observed": "0bcf2002bd7703f1ba97a815e8be7b4ad6bc295fddecef15bebccff95fa19538",
+    "freeze_sha256_observed": "390a6b6e948c13a078420a473e2c5a4faea2c175c8ccfc676792d0a91a13fa49"
+  },
+  "oracles": [
+    {
+      "criterion_id": "AC-S2-01-01",
+      "positive_predicate_pass": true,
+      "negative_control_failed": true,
+      "baseline_and_scale_pass": true,
+      "observed_scale": "9 collected tests in test_tc0030_init_log_path.py; direct production runtime oracle checked four path forms",
+      "evidence_locator": "implementation-S2-01-remediation-r2-20260803-implementation-oracle-evidence.json#oracles/AC-S2-01-01",
+      "command_runs": {
+        "candidate": {
+          "exit_code": 0,
+          "stdout": "9 passed in 5.83s; runtime_display_cases=4"
+        },
+        "positive_control": {
+          "exit_code": 0,
+          "stdout": "display_cases=4"
+        },
+        "negative_control": {
+          "exit_code": 1,
+          "failure": "AssertionError: D:/logs/run-01"
+        },
+        "runtime_negative_control": {
+          "exit_code": 1,
+          "failure": "AssertionError: D:/logs/run-01"
+        }
+      }
+    },
+    {
+      "criterion_id": "AC-S2-01-02",
+      "positive_predicate_pass": true,
+      "negative_control_failed": true,
+      "baseline_and_scale_pass": true,
+      "observed_scale": "no-tail, slash-tail, backslash-tail and mixed-tail inputs; 9 targeted tests; direct runtime and independent reference checks",
+      "evidence_locator": "implementation-S2-01-remediation-r2-20260803-implementation-oracle-evidence.json#oracles/AC-S2-01-02",
+      "command_runs": {
+        "candidate": {
+          "exit_code": 0,
+          "stdout": "9 passed in 6.16s; runtime_display_cases=4; display_normalization=PASS"
+        },
+        "positive_control": {
+          "exit_code": 0,
+          "stdout": "display_cases=4"
+        },
+        "negative_control": {
+          "exit_code": 1,
+          "failure": "AssertionError: D:/logs/run-01"
+        },
+        "runtime_negative_control": {
+          "exit_code": 1,
+          "failure": "AssertionError: D:/logs/run-01"
+        }
+      }
+    },
+    {
+      "criterion_id": "AC-S2-01-03",
+      "positive_predicate_pass": true,
+      "negative_control_failed": true,
+      "baseline_and_scale_pass": true,
+      "observed_scale": "9 S2-01 E2E tests plus 10 queue/ordinary initialization regression tests; union 19 passed; direct manager queue oracle observed success and failure",
+      "evidence_locator": "implementation-S2-01-remediation-r2-20260803-implementation-oracle-evidence.json#oracles/AC-S2-01-03",
+      "command_runs": {
+        "candidate": {
+          "exit_code": 0,
+          "stdout": "19 passed in 6.60s; runtime_queue_success=1 runtime_queue_failure=1"
+        },
+        "positive_control": {
+          "exit_code": 0,
+          "stdout": "queue_success=1 queue_failure=1"
+        },
+        "negative_control": {
+          "exit_code": 1,
+          "failure": "AssertionError: failure path emitted the success prompt"
+        },
+        "runtime_negative_control": {
+          "exit_code": 1,
+          "failure": "AssertionError: ['日志系统初始化成功']"
+        }
+      }
+    },
+    {
+      "criterion_id": "AC-S2-01-04",
+      "positive_predicate_pass": true,
+      "negative_control_failed": true,
+      "baseline_and_scale_pass": true,
+      "observed_scale": "one manager.py logger.info call site and four static contract patterns",
+      "evidence_locator": "implementation-S2-01-remediation-r2-20260803-implementation-oracle-evidence.json#oracles/AC-S2-01-04",
+      "command_runs": {
+        "candidate": {
+          "exit_code": 0,
+          "stdout": "contract_patterns=4"
+        },
+        "positive_control": {
+          "exit_code": 0,
+          "stdout": "contract_patterns=4"
+        },
+        "negative_control": {
+          "exit_code": 1,
+          "failure": "missing contract patterns: ['S2-01-missing-contract-pattern']"
+        }
+      }
+    }
+  ],
+  "command_runs": [
+    {
+      "id": "queue_regression",
+      "exit_code": 0,
+      "stdout": "10 passed in 0.81s"
+    },
+    {
+      "id": "quality_check",
+      "command": ".venv/Scripts/python.exe -m ruff check src/custom_logger/manager.py tests/01_unit_tests/test_tc0030_init_log_path.py docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_runtime.py --fix",
+      "exit_code": 0,
+      "stdout": "All checks passed!"
+    },
+    {
+      "id": "quality_format",
+      "command": ".venv/Scripts/python.exe -m ruff format --check src/custom_logger/manager.py tests/01_unit_tests/test_tc0030_init_log_path.py docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_runtime.py",
+      "exit_code": 0,
+      "stdout": "3 files already formatted"
+    },
+    {
+      "id": "union_retry_after_transient_timeout",
+      "exit_code": 0,
+      "stdout": "19 passed in 6.58s",
+      "note": "首个安静联合命令被执行器 64 秒时间限制中断；同一命令的详细复现和安静复跑均通过，未复现测试故障。"
+    },
+    {
+      "id": "full_suite",
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. .venv/Scripts/python.exe -m pytest tests -q -p no:cacheprovider",
+      "exit_code": 1,
+      "stdout": "212 passed, 3 skipped, 13 failed in 97.39s",
+      "residual_risk": "13 个失败与现有 invalid_level/Mock logger 配置及固定 /mnt/ntfs 子进程导入路径有关；数量和类别与 r1 历史基线一致，未覆盖或引用 S2-01 的目录显示断言。"
+    }
+  ],
+  "implementation_conformance": {
+    "solution_decision": "pass: 成功提示仍只在统一成功路径对 display_log_dir 使用 rstrip('/\\\\') + os.sep，原始配置和 writer/queue 路径不改写",
+    "design": "pass: 新增的 manager 变更仅处理 Ruff 质量门禁，不改变初始化分支、提示文本、文件名或错误传播；运行时 oracle 直接调用生产 manager 并隔离 I/O 协作者",
+    "constraints": "pass: info 级别、native separator、去重、配置不变、成功/失败时序和明确排除项均保持",
+    "acceptance": "pass: 四条 AC 均有实际候选命令、正向控制、反向控制和正式规模结果",
+    "prototype": "not_applicable",
+    "specialized_tracks": {
+      "frontend": "not_applicable",
+      "skill_change": "not_applicable"
+    }
+  },
+  "full_suite_residual_risk": {
+    "status": "known_unrelated_failures",
+    "summary": "完整套件不是绿色：212 passed、3 skipped、13 failed。",
+    "failure_categories": [
+      "5 个 tc0021 序列化用例使用 invalid_level 配置值",
+      "7 个 tc0022 线程清理用例依赖固定 /mnt/ntfs 子进程路径，Windows issue worktree 中无法导入 custom_logger",
+      "1 个 new_api_requirements 用例传入未配置的 Mock logger"
+    ],
+    "causality_check": "目标 9/9、队列回归 10/10、联合 19/19、冻结 oracle 和 Ruff 均通过；13 个失败未断言本 issue 的 display_log_dir 行为。"
+  },
+  "all_manifest_commands_rechecked": true,
+  "positive_predicates_pass": true,
+  "negative_controls_fail": true,
+  "baseline_and_scale_pass": true,
+  "candidate_results_adjudicated": true
+}

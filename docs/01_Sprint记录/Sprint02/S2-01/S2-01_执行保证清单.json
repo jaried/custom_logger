@@ -33,9 +33,9 @@
       "criterion_id": "AC-S2-01-01",
       "requirement_locator": "S2-01_方案决策.md#8/AC-S2-01-01",
       "evidence_grade_required": "business_outcome",
-      "command": "./.venv/Scripts/python.exe -m pytest tests/01_unit_tests/test_tc0030_init_log_path.py -q -p no:cacheprovider",
-      "result_parser": "pytest summary must report 9 passed and 0 failed",
-      "pass_predicate": "exit_code == 0 and passed == 9 and failed == 0",
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. ./.venv/Scripts/python.exe -m pytest tests/01_unit_tests/test_tc0030_init_log_path.py -q -p no:cacheprovider && PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. ./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_runtime.py --mode display",
+      "result_parser": "pytest summary must report 9 passed and 0 failed; the direct runtime oracle must emit runtime_display_cases=4",
+      "pass_predicate": "exit_code == 0 and passed == 9 and failed == 0 and runtime_display_cases == 4",
       "required_scale": "all 9 collected tests in test_tc0030_init_log_path.py",
       "positive_control": {
         "command": "./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode display",
@@ -60,9 +60,9 @@
       "criterion_id": "AC-S2-01-02",
       "requirement_locator": "S2-01_方案决策.md#8/AC-S2-01-02",
       "evidence_grade_required": "business_outcome",
-      "command": "./.venv/Scripts/python.exe -m pytest tests/01_unit_tests/test_tc0030_init_log_path.py -q -p no:cacheprovider && ./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode display",
-      "result_parser": "pytest summary reports 9 passed and the oracle emits display_cases=4; each parameterized case asserts config.paths.log_dir is unchanged",
-      "pass_predicate": "exit_code == 0 and passed == 9 and failed == 0 and display_cases == 4",
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. ./.venv/Scripts/python.exe -m pytest tests/01_unit_tests/test_tc0030_init_log_path.py -q -p no:cacheprovider && PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. ./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_runtime.py --mode display && PYTHONDONTWRITEBYTECODE=1 ./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_display_normalization.py",
+      "result_parser": "pytest summary reports 9 passed, the direct runtime oracle emits runtime_display_cases=4, and the independent normalization control emits display_normalization=PASS",
+      "pass_predicate": "exit_code == 0 and passed == 9 and failed == 0 and runtime_display_cases == 4 and display_normalization == PASS",
       "required_scale": "no-tail, slash-tail, backslash-tail and mixed-tail inputs",
       "positive_control": {
         "command": "./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode display",
@@ -74,8 +74,8 @@
       },
       "oracle_assets": [
         {
-          "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py",
-          "sha256": "55b582ef53ada7d9008a41579dff992f3149f0d2137c05b62b0883363f3760cf"
+          "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_display_normalization.py",
+          "sha256": "c5bd58bbe7e2223cfabb17b391a8c0bea9f78389906464bf247e4f68a078a31d"
         }
       ],
       "baseline": {
@@ -87,9 +87,9 @@
       "criterion_id": "AC-S2-01-03",
       "requirement_locator": "S2-01_方案决策.md#8/AC-S2-01-03",
       "evidence_grade_required": "business_outcome",
-      "command": "./.venv/Scripts/python.exe -m pytest tests/01_unit_tests/test_tc0030_init_log_path.py tests/01_unit_tests/test_tc0018_enable_queue_mode_config.py -q -p no:cacheprovider && ./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode queue",
-      "result_parser": "pytest summary reports 19 passed and the oracle emits queue_success=1 queue_failure=1; tc0030 contains real queue success/failure paths",
-      "pass_predicate": "exit_code == 0 and passed == 19 and failed == 0 and queue_success == 1 and queue_failure == 1",
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. ./.venv/Scripts/python.exe -m pytest tests/01_unit_tests/test_tc0030_init_log_path.py tests/01_unit_tests/test_tc0018_enable_queue_mode_config.py -q -p no:cacheprovider && PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. ./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_runtime.py --mode queue",
+      "result_parser": "pytest summary reports 19 passed and the direct runtime oracle emits runtime_queue_success=1 runtime_queue_failure=1; tc0030 contains real queue success/failure paths",
+      "pass_predicate": "exit_code == 0 and passed == 19 and failed == 0 and runtime_queue_success == 1 and runtime_queue_failure == 1",
       "required_scale": "9 S2-01 E2E tests plus 10 queue/ordinary initialization regression tests",
       "positive_control": {
         "command": "./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode queue",
@@ -101,8 +101,8 @@
       },
       "oracle_assets": [
         {
-          "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py",
-          "sha256": "55b582ef53ada7d9008a41579dff992f3149f0d2137c05b62b0883363f3760cf"
+          "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_runtime.py",
+          "sha256": "7b487b9773ea7f061a78fa89ec1d61f41a629009e4ff379b3ab657f4bd6bb28b"
         }
       ],
       "baseline": {
