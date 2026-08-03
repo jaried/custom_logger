@@ -1,0 +1,95 @@
+{
+  "schema_version": "implementation-stage-executor-oracle-evidence-1.0",
+  "issue_id": "S2-01",
+  "review_stage": "implementation",
+  "execution_mode": "independent",
+  "batch_id": "implementation-S2-01-remediation-r4-20260803",
+  "design_batch_id": "design-plan-S2-01-remediation-r7-20260803",
+  "worker_context_id": "main-agent:S2-01:implementation-remediation-r4:20260803",
+  "evidence_owner": "stage-executor",
+  "stage_executor_context_id": "main-agent:S2-01:implementation-remediation-r4:20260803",
+  "stage_model": "gpt-5.6-terra",
+  "context_inheritance": "not_applicable",
+  "review_exemption": {
+    "authority": "当前用户指令：terra模型不需要评审",
+    "scope": "implementation-S2-01-remediation-r4-20260803",
+    "mechanism": "validate_execution_assurance.py 的 gpt-5.6-terra stage-executor evidence 模式",
+    "independent_reviewer_started": false
+  },
+  "remediation_of": "r3 默认 pytest 自动加载 pytest-subtests 后会话退出挂起；r4 消费 r7 的 no:subtests 可重复候选命令",
+  "manifest_path": "docs/01_Sprint记录/Sprint02/S2-01/S2-01_执行保证清单.json",
+  "manifest_sha256": "bca075e7d4f3389ae1c5ed03a3e6747b62bc60b12a3c01842808c24b3fd9d20d",
+  "freeze_path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/freeze/design-plan-S2-01-remediation-r7-20260803.freeze.json",
+  "freeze_sha256": "ad78c479d6d4e4485d264b3754344741b53bd0c5f0d0e28c7d46f14bcb59c7b7",
+  "design_execution_evidence_path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/design-plan-S2-01-remediation-r7-20260803-design-oracle-evidence.json",
+  "design_execution_evidence_sha256": "1b480b565e44b775a2a469855adb31d722e5b46bbd41a855af14700b115e059d",
+  "oracle_asset_digests": [
+    {
+      "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_display_normalization.py",
+      "sha256": "d33fb9d1cdc6e0348c82a0fb10a6d7dc6a0204744851eec904bde198c081ae8f"
+    },
+    {
+      "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_contract.py",
+      "sha256": "fe3269420c590e9113ca5494fbb45b64912c4731c57189f96c0aaa64b49d6dfd"
+    },
+    {
+      "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py",
+      "sha256": "55b582ef53ada7d9008a41579dff992f3149f0d2137c05b62b0883363f3760cf"
+    },
+    {
+      "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_runtime.py",
+      "sha256": "7b487b9773ea7f061a78fa89ec1d61f41a629009e4ff379b3ab657f4bd6bb28b"
+    }
+  ],
+  "deterministic_verify": {
+    "command": "validate_execution_assurance.py verify --root <issue-worktree> --manifest S2-01_执行保证清单.json --freeze r7.freeze.json",
+    "exit_code": 0,
+    "status": "pass",
+    "manifest_sha256_observed": "bca075e7d4f3389ae1c5ed03a3e6747b62bc60b12a3c01842808c24b3fd9d20d",
+    "freeze_sha256_observed": "ad78c479d6d4e4485d264b3754344741b53bd0c5f0d0e28c7d46f14bcb59c7b7"
+  },
+  "pytest_environment": {
+    "disabled_external_plugin": "pytest-subtests",
+    "mechanism": "-p no:subtests",
+    "semantics": "本项目目标用例未使用 subtests；只移除导致会话退出挂起的外部插件"
+  },
+  "oracles": [
+    {
+      "criterion_id": "AC-S2-01-01",
+      "positive_predicate_pass": true,
+      "negative_control_failed": true,
+      "baseline_and_scale_pass": true,
+      "observed_scale": "9 target tests; display_cases=4; direct runtime display cases=4",
+      "evidence_locator": "r4 candidate with -p no:subtests: 9 passed in 5.93s; old/direct bad-display exit=1"
+    },
+    {
+      "criterion_id": "AC-S2-01-02",
+      "positive_predicate_pass": true,
+      "negative_control_failed": true,
+      "baseline_and_scale_pass": true,
+      "observed_scale": "no-tail, slash-tail, backslash-tail and mixed-tail inputs; display_normalization=PASS",
+      "evidence_locator": "r4 candidate: runtime_display_cases=4; LF normalization control passed"
+    },
+    {
+      "criterion_id": "AC-S2-01-03",
+      "positive_predicate_pass": true,
+      "negative_control_failed": true,
+      "baseline_and_scale_pass": true,
+      "observed_scale": "9 S2-01 target tests plus 10 queue/ordinary regressions; union=19 passed",
+      "evidence_locator": "r4 candidate with -p no:subtests: regression=10 passed in 0.97s; union=19 passed in 6.67s; old bad-queue exit=1"
+    },
+    {
+      "criterion_id": "AC-S2-01-04",
+      "positive_predicate_pass": true,
+      "negative_control_failed": true,
+      "baseline_and_scale_pass": true,
+      "observed_scale": "one production call site and three fixed contract strings",
+      "evidence_locator": "r4 contract_patterns=4; bad-contract exit=1"
+    }
+  ],
+  "all_manifest_commands_rechecked": true,
+  "line_ending_remediation": {
+    "policy": "LF raw bytes",
+    "pytest_exit_reliability": "r7 candidate explicitly disables unused pytest-subtests"
+  }
+}

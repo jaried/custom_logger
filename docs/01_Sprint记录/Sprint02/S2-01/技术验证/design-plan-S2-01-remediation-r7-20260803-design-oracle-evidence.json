@@ -1,0 +1,85 @@
+{
+  "schema_version": "design-stage-executor-oracle-evidence-1.0",
+  "issue_id": "S2-01",
+  "review_stage": "design",
+  "execution_mode": "independent",
+  "batch_id": "design-plan-S2-01-remediation-r7-20260803",
+  "worker_context_id": "main-agent:S2-01:design-remediation-r7:20260803",
+  "evidence_owner": "stage-executor",
+  "stage_executor_context_id": "main-agent:S2-01:design-remediation-r7:20260803",
+  "stage_model": "gpt-5.6-terra",
+  "context_inheritance": "not_applicable",
+  "review_exemption": {
+    "authority": "当前用户指令：terra模型不需要评审",
+    "scope": "design-plan-S2-01-remediation-r7-20260803",
+    "mechanism": "validate_execution_assurance.py 的 gpt-5.6-terra stage-executor evidence 模式",
+    "independent_reviewer_started": false
+  },
+  "remediation_of": "r6 默认 pytest 自动加载 pytest-subtests 时会话退出挂起；r7 显式禁用未使用的外部插件",
+  "manifest_path": "docs/01_Sprint记录/Sprint02/S2-01/S2-01_执行保证清单.json",
+  "manifest_sha256": "bca075e7d4f3389ae1c5ed03a3e6747b62bc60b12a3c01842808c24b3fd9d20d",
+  "oracle_asset_digests": [
+    {
+      "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_display_normalization.py",
+      "sha256": "d33fb9d1cdc6e0348c82a0fb10a6d7dc6a0204744851eec904bde198c081ae8f"
+    },
+    {
+      "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_contract.py",
+      "sha256": "fe3269420c590e9113ca5494fbb45b64912c4731c57189f96c0aaa64b49d6dfd"
+    },
+    {
+      "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py",
+      "sha256": "55b582ef53ada7d9008a41579dff992f3149f0d2137c05b62b0883363f3760cf"
+    },
+    {
+      "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_runtime.py",
+      "sha256": "7b487b9773ea7f061a78fa89ec1d61f41a629009e4ff379b3ab657f4bd6bb28b"
+    }
+  ],
+  "deterministic_validation": {
+    "command": "validate_execution_assurance.py validate --root <issue-worktree> --manifest S2-01_执行保证清单.json",
+    "exit_code": 0,
+    "status": "pass",
+    "manifest_sha256_observed": "bca075e7d4f3389ae1c5ed03a3e6747b62bc60b12a3c01842808c24b3fd9d20d"
+  },
+  "pytest_environment": {
+    "disabled_external_plugin": "pytest-subtests",
+    "mechanism": "-p no:subtests",
+    "reason": "该项目未使用 subtests；自动加载时所有用例通过后会话退出挂起，禁用后 9 passed in 5.93s、10 passed in 0.97s、19 passed in 6.67s"
+  },
+  "oracle_controls": [
+    {
+      "criterion_id": "AC-S2-01-01",
+      "positive_control_pass": true,
+      "negative_control_failed": true,
+      "baseline_definition_valid": true,
+      "evidence_locator": "r7 candidate with -p no:subtests: target=9 passed in 5.93s; display_cases=4; runtime_display_cases=4; bad-display exit=1"
+    },
+    {
+      "criterion_id": "AC-S2-01-02",
+      "positive_control_pass": true,
+      "negative_control_failed": true,
+      "baseline_definition_valid": true,
+      "evidence_locator": "r7 candidate: target=9 passed; runtime_display_cases=4; display_normalization=PASS for four tail forms"
+    },
+    {
+      "criterion_id": "AC-S2-01-03",
+      "positive_control_pass": true,
+      "negative_control_failed": true,
+      "baseline_definition_valid": true,
+      "evidence_locator": "r7 candidate with -p no:subtests: regression=10 passed; union=19 passed in 6.67s; runtime queue success/failure=1/1; bad-queue exit=1"
+    },
+    {
+      "criterion_id": "AC-S2-01-04",
+      "positive_control_pass": true,
+      "negative_control_failed": true,
+      "baseline_definition_valid": true,
+      "evidence_locator": "r7 contract_patterns=4; bad-contract exit=1"
+    }
+  ],
+  "all_manifest_commands_rechecked": true,
+  "line_ending_remediation": {
+    "policy": "LF raw bytes",
+    "display_normalization_sha256": "d33fb9d1cdc6e0348c82a0fb10a6d7dc6a0204744851eec904bde198c081ae8f"
+  }
+}
