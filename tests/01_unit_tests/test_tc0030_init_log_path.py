@@ -34,22 +34,22 @@ class TestInitLogPath:
 
         config = TempConfig()
 
-        # 初始化logger系统
-        from src.custom_logger import init_custom_logger_system
+        try:
+            # 初始化logger系统
+            from src.custom_logger import init_custom_logger_system
 
-        init_custom_logger_system(config)
+            init_custom_logger_system(config)
 
-        # 捕获输出
-        captured = capsys.readouterr()
+            # 捕获输出
+            captured = capsys.readouterr()
 
-        # 验证输出包含日志路径信息
-        assert "日志系统初始化成功" in captured.out or "日志目录" in captured.out, (
-            f"初始化成功后应打印日志路径信息，实际输出: {captured.out}"
-        )
-
-        # 清理
-        manager_module.tear_down_custom_logger_system()
-        manager_module._initialized = False
+            # 验证输出包含日志路径信息
+            assert "日志系统初始化成功" in captured.out or "日志目录" in captured.out, (
+                f"初始化成功后应打印日志路径信息，实际输出: {captured.out}"
+            )
+        finally:
+            manager_module.tear_down_custom_logger_system()
+            manager_module._initialized = False
 
     def test_tc0031_init_prints_log_dir(self, capsys):
         """测试：打印信息包含日志目录"""
@@ -68,20 +68,20 @@ class TestInitLogPath:
 
         config = TempConfig()
 
-        from src.custom_logger import init_custom_logger_system
+        try:
+            from src.custom_logger import init_custom_logger_system
 
-        init_custom_logger_system(config)
+            init_custom_logger_system(config)
 
-        captured = capsys.readouterr()
+            captured = capsys.readouterr()
 
-        # 验证包含日志目录
-        assert test_log_dir in captured.out, (
-            f"打印信息应包含日志目录 {test_log_dir}，实际输出: {captured.out}"
-        )
-
-        # 清理
-        manager_module.tear_down_custom_logger_system()
-        manager_module._initialized = False
+            # 验证包含日志目录
+            assert test_log_dir in captured.out, (
+                f"打印信息应包含日志目录 {test_log_dir}，实际输出: {captured.out}"
+            )
+        finally:
+            manager_module.tear_down_custom_logger_system()
+            manager_module._initialized = False
 
     def test_tc0032_init_prints_file_names(self, capsys):
         """测试：打印信息包含日志文件名"""
@@ -104,20 +104,20 @@ class TestInitLogPath:
 
         config = TempConfig()
 
-        from src.custom_logger import init_custom_logger_system
+        try:
+            from src.custom_logger import init_custom_logger_system
 
-        init_custom_logger_system(config)
+            init_custom_logger_system(config)
 
-        captured = capsys.readouterr()
+            captured = capsys.readouterr()
 
-        # 验证包含文件名
-        assert "full.log" in captured.out and "warning.log" in captured.out, (
-            f"打印信息应包含日志文件名，实际输出: {captured.out}"
-        )
-
-        # 清理
-        manager_module.tear_down_custom_logger_system()
-        manager_module._initialized = False
+            # 验证包含文件名
+            assert "full.log" in captured.out and "warning.log" in captured.out, (
+                f"打印信息应包含日志文件名，实际输出: {captured.out}"
+            )
+        finally:
+            manager_module.tear_down_custom_logger_system()
+            manager_module._initialized = False
 
     @pytest.mark.parametrize(
         "log_dir",

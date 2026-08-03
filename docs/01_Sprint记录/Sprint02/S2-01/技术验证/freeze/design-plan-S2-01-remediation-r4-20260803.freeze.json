@@ -1,0 +1,31 @@
+{
+  "contract_version": "1.0",
+  "issue_id": "S2-01",
+  "status": "frozen",
+  "reviewed_batch_id": "design-plan-S2-01-remediation-r4-20260803",
+  "worker_context_id": "main-agent:S2-01:design-remediation-r4:20260803",
+  "reviewer_context_id": "reviewer:S2-01:design:independent:20260803:r4-codex",
+  "context_inheritance": "none",
+  "manifest_path": "docs/01_Sprint记录/Sprint02/S2-01/S2-01_执行保证清单.json",
+  "manifest_sha256": "17e01d8a80f7aee54d1f1f70ce7d869cbf2f9c4f97ba685f9275dfd7a96f0a82",
+  "oracle_asset_digests": [
+    {
+      "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_contract.py",
+      "sha256": "fe3269420c590e9113ca5494fbb45b64912c4731c57189f96c0aaa64b49d6dfd"
+    },
+    {
+      "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py",
+      "sha256": "55b582ef53ada7d9008a41579dff992f3149f0d2137c05b62b0883363f3760cf"
+    },
+    {
+      "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py",
+      "sha256": "55b582ef53ada7d9008a41579dff992f3149f0d2137c05b62b0883363f3760cf"
+    },
+    {
+      "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py",
+      "sha256": "55b582ef53ada7d9008a41579dff992f3149f0d2137c05b62b0883363f3760cf"
+    }
+  ],
+  "execution_evidence_path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/design-plan-S2-01-remediation-r4-20260803-design-oracle-evidence.json",
+  "execution_evidence_sha256": "94a01ed5fb3519389b92b9c77be304b0647c206e5044ea0d7dc3088738eefb61"
+}

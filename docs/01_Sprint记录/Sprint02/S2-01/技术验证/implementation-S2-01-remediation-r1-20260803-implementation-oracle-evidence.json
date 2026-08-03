@@ -1,0 +1,271 @@
+{
+  "schema_version": "implementation-review-oracle-evidence-1.0",
+  "issue_id": "S2-01",
+  "review_stage": "implementation",
+  "execution_mode": "independent",
+  "batch_id": "implementation-S2-01-remediation-r1-20260803",
+  "worker_context_id": "main-agent:S2-01:implementation-remediation-r1:20260803",
+  "reviewer_context_id": "reviewer:S2-01:implementation:independent:20260803:r4-codex",
+  "context_inheritance": "none",
+  "manifest_path": "docs/01_Sprint记录/Sprint02/S2-01/S2-01_执行保证清单.json",
+  "manifest_sha256": "17e01d8a80f7aee54d1f1f70ce7d869cbf2f9c4f97ba685f9275dfd7a96f0a82",
+  "freeze_path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/freeze/design-plan-S2-01-remediation-r4-20260803.freeze.json",
+  "freeze_sha256": "15b901c530a28669de9943ada2bc1bdfa0e9769b67dde565ff085bc1ea54ff42",
+  "design_execution_evidence_path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/design-plan-S2-01-remediation-r4-20260803-design-oracle-evidence.json",
+  "design_execution_evidence_sha256": "94a01ed5fb3519389b92b9c77be304b0647c206e5044ea0d7dc3088738eefb61",
+  "design_report_path": "docs/01_Sprint记录/Sprint02/S2-01/S2-01_设计评审_r4_codex.md",
+  "design_report_sha256": "e8aff30c5584557520d0cd5b96c93fa65cfc1f282992e196e9db331906b80210",
+  "oracle_asset_digests": [
+    {
+      "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py",
+      "sha256": "55b582ef53ada7d9008a41579dff992f3149f0d2137c05b62b0883363f3760cf"
+    },
+    {
+      "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_contract.py",
+      "sha256": "fe3269420c590e9113ca5494fbb45b64912c4731c57189f96c0aaa64b49d6dfd"
+    }
+  ],
+  "digest_policy": {
+    "algorithm": "sha256-raw-bytes",
+    "encoding": "UTF-8",
+    "line_endings": "LF",
+    "eol_check": "git ls-files --eol and .gitattributes confirm LF for tracked S2-01 assets"
+  },
+  "deterministic_verify": {
+    "command": ".venv/Scripts/python.exe /c/Users/Tony/.codex/skills/resources/helpers/validate_execution_assurance.py verify --root . --manifest docs/01_Sprint记录/Sprint02/S2-01/S2-01_执行保证清单.json --freeze docs/01_Sprint记录/Sprint02/S2-01/技术验证/freeze/design-plan-S2-01-remediation-r4-20260803.freeze.json",
+    "exit_code": 0,
+    "status": "pass",
+    "stdout": "{\"status\": \"pass\", \"issue_id\": \"S2-01\", \"errors\": []}",
+    "manifest_sha256_observed": "17e01d8a80f7aee54d1f1f70ce7d869cbf2f9c4f97ba685f9275dfd7a96f0a82",
+    "freeze_sha256_observed": "15b901c530a28669de9943ada2bc1bdfa0e9769b67dde565ff085bc1ea54ff42"
+  },
+  "oracles": [
+    {
+      "criterion_id": "AC-S2-01-01",
+      "positive_predicate_pass": true,
+      "negative_control_failed": true,
+      "baseline_and_scale_pass": true,
+      "observed_scale": "9 collected tests in test_tc0030_init_log_path.py; display oracle display_cases=4",
+      "evidence_locator": "implementation-S2-01-remediation-r1-20260803-implementation-oracle-evidence.json#oracles/AC-S2-01-01",
+      "baseline": {
+        "applicable": false,
+        "reason": "显示格式变更无可比较历史业务基线；正式规模固定为目标文件 9 个测试"
+      },
+      "command_runs": {
+        "candidate": {
+          "command": ".venv/Scripts/python.exe -m pytest tests/01_unit_tests/test_tc0030_init_log_path.py -q -p no:cacheprovider",
+          "exit_code": 0,
+          "stdout": "......... [100%]\\n9 passed in 6.15s"
+        },
+        "positive_control": {
+          "command": ".venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode display",
+          "exit_code": 0,
+          "stdout": "display_cases=4"
+        },
+        "negative_control": {
+          "command": ".venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode bad-display",
+          "exit_code": 1,
+          "stdout_or_stderr": "AssertionError: D:/logs/run-01 does not satisfy trailing-separator predicate"
+        }
+      },
+      "candidate_adjudication": "pass: 9/9 target tests; negative control distinguishes raw display implementation"
+    },
+    {
+      "criterion_id": "AC-S2-01-02",
+      "positive_predicate_pass": true,
+      "negative_control_failed": true,
+      "baseline_and_scale_pass": true,
+      "observed_scale": "no-tail, slash-tail, backslash-tail and mixed-tail inputs; target 9 tests plus display_cases=4",
+      "evidence_locator": "implementation-S2-01-remediation-r1-20260803-implementation-oracle-evidence.json#oracles/AC-S2-01-02",
+      "baseline": {
+        "applicable": false,
+        "reason": "本地显示格式变更无可比较历史业务基线；四类尾分隔符为正式边界规模"
+      },
+      "command_runs": {
+        "candidate": {
+          "command": ".venv/Scripts/python.exe -m pytest tests/01_unit_tests/test_tc0030_init_log_path.py -q -p no:cacheprovider && .venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode display",
+          "exit_code": 0,
+          "stdout": "......... [100%]\\n9 passed in 6.37s\\ndisplay_cases=4"
+        },
+        "positive_control": {
+          "command": ".venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode display",
+          "exit_code": 0,
+          "stdout": "display_cases=4"
+        },
+        "negative_control": {
+          "command": ".venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode bad-display",
+          "exit_code": 1,
+          "stdout_or_stderr": "AssertionError: D:/logs/run-01 does not satisfy trailing-separator predicate"
+        },
+        "normalization_recheck": {
+          "command": ".venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_display_normalization.py",
+          "exit_code": 0,
+          "stdout": "four inputs normalized to one native separator; native_separator='\\\\'; display_normalization=PASS"
+        }
+      },
+      "candidate_adjudication": "pass: parameterized tests assert configured log_dir remains unchanged and no duplicate suffix"
+    },
+    {
+      "criterion_id": "AC-S2-01-03",
+      "positive_predicate_pass": true,
+      "negative_control_failed": true,
+      "baseline_and_scale_pass": true,
+      "observed_scale": "9 S2-01 E2E tests plus 10 queue/ordinary initialization regression tests; union 19 passed; queue oracle success=1 failure=1",
+      "evidence_locator": "implementation-S2-01-remediation-r1-20260803-implementation-oracle-evidence.json#oracles/AC-S2-01-03",
+      "baseline": {
+        "applicable": false,
+        "reason": "显示格式变更无可比较历史业务基线；union 的 19 个目标/回归测试为正式规模"
+      },
+      "command_runs": {
+        "candidate": {
+          "command": ".venv/Scripts/python.exe -m pytest tests/01_unit_tests/test_tc0030_init_log_path.py tests/01_unit_tests/test_tc0018_enable_queue_mode_config.py -q -p no:cacheprovider && .venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode queue",
+          "exit_code": 0,
+          "stdout": "................... [100%]\\n19 passed in 6.75s\\nqueue_success=1 queue_failure=1"
+        },
+        "positive_control": {
+          "command": ".venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode queue",
+          "exit_code": 0,
+          "stdout": "queue_success=1 queue_failure=1"
+        },
+        "negative_control": {
+          "command": ".venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode bad-queue",
+          "exit_code": 1,
+          "stdout_or_stderr": "AssertionError: failure path emitted the success prompt"
+        }
+      },
+      "candidate_adjudication": "pass: ordinary and real queue receiver success/failure paths retain timing and teardown"
+    },
+    {
+      "criterion_id": "AC-S2-01-04",
+      "positive_predicate_pass": true,
+      "negative_control_failed": true,
+      "baseline_and_scale_pass": true,
+      "observed_scale": "one manager.py logger.info call site and four static contract patterns",
+      "evidence_locator": "implementation-S2-01-remediation-r1-20260803-implementation-oracle-evidence.json#oracles/AC-S2-01-04",
+      "baseline": {
+        "applicable": false,
+        "reason": "静态契约没有性能或比较基线；正式规模为一个生产调用点和四个固定模式"
+      },
+      "command_runs": {
+        "candidate": {
+          "command": ".venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_contract.py --mode contract --root .",
+          "exit_code": 0,
+          "stdout": "contract_patterns=4"
+        },
+        "positive_control": {
+          "command": ".venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_contract.py --mode contract --root .",
+          "exit_code": 0,
+          "stdout": "contract_patterns=4"
+        },
+        "negative_control": {
+          "command": ".venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_contract.py --mode bad-contract --root .",
+          "exit_code": 1,
+          "stdout_or_stderr": "missing contract patterns: ['S2-01-missing-contract-pattern']"
+        }
+      },
+      "candidate_adjudication": "pass: logger.info, full.log, warning.log and failure-message contract patterns present"
+    }
+  ],
+  "command_runs": [
+    {
+      "id": "target_pytest",
+      "command": ".venv/Scripts/python.exe -m pytest tests/01_unit_tests/test_tc0030_init_log_path.py -q -p no:cacheprovider",
+      "exit_code": 0,
+      "stdout": "9 passed in 6.15s"
+    },
+    {
+      "id": "queue_regression",
+      "command": ".venv/Scripts/python.exe -m pytest tests/01_unit_tests/test_tc0018_enable_queue_mode_config.py -q -p no:cacheprovider",
+      "exit_code": 0,
+      "stdout": "10 passed in 1.21s"
+    },
+    {
+      "id": "union_pytest",
+      "command": ".venv/Scripts/python.exe -m pytest tests/01_unit_tests/test_tc0030_init_log_path.py tests/01_unit_tests/test_tc0018_enable_queue_mode_config.py -q -p no:cacheprovider",
+      "exit_code": 0,
+      "stdout": "19 passed in 6.68s"
+    },
+    {
+      "id": "display_normalization",
+      "command": ".venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_display_normalization.py",
+      "exit_code": 0,
+      "stdout": "display_normalization=PASS; native_separator='\\\\'; four samples checked"
+    },
+    {
+      "id": "ruff_check",
+      "command": ".venv/Scripts/python.exe -m ruff check tests/01_unit_tests/test_tc0030_init_log_path.py",
+      "exit_code": 0,
+      "stdout": "All checks passed!"
+    },
+    {
+      "id": "ruff_format",
+      "command": ".venv/Scripts/python.exe -m ruff format --check tests/01_unit_tests/test_tc0030_init_log_path.py",
+      "exit_code": 0,
+      "stdout": "1 file already formatted"
+    },
+    {
+      "id": "full_suite",
+      "command": "PYTHONDONTWRITEBYTECODE=1 .venv/Scripts/python.exe -m pytest tests -q -p no:cacheprovider",
+      "exit_code": 1,
+      "stdout": "212 passed, 3 skipped, 13 failed in 100.65s",
+      "failure_categories": {
+        "configuration_level_or_mock": "tc0021 serialization tests 5 plus test_new_api_requirements missing logger attribute 1; invalid_level/Mock logger values fail before any display assertion",
+        "fixed_cross_platform_subprocess_path": "tc0022 thread cleanup tests 7, including subprocess cases with hard-coded /mnt/ntfs path and ModuleNotFoundError on Windows issue worktree"
+      },
+      "residual_risk": "Existing suite-level configuration/mock and cross-platform subprocess failures remain; no failure references display_log_dir, the implementation remediation, or the first-three cleanup changes."
+    },
+    {
+      "id": "first_three_cleanup_structure",
+      "command": "rg -n \"def test_tc003[0-2]|try:|finally:|tear_down_custom_logger_system\" tests/01_unit_tests/test_tc0030_init_log_path.py",
+      "exit_code": 0,
+      "stdout": "test_tc0030/test_tc0031/test_tc0032 each show try at lines 37/71/107 and finally+tear_down at 50-51/82-83/118-119"
+    },
+    {
+      "id": "line_ending_policy",
+      "command": "git ls-files --eol -- docs/01_Sprint记录/Sprint02/S2-01/S2-01_执行保证清单.json docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py",
+      "exit_code": 0,
+      "stdout": "i/lf w/lf attr/text eol=lf for manifest and oracle"
+    }
+  ],
+  "cleanup_observation": {
+    "minor_id": "Minor-1",
+    "result": "pass",
+    "evidence": "The first three historical tests now wrap initialization, assertions and teardown in try/finally; each finally calls tear_down_custom_logger_system and resets _initialized. Target and union commands pass, including assertion/error paths represented by queue failure regression.",
+    "resource_scope": "writer/queue state is closed by the test finally blocks; queue success additionally closes and joins its multiprocessing queue",
+    "remaining_risk": "No new cleanup failure observed; full-suite unrelated thread-cleanup failures are retained as residual risk and are not reclassified as this batch failure."
+  },
+  "implementation_conformance_observations": {
+    "solution_decision": "pass: manager.py display-only str(log_dir).rstrip('/\\\\') + os.sep at the approved unified prompt; raw config and writer/queue inputs remain unchanged",
+    "design": "pass: only approved test cleanup remediation changed; manager.py display logic and writer/queue ordering remain at lines 77-121",
+    "constraints": "pass: logger.info, native separator, deduplication, filenames, initialization timing, and failure semantics preserved",
+    "acceptance": "pass: AC-S2-01-01 through AC-S2-01-04 each have candidate, positive and negative evidence",
+    "prototype": "not_applicable: solution decision explicitly has no frontend prototype",
+    "specialized_tracks": {
+      "frontend": "not_applicable",
+      "skill_change": "not_applicable"
+    }
+  },
+  "candidate_residual_risk": {
+    "status": "none_for_batch_scope",
+    "summary": "All four candidate predicates pass at their required scales; ordinary/queue/union regressions and static contract checks are green.",
+    "scope_note": "The implementation batch modifies only failure-safe cleanup in test_tc0030; production display logic was independently rechecked unchanged against the approved design."
+  },
+  "full_suite_residual_risk": {
+    "status": "known_unrelated_failures",
+    "summary": "Full suite is not a pass: 212 passed, 3 skipped, 13 failed.",
+    "failures": [
+      "5 tc0021 serialization cases fail on pre-existing invalid_level configuration",
+      "7 tc0022 thread cleanup cases fail on existing cross-platform/fixed /mnt/ntfs subprocess assumptions",
+      "1 test_new_api_requirements case fails on a pre-existing Mock logger level"
+    ],
+    "causality_check": "None of the 13 failures assert or mutate the S2-01 display normalization; targeted, queue, union and oracle commands pass. Acceptance should retain this residual risk without calling the full suite green."
+  },
+  "all_manifest_commands_rechecked": true,
+  "positive_controls_pass": true,
+  "positive_predicates_pass": true,
+  "negative_controls_fail": true,
+  "baseline_definitions_valid": true,
+  "baseline_and_scale_pass": true,
+  "candidate_results_adjudicated": true,
+  "adjudication_expected": "validate_execution_assurance.py adjudicate must return exit 0 for this evidence and freeze"
+}
