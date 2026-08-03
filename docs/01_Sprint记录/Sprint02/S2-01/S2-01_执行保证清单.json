@@ -1,7 +1,7 @@
 {
   "contract_version": "1.1",
   "issue_id": "S2-01",
-  "design_batch_id": "design-plan-S2-01-remediation-r4-20260803",
+  "design_batch_id": "design-plan-S2-01-remediation-r7-20260803",
   "assurance_profile": {
     "issue_points": 1,
     "points_source": "docs/00_待办列表/Sprint待办列表/Sprint02.md#12",
@@ -33,7 +33,7 @@
       "criterion_id": "AC-S2-01-01",
       "requirement_locator": "S2-01_方案决策.md#8/AC-S2-01-01",
       "evidence_grade_required": "business_outcome",
-      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. ./.venv/Scripts/python.exe -m pytest tests/01_unit_tests/test_tc0030_init_log_path.py -q -p no:cacheprovider && PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. ./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_runtime.py --mode display",
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. ./.venv/Scripts/python.exe -m pytest tests/01_unit_tests/test_tc0030_init_log_path.py -q -p no:cacheprovider -p no:subtests && PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. ./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_runtime.py --mode display",
       "result_parser": "pytest summary must report 9 passed and 0 failed; the direct runtime oracle must emit runtime_display_cases=4",
       "pass_predicate": "exit_code == 0 and passed == 9 and failed == 0 and runtime_display_cases == 4",
       "required_scale": "all 9 collected tests in test_tc0030_init_log_path.py",
@@ -60,7 +60,7 @@
       "criterion_id": "AC-S2-01-02",
       "requirement_locator": "S2-01_方案决策.md#8/AC-S2-01-02",
       "evidence_grade_required": "business_outcome",
-      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. ./.venv/Scripts/python.exe -m pytest tests/01_unit_tests/test_tc0030_init_log_path.py -q -p no:cacheprovider && PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. ./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_runtime.py --mode display && PYTHONDONTWRITEBYTECODE=1 ./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_display_normalization.py",
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. ./.venv/Scripts/python.exe -m pytest tests/01_unit_tests/test_tc0030_init_log_path.py -q -p no:cacheprovider -p no:subtests && PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. ./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_runtime.py --mode display && PYTHONDONTWRITEBYTECODE=1 ./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_display_normalization.py",
       "result_parser": "pytest summary reports 9 passed, the direct runtime oracle emits runtime_display_cases=4, and the independent normalization control emits display_normalization=PASS",
       "pass_predicate": "exit_code == 0 and passed == 9 and failed == 0 and runtime_display_cases == 4 and display_normalization == PASS",
       "required_scale": "no-tail, slash-tail, backslash-tail and mixed-tail inputs",
@@ -75,7 +75,7 @@
       "oracle_assets": [
         {
           "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_display_normalization.py",
-          "sha256": "c5bd58bbe7e2223cfabb17b391a8c0bea9f78389906464bf247e4f68a078a31d"
+          "sha256": "d33fb9d1cdc6e0348c82a0fb10a6d7dc6a0204744851eec904bde198c081ae8f"
         }
       ],
       "baseline": {
@@ -87,7 +87,7 @@
       "criterion_id": "AC-S2-01-03",
       "requirement_locator": "S2-01_方案决策.md#8/AC-S2-01-03",
       "evidence_grade_required": "business_outcome",
-      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. ./.venv/Scripts/python.exe -m pytest tests/01_unit_tests/test_tc0030_init_log_path.py tests/01_unit_tests/test_tc0018_enable_queue_mode_config.py -q -p no:cacheprovider && PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. ./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_runtime.py --mode queue",
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. ./.venv/Scripts/python.exe -m pytest tests/01_unit_tests/test_tc0030_init_log_path.py tests/01_unit_tests/test_tc0018_enable_queue_mode_config.py -q -p no:cacheprovider -p no:subtests && PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. ./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_runtime.py --mode queue",
       "result_parser": "pytest summary reports 19 passed and the direct runtime oracle emits runtime_queue_success=1 runtime_queue_failure=1; tc0030 contains real queue success/failure paths",
       "pass_predicate": "exit_code == 0 and passed == 19 and failed == 0 and runtime_queue_success == 1 and runtime_queue_failure == 1",
       "required_scale": "9 S2-01 E2E tests plus 10 queue/ordinary initialization regression tests",
