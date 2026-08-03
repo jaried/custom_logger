@@ -1,0 +1,170 @@
+{
+  "schema_version": "design-review-oracle-evidence-1.0",
+  "issue_id": "S2-01",
+  "review_stage": "design",
+  "execution_mode": "independent",
+  "batch_id": "design-plan-S2-01-remediation-r4-20260803",
+  "worker_context_id": "main-agent:S2-01:design-remediation-r4:20260803",
+  "reviewer_context_id": "reviewer:S2-01:design:independent:20260803:r4-codex",
+  "context_inheritance": "none",
+  "manifest_path": "docs/01_Sprint记录/Sprint02/S2-01/S2-01_执行保证清单.json",
+  "manifest_sha256": "17e01d8a80f7aee54d1f1f70ce7d869cbf2f9c4f97ba685f9275dfd7a96f0a82",
+  "oracle_asset_digests": [
+    {
+      "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py",
+      "sha256": "55b582ef53ada7d9008a41579dff992f3149f0d2137c05b62b0883363f3760cf"
+    },
+    {
+      "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_contract.py",
+      "sha256": "fe3269420c590e9113ca5494fbb45b64912c4731c57189f96c0aaa64b49d6dfd"
+    }
+  ],
+  "digest_policy": {
+    "algorithm": "sha256-raw-bytes",
+    "encoding": "UTF-8",
+    "line_endings": "LF",
+    "asset_eol_check": "all listed manifest/oracle assets LF-only; .gitattributes eol=lf"
+  },
+  "deterministic_validation": {
+    "command": ".venv/Scripts/python.exe D:/Tony/ubuntu_settings/.claude/skills/resources/helpers/validate_execution_assurance.py validate --root . --manifest docs/01_Sprint记录/Sprint02/S2-01/S2-01_执行保证清单.json",
+    "exit_code": 0,
+    "status": "pass",
+    "manifest_sha256_observed": "17e01d8a80f7aee54d1f1f70ce7d869cbf2f9c4f97ba685f9275dfd7a96f0a82",
+    "criterion_ids": [
+      "AC-S2-01-01",
+      "AC-S2-01-02",
+      "AC-S2-01-03",
+      "AC-S2-01-04"
+    ]
+  },
+  "oracle_controls": [
+    {
+      "criterion_id": "AC-S2-01-01",
+      "positive_control_pass": true,
+      "negative_control_failed": true,
+      "baseline_definition_valid": true,
+      "evidence_locator": "design-plan-S2-01-remediation-r4-20260803-design-oracle-evidence.json#oracle_controls/AC-S2-01-01",
+      "baseline": {
+        "applicable": false,
+        "reason": "本地显示格式变更没有可比较的历史业务基线；目标规模由 9 个正式测试固定"
+      },
+      "control_runs": {
+        "positive": {
+          "command": ".venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode display",
+          "exit_code": 0,
+          "stdout": "display_cases=4"
+        },
+        "negative": {
+          "command": ".venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode bad-display",
+          "exit_code": 1,
+          "failure": "AssertionError: D:/logs/run-01 does not satisfy trailing-separator predicate"
+        }
+      },
+      "required_scale": "all 9 collected tests in test_tc0030_init_log_path.py",
+      "candidate_command_observation": {
+        "command": ".venv/Scripts/python.exe -m pytest tests/01_unit_tests/test_tc0030_init_log_path.py -q -p no:cacheprovider",
+        "exit_code": 0,
+        "stdout": "9 passed in 5.97s",
+        "adjudication": "implementation stage only; not a design gate result"
+      }
+    },
+    {
+      "criterion_id": "AC-S2-01-02",
+      "positive_control_pass": true,
+      "negative_control_failed": true,
+      "baseline_definition_valid": true,
+      "evidence_locator": "design-plan-S2-01-remediation-r4-20260803-design-oracle-evidence.json#oracle_controls/AC-S2-01-02",
+      "baseline": {
+        "applicable": false,
+        "reason": "本地显示格式变更没有可比较的历史业务基线；四类尾分隔符是正式边界规模"
+      },
+      "control_runs": {
+        "positive": {
+          "command": ".venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode display",
+          "exit_code": 0,
+          "stdout": "display_cases=4"
+        },
+        "negative": {
+          "command": ".venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode bad-display",
+          "exit_code": 1,
+          "failure": "AssertionError: D:/logs/run-01 does not satisfy trailing-separator predicate"
+        },
+        "normalization_recheck": {
+          "command": ".venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_display_normalization.py",
+          "exit_code": 0,
+          "stdout": "display_normalization=PASS; native_separator='\\\\'"
+        }
+      },
+      "required_scale": "no-tail, slash-tail, backslash-tail and mixed-tail inputs",
+      "candidate_command_observation": {
+        "command": ".venv/Scripts/python.exe -m pytest tests/01_unit_tests/test_tc0030_init_log_path.py -q -p no:cacheprovider",
+        "exit_code": 0,
+        "stdout": "9 passed in 5.91s",
+        "adjudication": "implementation stage only; not a design gate result"
+      }
+    },
+    {
+      "criterion_id": "AC-S2-01-03",
+      "positive_control_pass": true,
+      "negative_control_failed": true,
+      "baseline_definition_valid": true,
+      "evidence_locator": "design-plan-S2-01-remediation-r4-20260803-design-oracle-evidence.json#oracle_controls/AC-S2-01-03",
+      "baseline": {
+        "applicable": false,
+        "reason": "本地显示格式变更没有可比较的历史业务基线；union 的 19 个目标/回归用例是正式规模"
+      },
+      "control_runs": {
+        "positive": {
+          "command": ".venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode queue",
+          "exit_code": 0,
+          "stdout": "queue_success=1 queue_failure=1"
+        },
+        "negative": {
+          "command": ".venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode bad-queue",
+          "exit_code": 1,
+          "failure": "AssertionError: failure path emitted the success prompt"
+        }
+      },
+      "required_scale": "9 S2-01 E2E tests plus 10 queue/ordinary initialization regression tests",
+      "candidate_command_observation": {
+        "command": ".venv/Scripts/python.exe -m pytest tests/01_unit_tests/test_tc0030_init_log_path.py tests/01_unit_tests/test_tc0018_enable_queue_mode_config.py -q -p no:cacheprovider",
+        "exit_code": 0,
+        "stdout": "19 passed in 6.46s",
+        "adjudication": "implementation stage only; not a design gate result"
+      }
+    },
+    {
+      "criterion_id": "AC-S2-01-04",
+      "positive_control_pass": true,
+      "negative_control_failed": true,
+      "baseline_definition_valid": true,
+      "evidence_locator": "design-plan-S2-01-remediation-r4-20260803-design-oracle-evidence.json#oracle_controls/AC-S2-01-04",
+      "baseline": {
+        "applicable": false,
+        "reason": "静态契约检查没有性能或比较基线；正式规模是唯一生产调用点"
+      },
+      "control_runs": {
+        "positive": {
+          "command": ".venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_contract.py --mode contract --root .",
+          "exit_code": 0,
+          "stdout": "contract_patterns=4"
+        },
+        "negative": {
+          "command": ".venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_contract.py --mode bad-contract --root .",
+          "exit_code": 1,
+          "failure": "missing contract patterns: ['S2-01-missing-contract-pattern']"
+        }
+      },
+      "required_scale": "one production call site and three fixed contract strings"
+    }
+  ],
+  "all_manifest_commands_rechecked": true,
+  "candidate_results_reserved_for_implementation": true,
+  "reviewer_recheck_summary": {
+    "positive_controls_pass": true,
+    "negative_controls_fail": true,
+    "baseline_definitions_valid": true,
+    "assets_digest_match": true,
+    "eol_policy_verified": true
+  }
+}

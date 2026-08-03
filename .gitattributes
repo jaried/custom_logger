@@ -1,0 +1,4 @@
+# Keep assurance assets byte-stable across Windows checkouts.
+/docs/01_Sprint记录/Sprint02/S2-01/**/*.json text eol=lf
+/docs/01_Sprint记录/Sprint02/S2-01/**/*.md text eol=lf
+/docs/01_Sprint记录/Sprint02/S2-01/**/*.py text eol=lf

@@ -1,15 +1,32 @@
 {
+  "contract_version": "1.1",
   "issue_id": "S2-01",
-  "design_batch_id": "design-plan-S2-01-remediation-r2-20260803",
+  "design_batch_id": "design-plan-S2-01-remediation-r4-20260803",
   "assurance_profile": {
     "issue_points": 1,
     "points_source": "docs/00_待办列表/Sprint待办列表/Sprint02.md#12",
     "execution_mode": "independent",
-    "primary_outcomes": ["初始化成功提示的日志目录显示值以一个目录分隔符结尾"],
-    "risk_modifiers": ["真实 queue receiver 成功/失败 E2E"],
+    "primary_outcomes": [
+      "初始化成功提示的日志目录显示值以一个目录分隔符结尾"
+    ],
+    "risk_modifiers": [
+      "真实 queue receiver 成功/失败 E2E"
+    ],
+    "risk_sources": [
+      {
+        "modifier": "真实 queue receiver 成功/失败 E2E",
+        "source_locator": "S2-01_设计.md#7.3/E2E-S2-01-03"
+      }
+    ],
     "effective_point_limit": 3,
     "budget_result": "pass",
     "split_reason": null
+  },
+  "digest_policy": {
+    "algorithm": "sha256-raw-bytes",
+    "text_encoding": "UTF-8",
+    "line_endings": "LF",
+    "checkout_policy": "S2-01 .gitattributes enforces LF for manifest, oracle and design evidence"
   },
   "acceptance_oracles": [
     {
@@ -20,10 +37,13 @@
       "result_parser": "pytest summary must report 9 passed and 0 failed",
       "pass_predicate": "exit_code == 0 and passed == 9 and failed == 0",
       "required_scale": "all 9 collected tests in test_tc0030_init_log_path.py",
-      "observed_scale": 9,
+      "positive_control": {
+        "command": "./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode display",
+        "pass_predicate": "exit_code == 0 and stdout contains display_cases=4"
+      },
       "negative_control": {
         "command": "./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode bad-display",
-        "fail_predicate": "exit_code != 0 because the known-bad raw display implementation fails the same trailing-separator predicate"
+        "fail_predicate": "exit_code != 0 because the known-bad raw display implementation fails the trailing-separator predicate"
       },
       "oracle_assets": [
         {
@@ -33,7 +53,7 @@
       ],
       "baseline": {
         "applicable": false,
-        "reason": "local display-format change has no comparative baseline"
+        "not_applicable_reason": "本地显示格式变更没有可比较的历史业务基线；目标规模由 9 个正式测试固定"
       }
     },
     {
@@ -44,7 +64,10 @@
       "result_parser": "pytest summary reports 9 passed and the oracle emits display_cases=4; each parameterized case asserts config.paths.log_dir is unchanged",
       "pass_predicate": "exit_code == 0 and passed == 9 and failed == 0 and display_cases == 4",
       "required_scale": "no-tail, slash-tail, backslash-tail and mixed-tail inputs",
-      "observed_scale": 4,
+      "positive_control": {
+        "command": "./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode display",
+        "pass_predicate": "exit_code == 0 and stdout contains display_cases=4"
+      },
       "negative_control": {
         "command": "./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode bad-display",
         "fail_predicate": "exit_code != 0 because the known-bad raw display implementation fails the same deduplication predicate"
@@ -57,7 +80,7 @@
       ],
       "baseline": {
         "applicable": false,
-        "reason": "local display-format change has no comparative baseline"
+        "not_applicable_reason": "本地显示格式变更没有可比较的历史业务基线；四类尾分隔符是正式边界规模"
       }
     },
     {
@@ -68,10 +91,13 @@
       "result_parser": "pytest summary reports 19 passed and the oracle emits queue_success=1 queue_failure=1; tc0030 contains real queue success/failure paths",
       "pass_predicate": "exit_code == 0 and passed == 19 and failed == 0 and queue_success == 1 and queue_failure == 1",
       "required_scale": "9 S2-01 E2E tests plus 10 queue/ordinary initialization regression tests",
-      "observed_scale": 19,
+      "positive_control": {
+        "command": "./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode queue",
+        "pass_predicate": "exit_code == 0 and stdout contains queue_success=1 queue_failure=1"
+      },
       "negative_control": {
         "command": "./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_oracles.py --mode bad-queue",
-        "fail_predicate": "exit_code != 0 because the known-bad queue failure path emits the success prompt and fails the same timing predicate"
+        "fail_predicate": "exit_code != 0 because the known-bad queue failure path emits the success prompt and fails the timing predicate"
       },
       "oracle_assets": [
         {
@@ -81,26 +107,30 @@
       ],
       "baseline": {
         "applicable": false,
-        "reason": "same-branch regression comparison is not applicable to this local change"
+        "not_applicable_reason": "本地显示格式变更没有可比较的历史业务基线；union 的 19 个目标/回归用例是正式规模"
       }
     },
     {
       "criterion_id": "AC-S2-01-04",
       "requirement_locator": "S2-01_方案决策.md#8/AC-S2-01-04",
       "evidence_grade_required": "contract",
-      "command": "rg -n \"get_logger\\(\\\"manager\\\"\\)|full.log|warning.log|日志系统初始化失败\" src/custom_logger/manager.py",
-      "result_parser": "manager logger.info call, both fixed filenames and failure message are present",
-      "pass_predicate": "exit_code == 0 and all required patterns have at least one match",
-      "required_scale": "one production call site",
-      "observed_scale": 1,
-      "oracle_assets": [],
+      "command": "./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_contract.py --mode contract",
+      "result_parser": "contract oracle emits contract_patterns=4 after checking logger.info, full.log, warning.log and the failure message",
+      "pass_predicate": "exit_code == 0 and contract_patterns == 4",
+      "required_scale": "one production call site and three fixed contract strings",
       "negative_control": {
-        "command": "rg -n S2-01-missing-contract-pattern src/custom_logger/manager.py",
-        "fail_predicate": "exit_code != 0 because missing static contract evidence must fail"
+        "command": "./.venv/Scripts/python.exe docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_contract.py --mode bad-contract",
+        "fail_predicate": "exit_code != 0 because a missing contract pattern must fail the static oracle"
       },
+      "oracle_assets": [
+        {
+          "path": "docs/01_Sprint记录/Sprint02/S2-01/技术验证/verify_s2_01_contract.py",
+          "sha256": "fe3269420c590e9113ca5494fbb45b64912c4731c57189f96c0aaa64b49d6dfd"
+        }
+      ],
       "baseline": {
         "applicable": false,
-        "reason": "static contract check has no performance or comparative baseline"
+        "not_applicable_reason": "静态契约检查没有性能或比较基线；正式规模是唯一生产调用点"
       }
     }
   ],
