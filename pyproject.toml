@@ -37,8 +37,8 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.uv.sources]
-config-manager = { path = "../config_manager", editable = true }
-is-debug = { path = "../is_debug", editable = true }
+config-manager = { path = "D:/Tony/Documents/invest2025/project/config_manager", editable = true }
+is-debug = { path = "D:/Tony/Documents/invest2025/project/is_debug", editable = true }
 
 [tool.setuptools.package-data]
 "*" = ["config/*.yaml"]
