@@ -37,3 +37,134 @@
 - 2026-08-27：生成临时报告 `D:\temp\architecture-review-20260827-200819.html`，包含 Sprint02 状态、五个候选、每项 before/after 可视化、强度与依赖标签、行级文件证据、deletion test、Top recommendation；报告未写入仓库。
 - 2026-08-27：报告经 `HTMLParser` UTF-8 解析校验（5 个 `<article>`、13 个 Mermaid 图块），并以 `cmd.exe /c start "" "D:\temp\architecture-review-20260827-200819.html"` 成功打开（exit 0）。
 - 2026-08-27：本阶段仅更新本任务记录；未修改产品代码、测试、项目文档或配置，未登记 Issue，未进入方案设计、grilling 或实施。报告末尾保留原文提问：`Which of these would you like to explore?`
+- 2026-08-27：用户回复“1~5”，选择架构报告中的五个候选全部进入 grilling；本轮范围扩展为逐项约束、依赖、收益和可行性压力测试，仍不授权方案发布、产品代码修改或实施。
+- 2026-08-27：用户再次回复“1~5”，确认五个候选均需进入 grilling；由于未选择前一题的组织方式选项，本轮采用已给出的推荐依赖顺序 4 → 1 → 2 → 3 → 5，先从配置投影 module 的输入范围开始逐题确认。
+- 2026-08-27：用户在候选 4 的输入范围分歧中选择方案 1：direct object、dict、serialized snapshot 为正式输入，legacy YAML/config_manager 仅通过 adapter 接入；下一题聚焦 canonical runtime view 的字段集合。
+- 2026-08-27：用户补充候选 1 的硬约束：“问题1 必须通过 config_manager 接入，需要初始化时间”；后续设计必须保留 config_manager 产生的配置接入链，并将初始化时间作为必需运行时数据，不能以独立默认时间替代。
+- 2026-08-27：用户进一步明确：必须把 `config_manager` 对象传入 custom_logger 初始化入口；custom_logger 不自行构造替代配置对象，初始化时间从该传入对象读取。
+- 2026-08-27：用户补充传入的 `config_manager` 对象还必须提供日志初始化目录等初始化数据；候选 1 的必需数据集合扩展为配置对象、初始化时间、初始化目录及其相关初始化配置。
+- 2026-08-27：用户最新说明替代前述候选 1 接入约束：允许调整为不传入 `config_manager` 对象，日志根目录可在当前工作路径下生成 `logs\\`，首次启动时间和目录由初始化 module 生成；此前同步时不能排除相关文件不再构成约束，当前目标聚焦首次启动时间与日志目录生成。
+- 2026-08-27：用户再次修正并替代上一条放宽口径：必须传入 `config` 对象接入初始化；缺少对象时直接抛错，不允许自动采用当前路径 `logs\\` 或其他默认配置。首次启动时间和初始化目录继续从传入对象读取。
+- 2026-08-27：用户确认保持当前 config 接入形态：“必须 config 对象传入，不传入就抛错，这是现在的样子，保持即可”；候选 4 不得引入无配置 fallback，候选 1 的生命周期收敛必须以现有 config 输入契约为前置条件。
+- 2026-08-27：用户确认候选 1 的进程输入方案：主进程传入 `config_manager` 对象，worker 传入由该对象序列化得到的 `config snapshot`；两种入口均保留现有配置校验和缺失抛错。
+- 2026-08-27：用户确认候选 1 的 lifecycle 方案：保留两个公开初始化入口，在内部提取共享 lifecycle/module；主进程与 worker 的差异继续由各自 adapter 表达，现有调用 interface 保持。
+- 2026-08-27：用户选择候选 1 的 queue mode 兼容语义方案 1：显式启用必须提供 queue；缺少显式开关但存在 queue 时保留 legacy auto-detect；无 queue 时使用普通 writer。
+- 2026-08-27：用户选择候选 1 的初始化失败策略方案 1：采用事务式 lifecycle，先完成配置/时间/目录校验和 adapter 启动，成功后再提交状态与退出清理；失败时清理已启动资源、重置状态并重新抛错。
+- 2026-08-27：用户连续回复两次 `1`，确认候选 1 由共享 lifecycle/module 统一拥有 teardown，提供幂等显式关闭；role adapter 只关闭自身 transport，关闭后统一重置状态。
+- 2026-08-27：用户确认候选 1 的 mode 读取方案 1：由共享 lifecycle/module 提供只读 runtime context，logger 通过稳定 interface 读取 mode/transport，不直接访问 manager 内部状态。
+- 2026-08-27：用户选择候选 1 的 runtime context 方案 1：初始化成功后生成不可变 snapshot，固定首次启动时间、日志目录、mode 和 transport owner；logger 不再反复读取原始 config 对象。
+- 2026-08-27：用户选择候选 1 的初始化目录方案 1：`config_manager` 对象必须提供 `paths.log_dir` 与时间，lifecycle/module 按传入路径确保目录存在；不推导 fallback 路径，目录无法创建时进入事务失败回滚。
+- 2026-08-27：用户确认 `first_start_time` 与 `paths.log_dir` 只能作为传入 `config` 对象的字段，不能改为独立参数；主进程使用 `config_manager` 对象、worker 使用其序列化 snapshot，缺少 config 或必需字段立即抛错。
+- 2026-08-27：用户选择候选 1 的 config object 范围方案 1：仅接受主进程的 `config_manager` 对象和 worker 的同源序列化 `config snapshot`；dict、裸时间、裸路径及其他临时对象均不作为初始化输入。
+- 2026-08-27：用户在候选 2 的共享 record interface 分歧处指出可能存在需要嵌套处理的问题，但暂时记不起具体位置；暂停该题选择，先通过代码、测试和 Git 历史查证 queue payload、配置序列化和 module 字段的实际结构。
+- 2026-08-27：查证“嵌套”主要来自配置快照而非日志 record：历史记录说明 `config_manager` 自动保存会产生 `__data__` 包装，`src/custom_logger/config.py:521-526` 负责展开；配置内部继续使用 `paths.log_dir`、`logger.*`、`queue_info.log_queue` 嵌套。`QueueLogEntry` 当前为扁平字段，未发现同类包装。
+- 2026-08-27：补充发现 Windows 多进程 queue 传递约束：`docs/新API架构说明.md:195-198` 要求 queue 通过进程参数传递，而当前 manager 从 `queue_info.log_queue` 读取；后续候选 2 将配置 adapter 展开、queue handle 传递与日志 record interface 分开处理。
+- 2026-08-27：用户选择候选 2 的 queue handle 传递方案 1：进程启动流程单独传递 queue，worker 在内存中注入到 config snapshot 后调用现有 config-only 初始化入口；queue handle 不进入 serialized payload。
+- 2026-08-27：用户选择候选 2 的 record interface 方案 1：普通 writer 与 queue adapter 均提交包含 `log_line`、`level_value`、`logger_name`、`exception_info` 的完整日志记录；共享 sink 统一全局、warning、module 文件和 exception 写入，不增加额外 `payload` 嵌套。
+- 2026-08-27：调用链查证完成：`CustomLogger.name` 是稳定日志身份，适合文件路由；`formatter.get_caller_info()` 生成动态调用方，`create_log_line()` 将其写入日志文本；动态模块测试要求两者保持独立。当前 queue record 缺少 `logger_name`，因此候选 2 需通过完整记录字段传递稳定身份，不能从日志文本反解析调用链来路由文件。
+- 2026-08-27：用户要求在归档文档中继续查找与调用链、日志身份、配置嵌套及跨进程传递相关的历史约定；这是对候选 2 当前决策问题的补充检索范围。
+- 2026-08-27：归档检索结果：`05_详细设计文档/detailed_design.md:507-525` 规定先识别调用者、再创建包含 `logger_name` 的日志记录，异步接收后按 `logger_name` 创建模块文件；`03_架构设计文档/architecture_design.md:225-243` 的时序图同样把 `logger_name` 作为写入字段，而未把调用链作为文件路由字段。
+- 2026-08-27：归档检索补充：`01_需求文档/需求变更及bug.md:388-414` 将“调用者、行号识别问题”和“多进程配置包装 `__data__` 问题”列为两类独立故障；`03_架构设计文档/新API架构说明.md:148-168,195-203` 规定 worker 通过进程参数接收 queue，再注入配置并独立初始化。未发现把调用链嵌套进日志 record 或用调用链解析模块文件名的历史约定。
+- 2026-08-27：用户确认候选 2 的调用链归属方案 1：`CustomLogger.name` 作为稳定文件路由字段；动态调用方与调用链只保留在 `log_line` 文本中；普通 writer 与 queue writer 使用统一平面记录并交给共享写入模块按 `logger_name` 路由。
+- 2026-08-27：用户对归档检索后的调用链归属确认完成；下一项待确认的是共享写入模块对全局文件、warning 文件、模块文件及异常输出的职责范围，传输适配器只负责记录传递还是各自保留路由。
+- 2026-08-27：用户追问 `logger_name` 是否应由调用方在记录日志前初始化；需核对 `get_logger(name)`、`CustomLogger.name` 与 formatter 动态调用方字段的实际归属。
+- 2026-08-27：核对确认：调用方先通过 `get_logger(name)` 选择并固定 `CustomLogger.name`；`logger_name` 随日志记录传递给 writer/queue。formatter 另行计算动态 `caller_module`、行号及调用链并写入 `log_line`，不会改写 `logger_name`；同一 logger 被其他模块调用时，文件路由仍保持原 logger 名。
+- 2026-08-27：用户新增不可变约束：`logger` 现有配色已经调试稳定，架构整理不得改变级别颜色映射、控制台输出配色或 Windows/PyCharm 配色路径；后续方案与验证必须保留该行为。
+- 2026-08-27：配色实现核对：`logger.py:184-260` 负责终端类型检测、ANSI 支持和 Windows/PyCharm 级别颜色映射；`logger.py:324-347,411-424` 负责控制台及异常信息着色。该配色路径属于保留接口，候选方案不得迁移或重算。
+- 2026-08-27：根据配色约束固定职责 seam：`CustomLogger` 继续负责控制台表现与 ANSI 着色；formatter/记录传递保持纯文本 `log_line`；共享持久化模块只处理记录与文件，不把颜色代码带入 queue 或落盘路径。
+- 2026-08-27：用户补充调用栈语义：只有特定日志级别按现有配置显示调用栈；普通日志不附加调用栈。需保留当前级别判断、异常栈优先级、控制台显示与文件记录的一致性。
+- 2026-08-27：级别规则核对：`WARNING` 仅在 `logger.show_warning_stack=True` 时附加 `get_call_stack()`；`ERROR/CRITICAL/EXCEPTION` 优先附加活动异常的 `get_exception_info()`，无异常时附加 `get_call_stack()`；INFO、DEBUG、DETAIL、W_SUMMARY、W_DETAIL 不附加调用栈。`formatter.show_call_chain` 产生的是独立的 `[调用链]` 控制台诊断输出，不等同于 record 的 `exception_info`。
+- 2026-08-27：根据级别规则确定候选 2 的调用栈传递方向：日志发射侧在入队前完成级别判断并生成可选 `exception_info`；共享写入模块只原样写入该字段，不在主进程接收后重新检查或重建 worker 调用栈。
+- 2026-08-27：用户确认调用栈职责方案 1：日志发射侧按级别生成 `exception_info`；普通 writer 与 queue writer 只传递；共享写入模块原样持久化，不重新计算调用栈。
+- 2026-08-27：用户确认异常信息落盘方案 1：`exception_info` 与 `log_line` 使用同一目标文件集合；按现有级别规则写入全局和对应模块的 full 文件，`WARNING` 及以上再写入 warning 文件。
+- 2026-08-27：补充核对刷新与关闭现状：普通 writer 先等待内部队列排空再发送结束标记并等待写入线程；queue receiver 当前收到停止信号后直接结束接收，存在待处理记录时序差异。归档仅要求自动 flush 与资源清理，候选 2 需明确统一的刷新屏障。
+- 2026-08-27：用户确认候选 2 的刷新契约方案 1：普通 writer 与跨进程 queue 使用显式排空屏障；worker 完成最终入队后退出，主进程确认 queue 排空再关闭共享写入模块；关闭操作保持幂等。
+- 2026-08-27：归档与现有 queue 代码未定义跨进程全局排序；可观察事实是单个 producer 的入队顺序与 receiver 的到达顺序。候选 2 需确认是否保持到达顺序，避免用日志文本时间戳重排记录。
+- 2026-08-27：用户确认候选 2 的顺序方案 1：各 worker 保持自身 FIFO，主进程按 queue 到达顺序写入；日志文本时间戳只用于展示，不增加排序字段、不做接收端重排。
+- 2026-08-27：用户确认候选 2 的 `logger_name` 校验方案 1：`logger_name` 必须是调用方固定的非空字符串；记录创建或入队前校验，非法记录直接报告并拒绝进入写入链，不生成兜底模块文件。
+- 2026-08-27：用户确认候选 2 的错误传播方案 1：记录结构与 `logger_name` 校验错误在入队前抛出；文件写入、queue 通信、flush 等运行时错误采用隔离式报告，不中断业务日志调用；queue 满沿用现有提示和丢弃策略。
+- 2026-08-27：用户确认候选 2 的并发方案 1：单一写入线程独占共享写入模块及全部文件句柄；所有记录先入队，模块文件创建、四类文件写入、flush 与 close 均由同一 owner 完成。
+- 2026-08-27：用户确认候选 2 的模块文件名方案 1：`logger_name` 在记录创建前校验为安全文件名片段，保留长度限制，拒绝路径分隔符、驱动器语法、控制字符和保留设备名；合法值原样使用，非法值直接抛出，不做静默替换。
+- 2026-08-27：用户确认候选 2 的文件级别过滤方案 1：日志发射侧完成 console/file 级别判断与调用栈成本控制；共享写入模块只按记录级别执行 full/warning 文件分流，不读取配置、不重复过滤、不重新获取调用栈。
+- 2026-08-27：用户确认候选 2 的批处理方案 1：共享写入模块逐条处理记录；每条记录完成全局、模块及必要 warning 文件写入后再处理下一条，保持现有刷新时机、到达顺序和可见性。
+- 2026-08-27：用户确认候选 2 的文件生命周期方案 1：初始化创建全局文件；模块文件在首条合法记录到达共享写入模块时延迟创建；关闭时统一 flush 并关闭全部句柄。
+- 2026-08-27：用户确认候选 2 的配置职责方案 1：`logger_name` 只作为模块文件路由键；console/file 级别由 logger 侧解析和过滤；共享写入模块不读取 `module_levels` 或其他配置。
+- 2026-08-27：用户确认候选 2 的同名路由方案 1：同一会话内相同 `logger_name` 复用同一对模块文件句柄，不按 logger 实例拆分文件，所有记录按到达顺序追加。
+- 2026-08-27：候选 2 grilling 收敛：配置/queue 注入、平面完整记录、稳定 `logger_name` 路由、级别化 `exception_info`、原有配色、显式 flush 屏障、到达顺序、严格文件名校验、隔离式运行时错误、单一写入 owner、逐条写入、延迟模块文件、logger 侧过滤及同名句柄复用均已确定；下一步进入候选 3。
+- 2026-08-27：用户确认候选 3 的发射职责方案 1：发射模块统一掌握早期 console/file 过滤、`logger_name` 校验、级别化调用栈判断和纯文本 `log_line` 生成；控制台适配器保留现有 ANSI 配色，写入适配器交给候选 2 共享持久化模块。
+- 2026-08-27：用户确认候选 3 的 formatter 方案 1：保留 formatter 现有公开函数与输出行为；发射模块负责调用顺序和级别策略，formatter 继续负责格式化、动态调用方识别和栈文本生成，不增加嵌套记录。
+- 2026-08-27：用户确认候选 3 的控制台适配器方案 1：接收纯文本 `log_line`、`level_value`、可选 `exception_info` 和倒计时状态；适配器内部保留现有颜色映射、输出流选择、异常着色和原位刷新；记录、queue、文件路径不携带 ANSI 代码。
+- 2026-08-27：用户确认候选 3 的 logger 实例缓存方案 1：按 `(logger_name, console_level 覆盖值, file_level 覆盖值)` 的有效上下文在进程内缓存；相同键复用同一实例并保持运行时策略不可变，不同覆盖值使用不同实例；动态调用方、调用链和调用栈仍在每次日志调用时重新计算。
+- 2026-08-27：用户确认候选 3 的 logger 缓存生命周期方案 1：teardown 完成后清空当前进程缓存并切换运行代际；旧 logger 引用失效，继续记录时抛出未初始化或实例失效错误；重新初始化后创建新实例。
+- 2026-08-27：用户确认候选 3 的发射失败隔离方案 1：控制台适配器和写入适配器独立执行；任一运行时失败只进入诊断通道并继续另一条路径，调用顺序保持控制台后写入；参数校验、级别策略和实例代际错误仍向调用方抛出。
+- 2026-08-27：用户确认候选 3 的 logger 缓存并发方案 1：使用进程级锁保护缓存查找、实例创建、代际校验和 teardown 清理；相同有效上下文始终复用同一实例。
+- 2026-08-27：用户确认候选 3 的调用链诊断策略方案 1：`show_call_chain` 与 `show_debug_call_stack` 在 logger 创建时从不可变运行时快照绑定；发射模块显式传递策略，formatter 继续负责动态调用方识别、调用链文本生成，并保持既有诊断输出格式。
+- 2026-08-27：用户确认候选 3 的 `CustomLogger` 构造方案 1：保留公开类名以兼容现有导入，但构造必须接收已验证的 config/运行时上下文；缺少上下文立即抛错；业务代码仍通过 `get_logger()` 获取并复用实例。
+- 2026-08-27：用户确认候选 3 的 `CustomLogger` 配置输入方案 1：构造函数接收已验证的 config 对象；主进程使用 `config_manager`，worker 使用序列化 snapshot；构造阶段立即提取不可变运行时上下文，不接受独立时间、路径、queue 或裸字典参数。
+- 2026-08-27：用户确认候选 3 的发射模块落点方案 1：`CustomLogger` 保持薄外观，公开日志方法及 `_log()` 兼容签名不变；内部发射模块负责策略、formatter 调用顺序和两个适配器协调，发射模块不对外导出。
+- 2026-08-27：用户要求澄清“发射模块”与“异常模块”的边界；该澄清适用于候选 3 当前设计，不改变已确认的职责、配置和日志行为约束。
+- 2026-08-27：用户继续要求解释“发射模块”的中文含义；在术语澄清完成前暂停依赖注入方案确认，不将该提问视为方案选择或行为授权。
+- 2026-08-27：用户指出“发射模块”概念不自然；该反馈作为候选 3 的架构术语与边界修正，暂停沿用 `emission module` 的命名，不改变已确认的行为约束，需先收敛为贴近现有日志调用链的职责名称与最小 seam。
+- 2026-08-27：用户确认候选 3 的术语与内部边界方案 1：使用内部“日志记录处理器（`LogRecordProcessor`）”作为 `CustomLogger` 的委托实现；不新增异常模块，不对外导出，不改变 formatter、颜色、writer 或 queue 行为。
+- 2026-08-27：用户确认候选 3 的 `LogRecordProcessor` 输入方案 1：处理器构造时绑定 `logger_name`、不可变运行时上下文和适配器；每次调用只接收与 `_log()` 对齐的 `level_value`、`message`、格式化参数、控制台开关、倒计时和关键字参数；不增加内部请求对象。
+- 2026-08-27：用户确认候选 3 的 `LogRecordProcessor` 返回方案 1：处理器直接协调控制台与写入适配器并返回 `None`；运行时副作用失败进入诊断通道；公开日志方法不暴露内部记录或传输状态。
+- 2026-08-27：用户确认候选 3 的 `LogRecordProcessor` 并发方案 1：处理器保持无状态且可重入；单次日志数据只存在于当前调用；控制台与写入适配器分别负责所需的并发安全。
+- 2026-08-27：用户确认候选 3 的 `LogRecordProcessor` 依赖方案 1：构造时注入不可变运行时上下文、formatter seam、控制台适配器和写入适配器；生产实现由 lifecycle 提供，测试可替换；记录期间不读取全局配置或动态切换适配器。
+- 2026-08-27：用户确认候选 5 的日志保留策略方案 1：初始化时从 config 固化 `logger.log_retention_days`；缺失时使用既有 7 天默认值但不回写原 config；清理直接作用于快照中的 `paths.log_dir`，不额外拼接 `logs`；每个 lifecycle 只执行一次。
+- 2026-08-27：用户确认候选 5 的清理时间基准方案 1：使用 lifecycle 注入的 clock，在清理开始时读取一次当前本地日期；仅按目录名日期和 `age > retention_days` 判断，不使用文件修改时间或 `first_start_time`。
+- 2026-08-27：用户确认候选 5 的文件系统边界方案 1：仅扫描配置日志目录的直接子目录，目录名严格为 `YYYYMMDD`；删除前校验路径仍在配置目录内，跳过符号链接、junction 和非目录项；单项失败进入诊断并继续其他目录。
+- 2026-08-27：用户确认候选 5 的清理失败方案 1：完成一次生命周期的扫描与删除尝试后即标记已尝试；单项失败通过 diagnostic adapter 记录，初始化继续；下一次 lifecycle 再重新尝试。
+- 2026-08-27：用户确认候选 5 的清理时序方案 1：先完成配置投影和安全清理，再打开 writer/queue；清理使用冻结的路径、保留天数与 clock，明确排除当前 session，诊断不依赖尚未启动的日志 sink。
+- 2026-08-27：用户补充并纠正候选 5 的诊断实现：清理模块沿用当前 Python 标准 `logging`；“独立 diagnostic adapter”仅表示不调用 `CustomLogger`、writer 或 queue，不新增另一套日志实现。
+- 2026-08-27：用户重新询问候选 5 的清理时序，要求评估“日志系统初始化完成后再清理”；该问题替代此前“清理先于 writer/queue”的候选时序草案，需按现有行为重新确认。
+- 2026-08-27：用户要求核对当前清理实现与调用时序；本轮仅做只读现状诊断，不将此前候选时序选择视为已实施变更。
+- 2026-08-27：用户明确要求清理过程统一使用 `custom_logger`；标准 `logging` 仅保留在自定义日志系统尚未成功初始化时的兜底路径，具体实现由当前架构方案收敛。
+- 2026-08-27：用户进一步收紧候选 5 的清理边界：清理只能在自定义日志系统初始化完成后执行；清理函数必须接收 `CustomLogger`，不接受 `None`，不为清理过程提供标准 logging 兜底；初始化失败时不进入清理阶段。
+- 2026-08-27：用户确认候选 5 的清理 logger 方案 1：复用初始化阶段创建的 `CustomLogger("manager")` 实例，同时记录初始化成功日志与清理日志；不创建独立 cleanup logger，不在清理模块内部构造 logger。
+- 2026-08-27：用户修正候选 5 的清理 logger 调用方式：清理函数按既定接口直接使用传入 logger，不增加缺失或类型判断，由 Python 自然调用错误暴露问题；该约束替代此前关于显式 logger 类型校验的设计草案。
+- 2026-08-27：用户确认候选 5 的清理日志方案 1：清理完成摘要继续使用现有 `info` 级别与文案，逐项删除失败继续使用现有 `warning` 级别与文案；不改变既有可观察日志输出。
+- 2026-08-27：用户确认候选 5 的生命周期方案 1：每个成功初始化生命周期只执行一次清理；下一次重新初始化时重置清理标记并重新允许一次清理。
+- 2026-08-27：用户确认候选 5 的日志顺序方案 1：保持现行可观察顺序，先由同一个 `manager` logger 记录初始化成功，再记录日志清理摘要。
+- 2026-08-27：用户确认候选 5 的返回契约方案 1：保持 `cleanup_expired_logs()` 返回 `(deleted_count, freed_bytes)`，分别表示删除目录数与释放字节数。
+- 2026-08-27：用户确认候选 5 的空目录方案 1：配置日志目录不存在或没有可清理目录时视为正常清理，返回 `(0, 0)`，并由同一个 `manager` logger 输出现有格式的 `info` 摘要。
+- 2026-08-27：用户确认候选 5 的日志异常方案 1：清理过程中的 `CustomLogger` `warning/info` 调用异常直接向上传播，保持统一日志链的可见失败语义。
+- 2026-08-27：用户确认候选 4 的 canonical runtime view 方案 1：固定最小运行字段 `first_start_time`、`paths.log_dir`、日志级别/模块级别、调用链/调用栈开关、保留天数与队列模式；`mode`/transport owner 由 lifecycle 生成，跨进程 queue handle 单独传递，不放入快照。
+- 2026-08-27：用户确认候选 4 的嵌套投影方案 1：边界 adapter 只展开一层 `config_manager` 产生的 `__data__` 包装，再按 `paths`/`logger` 读取；无包装时读取根配置，不递归展开、猜测字段或嵌入 queue handle。
+- 2026-08-27：用户确认候选 4 的默认值方案 1：必需字段继续由现有校验处理；缺失 logger 可选字段使用当前默认值，但只写入新的不可变 canonical snapshot，不回写传入的 `config_manager` 或 worker snapshot。
+- 2026-08-27：用户纠正候选 4 的 `module_levels` 级别语义：前一轮“按 logger 名分别覆盖全局级别”的解释不成立，级别是否生效必须由全局配置控制；该修正覆盖尚未冻结的模块级独立覆盖解释。
+- 2026-08-27：用户进一步明确候选 4 的级别控制口径：只有全局配置控制 logger 的级别显示，所有 logger 共享全局级别；不能由每个 logger 单独修改显示级别。
+- 2026-08-27：用户补充候选 4 的级别阈值语义：低于 `global_console_level` / `global_file_level` 全局阈值的 logger 级别实际上不生效；后续需按全局阈值优先定义有效级别计算。
+- 2026-08-27：用户明确上述全局阈值语义是 logger 控制的基本原理，属于必须保持的既定行为，不作为候选策略重新选择。
+- 2026-08-27：用户确认候选 4 的时间投影方案 1：在配置投影边界将主进程对象或 worker snapshot 中的 `first_start_time` 统一解析为不可变 `datetime`；字段缺失或无法解析时直接报错，不生成替代时间。
+- 2026-08-27：用户确认候选 4 的 `module_levels` 方案 1：从有效 runtime policy 中移除 `module_levels`，仅在输入兼容层保留，不参与运行时级别计算。
+- 2026-08-27：用户确认候选 4 的队列投影方案 1：初始化阶段根据显式开关与 legacy queue presence 冻结唯一 `mode` 与 transport owner；logger 运行期只读取 runtime context，queue handle 由进程启动参数注入。
+- 2026-08-27：用户确认候选 4 的路径方案：`paths.log_dir` 按现状保持不变，直接使用传入路径，不新增规范化、推导或初始化提示显示值变更。
+- 2026-08-27：用户确认候选 4 的公开边界方案 1：保留现有初始化、`get_logger`、teardown、状态查询和 `CustomLogger` 导出；canonical runtime view 与投影 adapter 仅为内部实现，不新增业务侧配置快照 API。
+- 2026-08-27：用户确认候选 4 的嵌套节点方案 1：`paths` / `logger` 保持对象属性与 mapping 双形态兼容；投影 adapter 只读取已知结构并复制到 canonical view，必需字段或节点形状不满足时直接暴露错误。
+- 2026-08-27：用户确认候选 4 的全局级别时点方案 1：初始化成功时冻结 `global_console_level` / `global_file_level` 到 runtime snapshot；后续原始 config 修改在下一轮生命周期初始化后生效。
+- 2026-08-27：用户确认候选 4 的调用栈开关方案 1：`show_call_chain`、`show_debug_call_stack`、`show_warning_stack` 作为三个独立的全局布尔字段冻结；前两项控制 formatter 诊断输出，后一项只控制 WARNING 栈附加。
+- 2026-08-27：用户确认候选 4 的全局级别错误方案 1：`global_console_level` / `global_file_level` 在投影阶段解析，非法名称或类型直接报错并触发初始化回滚，不使用默认替换或延迟解析。
+- 2026-08-27：用户确认候选 4 的持久化边界方案 1：配置投影只读输入并生成 canonical snapshot，不调用 `config.save()`，不回写运行时默认值或派生字段，配置保存由配置管理方负责。
+- 2026-08-27：用户反馈同一项确认在界面显示两次；原因是本轮同时发送了重复的进度消息与最终消息。后续每轮只发送一条对用户可见的确认消息，避免重复展示。
+- 2026-08-27：用户要求继续当前架构确认流程；恢复到候选 4 中尚未回答的 `current_session_dir` 与 `paths.log_dir` 兼容边界问题。
+- 2026-08-27：用户修正候选 4 的路径兼容边界：不保留 `current_session_dir` 兼容读取，运行时仅接受传入 config 的 `paths.log_dir`。
+- 2026-08-27：用户确认候选 3 的级别参数方案 1：`get_logger()` 的可选 `console_level` / `file_level` 参数仅保留兼容签名，实际显示与写入级别统一由全局阈值决定，logger 实例不单独改级别。
+- 2026-08-27：用户确认候选 3 的缓存方案 1：当前生命周期内按 `logger_name` 缓存并复用同名 logger；兼容级别参数不参与缓存键或运行时策略。
+- 2026-08-27：用户确认候选 4 的路径字段方案 1：canonical projection 只使用传入的 `paths.log_dir` 与 `first_start_time`，不读取 `base_dir`、`project_name`、`experiment_name` 重新推导日志路径或 logger 策略。
+- 2026-08-27：用户修正候选 4 的内部接口表述：采用只读 config 快照；初始化后各模块只读取该快照，不修改或回读原始 config。后续以“只读 config”作为正式术语。
+- 2026-08-27：用户要求继续候选 4 确认流程；恢复到只读 config 快照是否保留现有嵌套结构的边界问题。
+- 2026-08-27：用户确认候选 4 的快照结构方案 1：只读 config 快照保留现有嵌套结构，`first_start_time`、`paths.log_dir`、`logger.global_*` 与各开关继续按原路径访问。
+- 2026-08-27：用户确认候选 4 的只读强制方案 1：生成真正不可变的只读 config 快照，顶层及 `paths` / `logger` 嵌套节点写入尝试直接报错。
+- 2026-08-27：用户指出候选 2 还涉及调用链，复杂度较高；暂停文件路由选择，先查证动态 caller/module 名、稳定 logger 名、queue payload 和 module 文件命名是否应拆分为不同字段。
+- 2026-08-27：用户询问“怎么做到？”并确认上一轮选项 1；本轮将只读 config 快照的嵌套节点访问方式冻结为属性访问与 mapping 访问双形态兼容（例如 `config.paths.log_dir` 与 `config["paths"]["log_dir"]` 均可读），两种访问方式都禁止写入。该要求补充候选 4 的只读快照结构，不改变其只读与 config-only 边界。
+- 2026-08-28：用户确认候选 4 的全局级别表示方案 1：只读 config 保留 `global_console_level` / `global_file_level` 的原字符串可读值，同时冻结对应的解析数值阈值供 logger 比较；级别仍由全局阈值统一控制，初始化后不动态回读原始 config。
+- 2026-08-28：用户确认候选 4 的解析阈值公开边界方案 1：数值阈值只作为只读 config 的内部运行字段，业务侧继续读取原字符串，不新增公开配置字段；`LogRecordProcessor` 与适配器统一使用该内部冻结值。
+- 2026-08-28：用户确认候选 3/4 的处理器输入边界方案 1：`LogRecordProcessor` 分开接收只读 config 与 lifecycle runtime context；只读 config 提供配置字段，runtime context 提供冻结的 `mode` 与 transport owner，处理器不回读 manager 或全局状态。
+- 2026-08-28：用户确认候选 3/4 的 transport owner 能力边界方案 1：runtime context 只暴露窄的 `transport.emit(record)` 能力；`flush` 与 `close` 由 lifecycle 统一负责，`LogRecordProcessor` 不接触原始 writer 或 queue handle。
+- 2026-08-28：用户确认候选 2/3 的 record 传输方案 1：`transport.emit(record)` 接收内部不可变的扁平 `LogRecord`，字段固定为 `log_line`、`level_value`、`logger_name`、`exception_info`；该类型不对外导出，不增加嵌套 `payload`，普通 writer 与 queue adapter 使用同一记录契约。
+- 2026-08-28：用户确认候选 2/3 的 `LogRecord` 空值方案 1：四个字段始终存在；无异常时 `exception_info=None`，有异常时保存完整栈文本；该形状在普通 writer 与跨进程 queue 序列化中保持一致。
+- 2026-08-28：用户确认候选 2/3 的 `LogRecord` 实现方案 1：使用内部 `@dataclass(frozen=True, slots=True)`，四个字段均为不可变值；创建后字段修改直接抛错。
+- 2026-08-28：用户质疑“怎么改这么多东西？”，指出当前架构确认被拆分得过细、看起来超出必要改动范围。该反馈要求立即收敛为最小充分架构边界，区分任务记录中的候选设计决策与实际产品代码变更；当前仍未授权实施、Issue 登记或提交。
+- 2026-08-28：用户再次明确调用 `$grilling`；后续继续执行架构压力测试，但问题粒度收敛到最小充分边界，先解释实际变更范围，再只确认仍会改变公开行为或实施风险的关键分歧。
+- 2026-08-28：用户确认将 grilling 收敛为最小边界方案 1：后续只确认会影响公开行为、失败语义或生命周期安全性的关键项；`LogRecord` 具体实现、空值表达和内部阈值字段等实现细节由设计阶段统一收敛，不再逐项询问。
+- 2026-08-28：用户确认候选 1/5 的清理异常生命周期方案 1：初始化提交后，清理阶段 `CustomLogger.info()` 或 `warning()` 异常直接向上传播，但保持系统已初始化状态与已启动 transport；下一次生命周期重新执行清理。
